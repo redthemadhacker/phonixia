@@ -685,56 +685,85 @@ export default function App() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>🛡️ Explorer Home</Text>
-              <Text style={styles.modalSubtitle}>Current Explorer & Land Scores</Text>
+              <View style={styles.homeHeaderContainer}>
+                <View style={styles.homeBadgeWrapper}>
+                  <Text style={styles.homeBadgeEmoji}>🛡️</Text>
+                  <Text style={styles.homeTitleText}>EXPLORER HOME</Text>
+                </View>
+                <Text style={styles.homeSubtitleText}>Your Grand Adventure Statistics & Realm Progress</Text>
+              </View>
 
               <ScrollView style={styles.profileScrollBox} showsVerticalScrollIndicator={false}>
-                <Text style={styles.profileHeroName}>✨ Explorer {currentExplorer}</Text>
-                
-                <TouchableOpacity 
-                  style={styles.switchExplorerButton} 
-                  onPress={() => { setProfileVisible(false); setCurrentExplorer(''); }}
-                >
-                  <Text style={styles.switchExplorerButtonText}>👥 Switch / Add Explorer Kid</Text>
-                </TouchableOpacity>
-
-                <View style={styles.statSummaryCard}>
-                  <Text style={styles.summaryText}>⭐ Total Combined Score: <Text style={styles.highlightNum}>{totalScore}</Text></Text>
+                {/* Explorer Card Banner */}
+                <View style={styles.homeExplorerBanner}>
+                  <Text style={styles.homeExplorerAvatar}>⛺</Text>
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={styles.homeExplorerNameLabel}>ACTIVE HERO</Text>
+                    <Text style={styles.homeExplorerNameVal}>{currentExplorer}</Text>
+                  </View>
+                  <TouchableOpacity 
+                    style={styles.homeSwitchButtonMini} 
+                    onPress={() => { setProfileVisible(false); setCurrentExplorer(''); }}
+                  >
+                    <Text style={styles.homeSwitchButtonMiniText}>Switch Kid 👥</Text>
+                  </TouchableOpacity>
                 </View>
 
-                <View style={styles.landStatBox}>
-                  <Text style={styles.landRowHeader}>🌊 Sound Shallows</Text>
-                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.soundShallows)}</Text></Text>
+                {/* Total Combined Score Banner */}
+                <View style={styles.homeTotalScoreCard}>
+                  <Text style={styles.homeTotalScoreIcon}>⭐</Text>
+                  <View>
+                    <Text style={styles.homeTotalScoreTitle}>TOTAL COMBINED STARS</Text>
+                    <Text style={styles.homeTotalScoreVal}>{totalScore} <Text style={{ fontSize: 14, color: '#fcd34d' }}>Points</Text></Text>
+                  </View>
                 </View>
 
-                <View style={styles.landStatBox}>
-                  <Text style={styles.landRowHeader}>🏝️ Isles of Play</Text>
-                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.islesOfPlay)}</Text></Text>
-                </View>
+                {/* Realm Progress Grid */}
+                <Text style={styles.homeSectionHeading}>🗺️ Realm Mastery Progress</Text>
+                <View style={styles.homeRealmsGrid}>
+                  <View style={styles.homeRealmCard}>
+                    <Text style={styles.homeRealmEmoji}>🌊</Text>
+                    <Text style={styles.homeRealmName}>Sound Shallows</Text>
+                    <Text style={styles.homeRealmScore}>{getLandTotalScore(landProgress.soundShallows)} pts</Text>
+                  </View>
 
-                <View style={styles.landStatBox}>
-                  <Text style={styles.landRowHeader}>🐚 Shellshore Arcade</Text>
-                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.shellshoreArcade)}</Text></Text>
-                </View>
+                  <View style={styles.homeRealmCard}>
+                    <Text style={styles.homeRealmEmoji}>🏝️</Text>
+                    <Text style={styles.homeRealmName}>Isles of Play</Text>
+                    <Text style={styles.homeRealmScore}>{getLandTotalScore(landProgress.islesOfPlay)} pts</Text>
+                  </View>
 
-                <View style={styles.landStatBox}>
-                  <Text style={styles.landRowHeader}>🧱 Builders Guild</Text>
-                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.buildersGuild)}</Text></Text>
-                </View>
+                  <View style={styles.homeRealmCard}>
+                    <Text style={styles.homeRealmEmoji}>🐚</Text>
+                    <Text style={styles.homeRealmName}>Shellshore Arcade</Text>
+                    <Text style={styles.homeRealmScore}>{getLandTotalScore(landProgress.shellshoreArcade)} pts</Text>
+                  </View>
 
-                <View style={styles.landStatBox}>
-                  <Text style={styles.landRowHeader}>🌲 Tricky Trails</Text>
-                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.trickyTrails)}</Text></Text>
-                </View>
+                  <View style={styles.homeRealmCard}>
+                    <Text style={styles.homeRealmEmoji}>🧱</Text>
+                    <Text style={styles.homeRealmName}>Builders Guild</Text>
+                    <Text style={styles.homeRealmScore}>{getLandTotalScore(landProgress.buildersGuild)} pts</Text>
+                  </View>
 
-                <View style={styles.landStatBox}>
-                  <Text style={styles.landRowHeader}>⛰️ Whispering Peaks</Text>
-                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.whisperingPeaks)}</Text></Text>
-                </View>
+                  <View style={styles.homeRealmCard}>
+                    <Text style={styles.homeRealmEmoji}>🌲</Text>
+                    <Text style={styles.homeRealmName}>Tricky Trails</Text>
+                    <Text style={styles.homeRealmScore}>{getLandTotalScore(landProgress.trickyTrails)} pts</Text>
+                  </View>
 
-                <View style={styles.landStatBox}>
-                  <Text style={styles.landRowHeader}>🏛️ Lexicon Empire</Text>
-                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.lexiconEmpire)}</Text></Text>
+                  <View style={styles.homeRealmCard}>
+                    <Text style={styles.homeRealmEmoji}>⛰️</Text>
+                    <Text style={styles.homeRealmName}>Whispering Peaks</Text>
+                    <Text style={styles.homeRealmScore}>{getLandTotalScore(landProgress.whisperingPeaks)} pts</Text>
+                  </View>
+
+                  <View style={[styles.homeRealmCard, { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={[styles.homeRealmEmoji, { marginRight: 12, marginBottom: 0 }]}>🏛️</Text>
+                      <Text style={[styles.homeRealmName, { textAlign: 'left' }]}>Lexicon Empire</Text>
+                    </View>
+                    <Text style={styles.homeRealmScore}>{getLandTotalScore(landProgress.lexiconEmpire)} pts</Text>
+                  </View>
                 </View>
               </ScrollView>
 
@@ -822,7 +851,7 @@ function ExplorerSelectorScreen({ parentEmail, onSelectExplorer, onOpenAddModal,
               <Text style={styles.authButtonText}>✨ Save & Start Exploring</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.closeButton} onPress={() => setExplorerModalVisible(false)}>
+            <TouchableOpacity style={[styles.closeButton, { marginTop: 10 }]} onPress={() => setExplorerModalVisible(false)}>
               <Text style={styles.closeButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -833,55 +862,74 @@ function ExplorerSelectorScreen({ parentEmail, onSelectExplorer, onOpenAddModal,
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#0b090a' },
-  authContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#1b263b' },
+  safeArea: { flex: 1, backgroundColor: '#03045e' },
+  authContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#03045e' },
   authEmoji: { fontSize: 48, marginBottom: 10 },
   authTitle: { fontSize: 32, fontWeight: 'bold', color: '#fff', marginBottom: 8, textAlign: 'center' },
   authSubtitle: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 20, paddingHorizontal: 10 },
-  errorBanner: { backgroundColor: '#7f1d1d', color: '#fca5a5', padding: 10, borderRadius: 8, textAlign: 'center', marginBottom: 15, fontSize: 13, width: '100%', fontWeight: 'bold' },
-  textInput: { width: '100%', height: 48, backgroundColor: '#0d1b2a', borderWidth: 1, borderColor: '#415a77', borderRadius: 10, paddingHorizontal: 15, color: '#fff', marginBottom: 14, fontSize: 15 },
-  authButton: { width: '100%', height: 48, backgroundColor: '#4361ee', justifyContent: 'center', alignItems: 'center', borderRadius: 10, marginTop: 4, elevation: 3 },
+  errorBanner: { width: '100%', backgroundColor: '#7f1d1d', color: '#fca5a5', padding: 10, borderRadius: 8, textAlign: 'center', marginBottom: 15, fontSize: 13, fontWeight: 'bold' },
+  textInput: { width: '100%', height: 50, backgroundColor: '#1b263b', borderRadius: 12, paddingHorizontal: 16, color: '#fff', fontSize: 15, marginBottom: 14, borderWidth: 1, borderColor: '#415a77' },
+  authButton: { width: '100%', height: 50, backgroundColor: '#2a9d8f', borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 3 },
   authButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  rememberRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 12 },
-  checkboxBox: { width: 20, height: 20, borderWidth: 2, borderColor: '#415a77', borderRadius: 4, justifyContent: 'center', alignItems: 'center', marginRight: 8, backgroundColor: '#0d1b2a' },
-  checkboxBoxChecked: { backgroundColor: '#4361ee', borderColor: '#4361ee' },
-  checkmark: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
+  switchAuthToggle: { marginTop: 10, padding: 5 },
+  switchAuthText: { color: '#48cae4', fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  forgotToggle: { marginTop: 5, marginBottom: 10, padding: 5 },
+  forgotToggleText: { color: '#f4a261', fontSize: 13, fontWeight: '600', textAlign: 'center' },
+  rememberRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 14 },
+  checkboxBox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#48cae4', justifyContent: 'center', alignItems: 'center', marginRight: 8, backgroundColor: '#1b263b' },
+  checkboxBoxChecked: { backgroundColor: '#2a9d8f', borderColor: '#2a9d8f' },
+  checkmark: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
   rememberText: { color: '#cbd5e1', fontSize: 14 },
-  forgotToggle: { marginTop: 12 },
-  forgotToggleText: { color: '#48cae4', fontSize: 14, fontWeight: '600' },
-  switchAuthToggle: { marginTop: 16 },
-  switchAuthText: { color: '#94a3b8', fontSize: 14, textDecorationLine: 'underline' },
+  
+  explorerCard: { width: '100%', backgroundColor: '#1b263b', padding: 16, borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: '#415a77', alignItems: 'center' },
+  explorerCardText: { color: '#f4a261', fontSize: 18, fontWeight: 'bold' },
+
   mapBackground: { flex: 1, width: '100%', height: '100%' },
   mapContainer: { flex: 1, position: 'relative' },
-  mapNode: { position: 'absolute', alignItems: 'center' },
-  nodeIconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#1d3557', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#fff', elevation: 5 },
-  lockedNodeCircle: { backgroundColor: '#475569', borderColor: '#94a3b8' },
-  activeNodeCircle: { backgroundColor: '#e63946' },
-  profileNodeCircle: { backgroundColor: '#2a9d8f' },
-  arcadeNodeCircle: { backgroundColor: '#f4a261' },
-  islesNodeCircle: { backgroundColor: '#3a86ff' },
-  nodeEmoji: { fontSize: 20 },
-  nodeLabel: { marginTop: 4, color: '#fff', fontSize: 11, fontWeight: 'bold', backgroundColor: 'rgba(0,0,0,0.7)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, overflow: 'hidden' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { width: '100%', maxWidth: 380, backgroundColor: '#1b263b', borderRadius: 20, padding: 20, alignItems: 'center', borderWidth: 2, borderColor: '#415a77' },
-  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#fff', textAlign: 'center', marginBottom: 6 },
-  modalSubtitle: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 16 },
-  profileScrollBox: { width: '100%', maxHeight: 320, marginBottom: 15 },
-  profileHeroName: { fontSize: 18, fontWeight: 'bold', color: '#48cae4', textAlign: 'center', marginBottom: 12 },
-  switchExplorerButton: { backgroundColor: '#3a86ff', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, alignSelf: 'center', marginBottom: 15 },
-  switchExplorerButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
-  statSummaryCard: { backgroundColor: '#0d1b2a', padding: 12, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: '#48cae4' },
-  summaryText: { color: '#fff', fontSize: 15, fontWeight: 'bold', textAlign: 'center' },
-  highlightNum: { color: '#4ade80', fontSize: 16 },
-  landStatBox: { backgroundColor: '#0f172a', padding: 10, borderRadius: 8, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#334155' },
-  lockedLandBox: { opacity: 0.6 },
-  landRowHeader: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
-  scoreRowText: { color: '#cbd5e1', fontSize: 13, fontWeight: '600' },
-  modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 5 },
-  switchButton: { backgroundColor: '#e63946', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, flex: 1, marginRight: 8, alignItems: 'center' },
-  switchButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
-  closeButton: { backgroundColor: '#475569', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, flex: 1, marginLeft: 8, alignItems: 'center' },
+  mapNode: { position: 'absolute', alignItems: 'center', width: 75 },
+  nodeIconCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#1b263b', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#f4a261', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 4, elevation: 6 },
+  activeNodeCircle: { backgroundColor: '#2a9d8f', borderColor: '#48cae4' },
+  profileNodeCircle: { backgroundColor: '#e76f51', borderColor: '#f4a261' },
+  arcadeNodeCircle: { backgroundColor: '#e9c46a', borderColor: '#f4a261' },
+  islesNodeCircle: { backgroundColor: '#264653', borderColor: '#2a9d8f' },
+  lockedNodeCircle: { backgroundColor: '#334155', borderColor: '#64748b' },
+  nodeEmoji: { fontSize: 22 },
+  nodeLabel: { color: '#fff', fontSize: 11, fontWeight: 'bold', textAlign: 'center', marginTop: 4, textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3 },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  modalContent: { width: '100%', maxWidth: 420, height: '82%', backgroundColor: '#0f172a', borderRadius: 24, padding: 20, borderWidth: 2, borderColor: '#f4a261', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.6, shadowRadius: 8, elevation: 10, display: 'flex', flexDirection: 'column' },
+  
+  // Custom styled Explorer Home elements
+  homeHeaderContainer: { alignItems: 'center', marginBottom: 12, borderBottomWidth: 1, borderBottomColor: '#334155', paddingBottom: 10 },
+  homeBadgeWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e293b', paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, borderWidth: 1, borderColor: '#f4a261', marginBottom: 4 },
+  homeBadgeEmoji: { fontSize: 18, marginRight: 6 },
+  homeTitleText: { color: '#f4a261', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  homeSubtitleText: { color: '#94a3b8', fontSize: 11, textAlign: 'center' },
+  
+  profileScrollBox: { flex: 1, marginBottom: 12 },
+  
+  homeExplorerBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e293b', borderRadius: 16, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#3b82f6' },
+  homeExplorerAvatar: { fontSize: 32, backgroundColor: '#0f172a', width: 48, height: 48, borderRadius: 24, textAlign: 'center', textAlignVertical: 'center', lineHeight: 48, borderWidth: 1, borderColor: '#60a5fa' },
+  homeExplorerNameLabel: { color: '#60a5fa', fontSize: 10, fontWeight: 'bold', letterSpacing: 0.5 },
+  homeExplorerNameVal: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  homeSwitchButtonMini: { backgroundColor: '#334155', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 10, borderWidth: 1, borderColor: '#64748b' },
+  homeSwitchButtonMiniText: { color: '#cbd5e1', fontSize: 11, fontWeight: 'bold' },
+
+  homeTotalScoreCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(245, 158, 11, 0.15)', borderRadius: 16, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#f59e0b' },
+  homeTotalScoreIcon: { fontSize: 32, marginRight: 12 },
+  homeTotalScoreTitle: { color: '#fbbf24', fontSize: 10, fontWeight: 'bold', letterSpacing: 0.5 },
+  homeTotalScoreVal: { color: '#fff', fontSize: 24, fontWeight: '900' },
+
+  homeSectionHeading: { color: '#e2e8f0', fontSize: 13, fontWeight: 'bold', marginBottom: 10, letterSpacing: 0.5 },
+  homeRealmsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 10 },
+  homeRealmCard: { width: '48%', backgroundColor: '#1e293b', borderRadius: 14, padding: 12, marginBottom: 10, alignItems: 'center', borderWidth: 1, borderColor: '#334155' },
+  homeRealmEmoji: { fontSize: 24, marginBottom: 4 },
+  homeRealmName: { color: '#cbd5e1', fontSize: 12, fontWeight: 'bold', textAlign: 'center', marginBottom: 2 },
+  homeRealmScore: { color: '#38bdf8', fontSize: 13, fontWeight: '900' },
+
+  modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#334155' },
+  switchButton: { flex: 1, backgroundColor: '#7f1d1d', paddingVertical: 10, borderRadius: 10, alignItems: 'center', marginRight: 6 },
+  switchButtonText: { color: '#fca5a5', fontWeight: 'bold', fontSize: 12 },
+  closeButton: { flex: 1, backgroundColor: '#334155', paddingVertical: 10, borderRadius: 10, alignItems: 'center', marginLeft: 6 },
   closeButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
-  explorerCard: { backgroundColor: '#0d1b2a', padding: 14, borderRadius: 10, marginBottom: 10, borderWidth: 1, borderColor: '#415a77', alignItems: 'center' },
-  explorerCardText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });

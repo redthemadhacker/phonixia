@@ -7,6 +7,8 @@ import BuildersGuild from './BuildersGuild';
 import TrickyTrails from './TrickyTrails';
 import WhisperingPeaks from './WhisperingPeaks';
 import LexiconEmpire from './LexiconEmpire';
+import ShellshoreArcade from './ShellshoreArcade';
+import IslesOfPlay from './IslesofPlay';
 
 export default function App() {
   const [activeParentEmail, setActiveParentEmail] = useState('');
@@ -42,6 +44,8 @@ export default function App() {
     trickyTrails: { game1: 0, game2: 0, game3: 0, game4: 0, game5: 0, game6: 0 },
     whisperingPeaks: { game1: 0, game2: 0, game3: 0, game4: 0, game5: 0, game6: 0 },
     lexiconEmpire: { game1: 0, game2: 0, game3: 0, game4: 0, game5: 0, game6: 0 },
+    shellshoreArcade: { game1: 0, game2: 0, game3: 0, game4: 0, game5: 0, game6: 0 },
+    islesOfPlay: { game1: 0, game2: 0, game3: 0, game4: 0, game5: 0, game6: 0 },
   });
   const [totalScore, setTotalScore] = useState(0);
 
@@ -102,6 +106,8 @@ export default function App() {
       const trickyTrails = await loadLandGames('trickyTrails');
       const whisperingPeaks = await loadLandGames('whisperingPeaks');
       const lexiconEmpire = await loadLandGames('lexiconEmpire');
+      const shellshoreArcade = await loadLandGames('shellshoreArcade');
+      const islesOfPlay = await loadLandGames('islesOfPlay');
 
       setLandProgress({
         soundShallows,
@@ -109,10 +115,12 @@ export default function App() {
         trickyTrails,
         whisperingPeaks,
         lexiconEmpire,
+        shellshoreArcade,
+        islesOfPlay,
       });
 
       let combinedScore = 0;
-      [soundShallows, buildersGuild, trickyTrails, whisperingPeaks, lexiconEmpire].forEach(landObj => {
+      [soundShallows, buildersGuild, trickyTrails, whisperingPeaks, lexiconEmpire, shellshoreArcade, islesOfPlay].forEach(landObj => {
         for (let i = 1; i <= 6; i++) {
           combinedScore += (landObj[`game${i}`] || 0);
         }
@@ -356,26 +364,9 @@ export default function App() {
     }
   };
 
-  // 25 levels * 5 points = 125 points max score per game
-  const isLandFullyCompleted = (landGamesObj) => {
-    for (let i = 1; i <= 6; i++) {
-      if ((landGamesObj[`game${i}`] || 0) < 125) return false;
-    }
-    return true;
-  };
-
   const isLandUnlocked = (landKey) => {
     return true; // 🔓 UNLOCKED FOR TESTING: All lands open immediately!
   };
-
- /* const isLandUnlocked = (landKey) => {
-    if (landKey === 'soundShallows') return true;
-    if (landKey === 'buildersGuild') return isLandFullyCompleted(landProgress.soundShallows);
-    if (landKey === 'trickyTrails') return isLandFullyCompleted(landProgress.buildersGuild);
-    if (landKey === 'whisperingPeaks') return isLandFullyCompleted(landProgress.trickyTrails);
-    if (landKey === 'lexiconEmpire') return isLandFullyCompleted(landProgress.whisperingPeaks);
-    return false;
-  }; */
 
   const getLandTotalScore = (landGamesObj) => {
     let sum = 0;
@@ -402,6 +393,8 @@ export default function App() {
     trickyTrails: TrickyTrails,
     whisperingPeaks: WhisperingPeaks,
     lexiconEmpire: LexiconEmpire,
+    shellshoreArcade: ShellshoreArcade,
+    islesOfPlay: IslesOfPlay,
   };
 
   // --- 1. PARENT AUTHENTICATION SCREEN ---
@@ -645,7 +638,7 @@ export default function App() {
 
           <TouchableOpacity 
             style={[styles.mapNode, { top: '84%', left: '12%' }]} 
-            onPress={() => alert('Welcome to Shellshore Arcade! Minigames coming soon! 🐚✨')}
+            onPress={() => handleLandPress('shellshoreArcade', 'Shellshore Arcade')}
           >
             <View style={[styles.nodeIconCircle, styles.arcadeNodeCircle]}>
               <Text style={styles.nodeEmoji}>🐚</Text>
@@ -655,7 +648,7 @@ export default function App() {
 
           <TouchableOpacity 
             style={[styles.mapNode, { top: '49%', left: '15.5%' }]} 
-            onPress={() => alert('Welcome to Isles of Play! Minigames coming soon! 🏝️✨')}
+            onPress={() => handleLandPress('islesOfPlay', 'Isles of Play')}
           >
             <View style={[styles.nodeIconCircle, styles.islesNodeCircle]}>
               <Text style={styles.nodeEmoji}>🏝️</Text>
@@ -714,32 +707,34 @@ export default function App() {
                   <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.soundShallows)}</Text></Text>
                 </View>
 
-                <View style={[styles.landStatBox, !isLandUnlocked('buildersGuild') && styles.lockedLandBox]}>
+                <View style={styles.landStatBox}>
+                  <Text style={styles.landRowHeader}>🏝️ Isles of Play</Text>
+                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.islesOfPlay)}</Text></Text>
+                </View>
+
+                <View style={styles.landStatBox}>
+                  <Text style={styles.landRowHeader}>🐚 Shellshore Arcade</Text>
+                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.shellshoreArcade)}</Text></Text>
+                </View>
+
+                <View style={styles.landStatBox}>
                   <Text style={styles.landRowHeader}>🧱 Builders Guild</Text>
-                  <Text style={styles.scoreRowText}>
-                    {isLandUnlocked('buildersGuild') ? <>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.buildersGuild)}</Text></> : "🔒 Locked"}
-                  </Text>
+                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.buildersGuild)}</Text></Text>
                 </View>
 
-                <View style={[styles.landStatBox, !isLandUnlocked('trickyTrails') && styles.lockedLandBox]}>
+                <View style={styles.landStatBox}>
                   <Text style={styles.landRowHeader}>🌲 Tricky Trails</Text>
-                  <Text style={styles.scoreRowText}>
-                    {isLandUnlocked('trickyTrails') ? <>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.trickyTrails)}</Text></> : "🔒 Locked"}
-                  </Text>
+                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.trickyTrails)}</Text></Text>
                 </View>
 
-                <View style={[styles.landStatBox, !isLandUnlocked('whisperingPeaks') && styles.lockedLandBox]}>
+                <View style={styles.landStatBox}>
                   <Text style={styles.landRowHeader}>⛰️ Whispering Peaks</Text>
-                  <Text style={styles.scoreRowText}>
-                    {isLandUnlocked('whisperingPeaks') ? <>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.whisperingPeaks)}</Text></> : "🔒 Locked"}
-                  </Text>
+                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.whisperingPeaks)}</Text></Text>
                 </View>
 
-                <View style={[styles.landStatBox, !isLandUnlocked('lexiconEmpire') && styles.lockedLandBox]}>
+                <View style={styles.landStatBox}>
                   <Text style={styles.landRowHeader}>🏛️ Lexicon Empire</Text>
-                  <Text style={styles.scoreRowText}>
-                    {isLandUnlocked('lexiconEmpire') ? <>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.lexiconEmpire)}</Text></> : "🔒 Locked"}
-                  </Text>
+                  <Text style={styles.scoreRowText}>Score: <Text style={styles.highlightNum}>{getLandTotalScore(landProgress.lexiconEmpire)}</Text></Text>
                 </View>
               </ScrollView>
 
@@ -824,7 +819,7 @@ function ExplorerSelectorScreen({ parentEmail, onSelectExplorer, onOpenAddModal,
             />
 
             <TouchableOpacity style={styles.authButton} onPress={handleAddExplorer}>
-              <Text style={styles.authButtonText}>🚀 Create Profile</Text>
+              <Text style={styles.authButtonText}>✨ Save & Start Exploring</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.closeButton} onPress={() => setExplorerModalVisible(false)}>
@@ -839,54 +834,54 @@ function ExplorerSelectorScreen({ parentEmail, onSelectExplorer, onOpenAddModal,
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#0b090a' },
-  authContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#161a1d' },
-  authEmoji: { fontSize: 48, marginBottom: 8 },
-  authTitle: { fontSize: 32, fontWeight: 'bold', color: '#fff', marginBottom: 6, textAlign: 'center' },
-  authSubtitle: { fontSize: 14, color: '#8d99ae', textAlign: 'center', marginBottom: 20, lineHeight: 20 },
-  errorBanner: { color: '#ff4d4d', backgroundColor: '#ffe6e6', padding: 10, borderRadius: 8, marginBottom: 12, textAlign: 'center', fontSize: 13, fontWeight: '600', width: '100%' },
-  textInput: { width: '100%', height: 50, backgroundColor: '#212529', borderRadius: 10, paddingHorizontal: 16, color: '#fff', fontSize: 16, marginBottom: 12, borderWidth: 1, borderColor: '#343a40' },
-  rememberRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 16 },
-  checkboxBox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: '#adb5bd', justifyContent: 'center', alignItems: 'center', marginRight: 8 },
+  authContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#1b263b' },
+  authEmoji: { fontSize: 48, marginBottom: 10 },
+  authTitle: { fontSize: 32, fontWeight: 'bold', color: '#fff', marginBottom: 8, textAlign: 'center' },
+  authSubtitle: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 20, paddingHorizontal: 10 },
+  errorBanner: { backgroundColor: '#7f1d1d', color: '#fca5a5', padding: 10, borderRadius: 8, textAlign: 'center', marginBottom: 15, fontSize: 13, width: '100%', fontWeight: 'bold' },
+  textInput: { width: '100%', height: 48, backgroundColor: '#0d1b2a', borderWidth: 1, borderColor: '#415a77', borderRadius: 10, paddingHorizontal: 15, color: '#fff', marginBottom: 14, fontSize: 15 },
+  authButton: { width: '100%', height: 48, backgroundColor: '#4361ee', justifyContent: 'center', alignItems: 'center', borderRadius: 10, marginTop: 4, elevation: 3 },
+  authButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  rememberRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 12 },
+  checkboxBox: { width: 20, height: 20, borderWidth: 2, borderColor: '#415a77', borderRadius: 4, justifyContent: 'center', alignItems: 'center', marginRight: 8, backgroundColor: '#0d1b2a' },
   checkboxBoxChecked: { backgroundColor: '#4361ee', borderColor: '#4361ee' },
   checkmark: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  rememberText: { color: '#adb5bd', fontSize: 14 },
-  authButton: { width: '100%', height: 50, backgroundColor: '#4361ee', borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginTop: 4, marginBottom: 12 },
-  authButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  forgotToggle: { marginBottom: 12 },
-  forgotToggleText: { color: '#4cc9f0', fontSize: 14, fontWeight: '600' },
-  switchAuthToggle: { marginTop: 4 },
-  switchAuthText: { color: '#adb5bd', fontSize: 14 },
+  rememberText: { color: '#cbd5e1', fontSize: 14 },
+  forgotToggle: { marginTop: 12 },
+  forgotToggleText: { color: '#48cae4', fontSize: 14, fontWeight: '600' },
+  switchAuthToggle: { marginTop: 16 },
+  switchAuthText: { color: '#94a3b8', fontSize: 14, textDecorationLine: 'underline' },
   mapBackground: { flex: 1, width: '100%', height: '100%' },
   mapContainer: { flex: 1, position: 'relative' },
   mapNode: { position: 'absolute', alignItems: 'center' },
-  nodeIconCircle: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#3a86ff', justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 5 },
-  activeNodeCircle: { backgroundColor: '#2ec4b6' },
-  lockedNodeCircle: { backgroundColor: '#6c757d' },
-  profileNodeCircle: { backgroundColor: '#f72585' },
-  arcadeNodeCircle: { backgroundColor: '#7209b7' },
-  islesNodeCircle: { backgroundColor: '#3a0ca3' },
-  nodeEmoji: { fontSize: 22 },
-  nodeLabel: { marginTop: 4, color: '#fff', fontSize: 12, fontWeight: 'bold', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, overflow: 'hidden' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.7)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { width: '100%', maxWidth: 400, backgroundColor: '#1b263b', borderRadius: 16, padding: 20, alignItems: 'center', borderWidth: 1, borderColor: '#415a77' },
-  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#fff', marginBottom: 4 },
-  modalSubtitle: { fontSize: 13, color: '#94a3b8', textAlign: 'center', marginBottom: 16 },
-  profileScrollBox: { width: '100%', maxHeight: 300 },
-  profileHeroName: { fontSize: 20, fontWeight: 'bold', color: '#f72585', textAlign: 'center', marginBottom: 12 },
-  switchExplorerButton: { backgroundColor: '#3a0ca3', paddingVertical: 10, borderRadius: 8, alignItems: 'center', marginBottom: 14 },
-  switchExplorerButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
-  statSummaryCard: { backgroundColor: '#0d1b2a', padding: 12, borderRadius: 8, marginBottom: 12, alignItems: 'center' },
-  summaryText: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  highlightNum: { color: '#ffd166', fontWeight: 'bold' },
-  landStatBox: { backgroundColor: '#27374d', padding: 10, borderRadius: 8, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  nodeIconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#1d3557', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#fff', elevation: 5 },
+  lockedNodeCircle: { backgroundColor: '#475569', borderColor: '#94a3b8' },
+  activeNodeCircle: { backgroundColor: '#e63946' },
+  profileNodeCircle: { backgroundColor: '#2a9d8f' },
+  arcadeNodeCircle: { backgroundColor: '#f4a261' },
+  islesNodeCircle: { backgroundColor: '#3a86ff' },
+  nodeEmoji: { fontSize: 20 },
+  nodeLabel: { marginTop: 4, color: '#fff', fontSize: 11, fontWeight: 'bold', backgroundColor: 'rgba(0,0,0,0.7)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, overflow: 'hidden' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { width: '100%', maxWidth: 380, backgroundColor: '#1b263b', borderRadius: 20, padding: 20, alignItems: 'center', borderWidth: 2, borderColor: '#415a77' },
+  modalTitle: { fontSize: 22, fontWeight: 'bold', color: '#fff', textAlign: 'center', marginBottom: 6 },
+  modalSubtitle: { fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 16 },
+  profileScrollBox: { width: '100%', maxHeight: 320, marginBottom: 15 },
+  profileHeroName: { fontSize: 18, fontWeight: 'bold', color: '#48cae4', textAlign: 'center', marginBottom: 12 },
+  switchExplorerButton: { backgroundColor: '#3a86ff', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, alignSelf: 'center', marginBottom: 15 },
+  switchExplorerButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
+  statSummaryCard: { backgroundColor: '#0d1b2a', padding: 12, borderRadius: 10, marginBottom: 14, borderWidth: 1, borderColor: '#48cae4' },
+  summaryText: { color: '#fff', fontSize: 15, fontWeight: 'bold', textAlign: 'center' },
+  highlightNum: { color: '#4ade80', fontSize: 16 },
+  landStatBox: { backgroundColor: '#0f172a', padding: 10, borderRadius: 8, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#334155' },
   lockedLandBox: { opacity: 0.6 },
   landRowHeader: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
-  scoreRowText: { color: '#cbd5e1', fontSize: 13 },
-  modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 16 },
-  switchButton: { flex: 1, backgroundColor: '#e63946', padding: 12, borderRadius: 8, alignItems: 'center', marginRight: 6 },
-  switchButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
-  closeButton: { flex: 1, backgroundColor: '#495057', padding: 12, borderRadius: 8, alignItems: 'center', marginLeft: 6 },
-  closeButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
-  explorerCard: { backgroundColor: '#212529', padding: 14, borderRadius: 10, marginBottom: 8, borderWidth: 1, borderColor: '#343a40', alignItems: 'center' },
+  scoreRowText: { color: '#cbd5e1', fontSize: 13, fontWeight: '600' },
+  modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 5 },
+  switchButton: { backgroundColor: '#e63946', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, flex: 1, marginRight: 8, alignItems: 'center' },
+  switchButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
+  closeButton: { backgroundColor: '#475569', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, flex: 1, marginLeft: 8, alignItems: 'center' },
+  closeButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
+  explorerCard: { backgroundColor: '#0d1b2a', padding: 14, borderRadius: 10, marginBottom: 10, borderWidth: 1, borderColor: '#415a77', alignItems: 'center' },
   explorerCardText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });

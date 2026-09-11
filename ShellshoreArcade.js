@@ -106,7 +106,7 @@ export default function ShellshoreArcade({ username, email, onScoreUpdate, onBac
       <ImageBackground 
         source={require('./shellshore.png')} 
         style={styles.backgroundImage}
-        resizeMode="cover"
+        resizeMode="stretch"
       >
         <View style={styles.overlayContainer}>
           {/* Header */}

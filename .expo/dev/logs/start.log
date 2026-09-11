@@ -3429,3 +3429,117 @@
 {"_e":"metro:client_log","_t":1789145465894,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
 {"_e":"metro:client_log","_t":1789145465894,"level":"warn","data":["\"textShadow*\" style props are deprecated. Use \"textShadow\"."]}
 {"_e":"metro:client_log","_t":1789145465894,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"root:init","_t":1789146148943,"format":"v0-jsonl","version":"57.0.23"}
+{"_e":"env:mode","_t":1789146148944,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1789146148946,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1789146149131,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../../../app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1789146149395,"serverRoot":"../../..","projectRoot":"../../..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1789146149688,"plugins":[]}
+{"_e":"metro:server_log","_t":1789146151904,"level":"warn","data":["Failed to download the latest version of React Native DevTools. Using a fallback version instead. Connect to the internet or check your network settings."]}
+{"_e":"metro:instantiate","_t":1789146152755,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1789146154689,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146154690,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146154697,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146154798,"id":"1","progress":0.6673279111287443,"total":71,"current":58}
+{"_e":"metro:bundling:progress","_t":1789146154898,"id":"1","progress":0.6673279111287443,"total":130,"current":101}
+{"_e":"metro:bundling:progress","_t":1789146154998,"id":"1","progress":0.7331640624999999,"total":160,"current":137}
+{"_e":"metro:bundling:progress","_t":1789146155099,"id":"1","progress":0.9890411786016182,"total":182,"current":181}
+{"_e":"metro:bundling:progress","_t":1789146156024,"id":"1","progress":0.999,"total":182,"current":182}
+{"_e":"metro:bundling:progress","_t":1789146156125,"id":"1","progress":0.999,"total":235,"current":202}
+{"_e":"metro:bundling:progress","_t":1789146156225,"id":"1","progress":0.999,"total":295,"current":275}
+{"_e":"metro:bundling:progress","_t":1789146156325,"id":"1","progress":0.999,"total":334,"current":331}
+{"_e":"metro:bundling:done","_t":1789146156398,"id":"1","total":334,"ms":1708.775862}
+{"_e":"metro:client_log","_t":1789146156932,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1789146156935,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1789146156935,"level":"warn","data":["\"textShadow*\" style props are deprecated. Use \"textShadow\"."]}
+{"_e":"metro:client_log","_t":1789146156936,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1789146251690,"id":"5","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146251690,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789146251736,"id":"5","total":1,"ms":45.772314}
+{"_e":"metro:client_log","_t":1789146251995,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1789146251996,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1789146251996,"level":"warn","data":["\"textShadow*\" style props are deprecated. Use \"textShadow\"."]}
+{"_e":"metro:client_log","_t":1789146251997,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:failed","_t":1789146346760,"id":null,"message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (461:8)\n\n  459 |             </View>\n  460 |           </View>\n> 461 |         </div>\n      |         ^\n  462 |\n  463 |         {/* Travel Confirmation Modal */}\n  464 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:client_log","_t":1789146346766,"level":"error","data":["[TransformError: SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (461:8)\n\n  459 |             </View>\n  460 |           </View>\n> 461 |         </div>\n      |         ^\n  462 |\n  463 |         {/* Travel Confirmation Modal */}\n  464 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>]"]}
+{"_e":"metro:bundling:started","_t":1789146352145,"id":"8","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146352145,"id":"8","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146352146,"id":"8","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789146352214,"id":"8","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (461:8)\n\n  459 |             </View>\n  460 |           </View>\n> 461 |         </div>\n      |         ^\n  462 |\n  463 |         {/* Travel Confirmation Modal */}\n  464 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:bundling:started","_t":1789146475868,"id":"a","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146475868,"id":"a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146475869,"id":"a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789146475923,"id":"a","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (541:8)\n\n  539 |             </TouchableOpacity>\n  540 |           </View>\n> 541 |         </div>\n      |         ^\n  542 |\n  543 |         {/* Travel Confirmation Modal */}\n  544 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:bundling:started","_t":1789146478589,"id":"c","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146478589,"id":"c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146478590,"id":"c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789146478625,"id":"c","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (541:8)\n\n  539 |             </TouchableOpacity>\n  540 |           </View>\n> 541 |         </div>\n      |         ^\n  542 |\n  543 |         {/* Travel Confirmation Modal */}\n  544 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:bundling:started","_t":1789146479557,"id":"e","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146479557,"id":"e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146479557,"id":"e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789146479596,"id":"e","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (541:8)\n\n  539 |             </TouchableOpacity>\n  540 |           </View>\n> 541 |         </div>\n      |         ^\n  542 |\n  543 |         {/* Travel Confirmation Modal */}\n  544 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:bundling:started","_t":1789146528590,"id":"g","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146528590,"id":"g","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146528592,"id":"g","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789146528624,"id":"g","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (517:8)\n\n  515 |             </TouchableOpacity>\n  516 |           </View>\n> 517 |         </div>\n      |         ^\n  518 |\n  519 |         {/* Travel Confirmation Modal */}\n  520 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:bundling:started","_t":1789146529996,"id":"i","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146529996,"id":"i","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146529997,"id":"i","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789146530025,"id":"i","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (517:8)\n\n  515 |             </TouchableOpacity>\n  516 |           </View>\n> 517 |         </div>\n      |         ^\n  518 |\n  519 |         {/* Travel Confirmation Modal */}\n  520 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"root:init","_t":1789146544957,"format":"v0-jsonl","version":"57.0.23"}
+{"_e":"env:mode","_t":1789146544958,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1789146544959,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1789146545138,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../../../app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1789146545394,"serverRoot":"../../..","projectRoot":"../../..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1789146545668,"plugins":[]}
+{"_e":"metro:server_log","_t":1789146547836,"level":"warn","data":["Failed to download the latest version of React Native DevTools. Using a fallback version instead. Connect to the internet or check your network settings."]}
+{"_e":"metro:instantiate","_t":1789146548631,"atlas":false,"workers":8,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1789146550333,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146550334,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146550341,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146550440,"id":"1","progress":0.6318211702827087,"total":78,"current":62}
+{"_e":"metro:bundling:progress","_t":1789146550540,"id":"1","progress":0.7346938775510203,"total":133,"current":114}
+{"_e":"metro:bundling:progress","_t":1789146550640,"id":"1","progress":0.9413619614512472,"total":168,"current":163}
+{"_e":"metro:bundling:progress","_t":1789146550741,"id":"1","progress":0.9890411786016182,"total":182,"current":181}
+{"_e":"metro:bundling:failed","_t":1789146551074,"id":"1","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (517:8)\n\n  515 |             </TouchableOpacity>\n  516 |           </View>\n> 517 |         </div>\n      |         ^\n  518 |\n  519 |         {/* Travel Confirmation Modal */}\n  520 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:bundling:started","_t":1789146651255,"id":"3","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146651255,"id":"3","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146651271,"id":"3","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146651370,"id":"3","progress":0.7399699387212395,"total":93,"current":80}
+{"_e":"metro:bundling:progress","_t":1789146651470,"id":"3","progress":0.7399699387212395,"total":160,"current":135}
+{"_e":"metro:bundling:failed","_t":1789146651529,"id":"3","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (551:6)\n\n  549 |           </View>\n  550 |         </Modal>\n> 551 |       </ImageBackground>\n      |       ^\n  552 |     </SafeAreaView>\n  553 |   );\n  554 | }","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:bundling:started","_t":1789146744862,"id":"5","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789146744862,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146744868,"id":"5","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789146744971,"id":"5","progress":0.6361961451247167,"total":84,"current":67}
+{"_e":"metro:bundling:progress","_t":1789146745112,"id":"5","progress":0.8137806249694362,"total":143,"current":129}
+{"_e":"metro:bundling:progress","_t":1789146745213,"id":"5","progress":0.9890411786016182,"total":182,"current":181}
+{"_e":"metro:bundling:progress","_t":1789146745481,"id":"5","progress":0.999,"total":182,"current":182}
+{"_e":"metro:bundling:progress","_t":1789146745580,"id":"5","progress":0.999,"total":254,"current":239}
+{"_e":"metro:bundling:progress","_t":1789146745680,"id":"5","progress":0.999,"total":334,"current":318}
+{"_e":"metro:bundling:done","_t":1789146745729,"id":"5","total":334,"ms":867.498525}
+{"_e":"metro:client_log","_t":1789146745978,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1789146745979,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1789146745979,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:failed","_t":1789147044346,"id":"3","message":"SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (517:8)\n\n  515 |             </TouchableOpacity>\n  516 |           </View>\n> 517 |         </>\n      |         ^\n  518 |\n  519 |         {/* Travel Confirmation Modal */}\n  520 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>","importStack":null,"filename":"App.js","targetModuleName":null,"originModulePath":null}
+{"_e":"metro:client_log","_t":1789147044350,"level":"error","data":["[TransformError: SyntaxError: /home/maddevred/phonixia/App.js: Expected corresponding JSX closing tag for <View>. (517:8)\n\n  515 |             </TouchableOpacity>\n  516 |           </View>\n> 517 |         </>\n      |         ^\n  518 |\n  519 |         {/* Travel Confirmation Modal */}\n  520 |         <Modal animationType=\"fade\" transparent={true} visible={travelModalVisible} onRequestClose={() => setTravelModalVisible(false)}>]"]}
+{"_e":"metro:client_log","_t":1789147045984,"level":"warn","data":["\"textShadow*\" style props are deprecated. Use \"textShadow\"."]}
+{"_e":"metro:bundling:started","_t":1789147051307,"id":"8","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789147051307,"id":"8","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789147051347,"id":"8","total":1,"ms":40.240319}
+{"_e":"metro:client_log","_t":1789147051672,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1789147051673,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1789147051673,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1789147165541,"id":"b","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789147165541,"id":"b","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789147165575,"id":"b","total":1,"ms":33.807103}
+{"_e":"metro:client_log","_t":1789147165893,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1789147165896,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1789147165897,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1789147408073,"level":"warn","data":["\"textShadow*\" style props are deprecated. Use \"textShadow\"."]}
+{"_e":"metro:bundling:started","_t":1789147658247,"id":"f","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789147658247,"id":"f","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789147658285,"id":"f","total":1,"ms":37.951514}
+{"_e":"metro:client_log","_t":1789147658610,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1789147658611,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1789147658611,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}

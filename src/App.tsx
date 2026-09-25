@@ -10,44 +10,53 @@ import { AuthModal } from './components/AuthModal';
 import { AvatarRenderer } from './components/AvatarRenderer';
 import { LandId, MinigameId } from './types/character';
 import { sounds } from './utils/audio';
-import { Star, Sparkles, UserPlus, LogIn, Compass, Flame } from 'lucide-react';
+import { Star, Sparkles, UserPlus, LogIn, Compass, Flame, RotateCcw } from 'lucide-react';
 import phonixiaMap from '../phonixia.png';
 
 const GameContent: React.FC = () => {
   const {
     activeExplorer,
     showHallOfFameCelebration,
-    dismissHallOfFameCelebration
+    dismissHallOfFameCelebration,
+    resetExplorerProgress
   } = useGame();
 
+  // No auto-login on startup: must authenticate per session
   const [isSignedIn, setIsSignedIn] = useState<boolean>(() => {
-    return Boolean(localStorage.getItem('phonixia_is_logged_in_v1'));
+    return Boolean(sessionStorage.getItem('phonixia_active_session'));
   });
 
   const [activeLandId, setActiveLandId] = useState<LandId | null>(null);
   const [activeMinigameHub, setActiveMinigameHub] = useState<MinigameId | null>(null);
   const [isHomeHutOpen, setIsHomeHutOpen] = useState(false);
   const [isCharacterCreatorOpen, setIsCharacterCreatorOpen] = useState(false);
+
+  // Modal Auth State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+
+  const handleOpenAuth = (mode: 'login' | 'signup') => {
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleAuthSuccess = () => {
+    sessionStorage.setItem('phonixia_active_session', 'true');
+    setIsSignedIn(true);
+    setIsAuthModalOpen(false);
+  };
 
   const handleLogoutSession = () => {
-    localStorage.removeItem('phonixia_is_logged_in_v1');
+    sessionStorage.removeItem('phonixia_active_session');
     setIsSignedIn(false);
     setIsHomeHutOpen(false);
     setActiveLandId(null);
     setActiveMinigameHub(null);
   };
 
-  const handleEnterGame = () => {
-    localStorage.setItem('phonixia_is_logged_in_v1', 'true');
-    setIsSignedIn(true);
-    sounds.playFanfare();
-    sounds.speak('Welcome to Phonixia! Happy reading!');
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-2 sm:p-4 selection:bg-amber-500 selection:text-slate-950 font-sans">
-      {/* 0. LANDING SCREEN (WHEN NOT SIGNED IN) */}
+      {/* 0. WELCOME / LANDING SCREEN (WHEN NOT SIGNED IN) */}
       {!isSignedIn ? (
         <div className="relative w-full h-[90vh] max-w-[1500px] mx-auto rounded-3xl overflow-hidden border-4 border-amber-500/50 shadow-2xl bg-slate-950 flex flex-col items-center justify-center p-6 text-center select-none animate-pulse-glow">
           <img
@@ -83,7 +92,7 @@ const GameContent: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
               <button
-                onClick={() => setIsAuthModalOpen(true)}
+                onClick={() => handleOpenAuth('signup')}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95 border-b-4 border-amber-700"
               >
                 <UserPlus className="w-4 h-4 stroke-[3]" />
@@ -91,7 +100,7 @@ const GameContent: React.FC = () => {
               </button>
 
               <button
-                onClick={handleEnterGame}
+                onClick={() => handleOpenAuth('login')}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-amber-300 border-2 border-amber-400/80 font-black text-xs uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95 border-b-4 border-amber-900"
               >
                 <LogIn className="w-4 h-4 stroke-[3]" />
@@ -133,7 +142,7 @@ const GameContent: React.FC = () => {
           onOpenCharacterCreator={() => setIsCharacterCreatorOpen(true)}
           onOpenAuthModal={() => {
             handleLogoutSession();
-            setIsAuthModalOpen(true);
+            handleOpenAuth('login');
           }}
         />
       )}
@@ -145,17 +154,16 @@ const GameContent: React.FC = () => {
         />
       )}
 
-      {/* AUTHENTICATION / ACCOUNT SWITCH MODAL */}
+      {/* AUTHENTICATION / LOGIN / SIGNUP MODAL */}
       {isAuthModalOpen && (
         <AuthModal
-          onClose={() => {
-            setIsAuthModalOpen(false);
-            handleEnterGame();
-          }}
+          initialMode={authMode}
+          onClose={() => setIsAuthModalOpen(false)}
+          onSuccess={handleAuthSuccess}
         />
       )}
 
-      {/* HALL OF FAME CELEBRATION MODAL */}
+      {/* HALL OF FAME CELEBRATION & REPLAY STORYLINE MODAL */}
       {showHallOfFameCelebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-lg">
           <div className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-slate-900 via-amber-950/80 to-slate-900 border-4 border-amber-400 p-6 sm:p-8 text-center shadow-2xl space-y-5 animate-scale-up">
@@ -166,7 +174,7 @@ const GameContent: React.FC = () => {
                 Grand Phonixian Champion!
               </h2>
               <p className="text-sm sm:text-base text-amber-100 font-semibold leading-relaxed">
-                Congrats! You explored all the lands of Phonixia and mastered reading and phonics!
+                {activeExplorer.name} has completed all 5 realms of Phonixia! You are officially inducted into the Hall of Fame.
               </p>
             </div>
 
@@ -183,17 +191,34 @@ const GameContent: React.FC = () => {
               <span>250 / 250 Games Mastered</span>
             </div>
 
-            <button
-              onClick={() => {
-                sounds.playFanfare();
-                sounds.speak(`Inducted ${activeExplorer.name} into the Phonixia Hall of Fame! Outstanding work!`);
-                dismissHallOfFameCelebration();
-              }}
-              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-sm uppercase tracking-wider shadow-2xl cursor-pointer flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95"
-            >
-              <Sparkles className="w-5 h-5 fill-current" />
-              <span>Click Here to Add Player Profile to Hall of Fame</span>
-            </button>
+            <div className="space-y-2.5 pt-2">
+              <button
+                onClick={() => {
+                  sounds.playFanfare();
+                  sounds.speak(`Inducted ${activeExplorer.name} into the Phonixia Hall of Fame! Outstanding work!`);
+                  dismissHallOfFameCelebration();
+                }}
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl cursor-pointer flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95 border-b-4 border-amber-700"
+              >
+                <Sparkles className="w-5 h-5 fill-current" />
+                <span>Save to Hall of Fame & Keep Progress</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (window.confirm(`Restart ${activeExplorer.name}'s adventure from the beginning? Your Hall of Fame record stays permanent, but your games and stars will reset to 0.`)) {
+                    sounds.playFanfare();
+                    sounds.speak(`Storyline restarted! Welcome back to Sound Shallows, Champion ${activeExplorer.name}!`);
+                    dismissHallOfFameCelebration();
+                    resetExplorerProgress(activeExplorer.id);
+                  }
+                }}
+                className="w-full py-3 px-6 rounded-2xl bg-slate-950 hover:bg-slate-800 text-rose-300 hover:text-rose-200 border-2 border-rose-500/40 hover:border-rose-400 font-bold text-xs uppercase tracking-wider shadow-lg cursor-pointer flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Restart Storyline from Beginning (New Game+)</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

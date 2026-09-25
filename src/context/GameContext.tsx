@@ -1,6 +1,45 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Account, ExplorerProfile, LandId, MinigameId } from '../types/character';
 
+export const LAND_ORDER: LandId[] = [
+  'sound-shallows',
+  'builders-guild',
+  'tricky-trails',
+  'whispering-peaks',
+  'lexicon-empire',
+];
+
+// Sequential lock logic: Sound Shallows is open; each next land requires 50 games in the previous land
+export const isLandUnlocked = (arg1: any, arg2?: any): boolean => {
+  const landId: LandId = (typeof arg1 === 'string' ? arg1 : typeof arg2 === 'string' ? arg2 : '') as LandId;
+  const scores = (typeof arg1 === 'object' && arg1 !== null)
+    ? (arg1.landScores || arg1)
+    : (typeof arg2 === 'object' && arg2 !== null ? (arg2.landScores || arg2) : null);
+
+  // Sound Shallows is ALWAYS unlocked
+  if (landId === 'sound-shallows') return true;
+  if (!LAND_ORDER.includes(landId)) return true;
+
+  const landIndex = LAND_ORDER.indexOf(landId);
+  if (landIndex <= 0) return true;
+
+  // Check if explicitly unlocked in saved score state
+  if (scores && scores[landId]?.unlocked === true) return true;
+
+  // Otherwise check if the preceding realm completed all 50 games
+  const prevLandId = LAND_ORDER[landIndex - 1];
+  const prevLand = scores ? scores[prevLandId] : null;
+  return Boolean(prevLand && prevLand.completedGamesCount >= 50);
+};
+
+interface RegisterPayload {
+  username: string;
+  password: string;
+  familyName: string;
+  role: 'parent' | 'teacher';
+  starterExplorerName: string;
+}
+
 interface GameContextType {
   account: Account;
   activeExplorer: ExplorerProfile;
@@ -12,15 +51,46 @@ interface GameContextType {
   showHallOfFameCelebration: boolean;
   dismissHallOfFameCelebration: () => void;
   resetExplorerProgress: (explorerId: string) => void;
+  loginWithCredentials: (u: string, p: string) => boolean;
+  registerAccount: (payload: RegisterPayload) => void;
+  isLandUnlocked: (landId: LandId) => boolean;
   logout: () => void;
 }
 
 const DEFAULT_LAND_SCORES = {
   'sound-shallows': { completedGamesCount: 0, stars: 0, unlocked: true },
-  'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: true },
-  'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: true },
-  'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: true },
-  'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: true }
+  'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+  'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+  'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+  'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+};
+
+const FALLBACK_EXPLORER: ExplorerProfile = {
+  id: 'exp-kam',
+  name: 'Kam',
+  ageTier: 'preschool',
+  level: 1,
+  totalStars: 12,
+  coins: 40,
+  arcadeTokens: 5,
+  isHallOfFameInducted: false,
+  timesStorylineCompleted: 0,
+  landScores: {
+    'sound-shallows': { completedGamesCount: 4, stars: 12, unlocked: true },
+    'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+    'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+    'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+    'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+  },
+  customization: {
+    skinTone: '#ffd1a4',
+    hairStyle: 'curls',
+    hairColor: '#3d2314',
+    outfitColor: '#3b82f6',
+    accessory: 'glasses',
+    companionPet: 'baby-dragon',
+    title: 'Shallow Scout'
+  }
 };
 
 const INITIAL_ACCOUNT: Account = {
@@ -29,33 +99,7 @@ const INITIAL_ACCOUNT: Account = {
   username: 'readingheroes',
   role: 'parent',
   explorers: [
-    {
-      id: 'exp-kam',
-      name: 'Kam',
-      ageTier: 'preschool',
-      level: 1,
-      totalStars: 12,
-      coins: 40,
-      arcadeTokens: 5,
-      isHallOfFameInducted: false,
-      timesStorylineCompleted: 0,
-      landScores: {
-        'sound-shallows': { completedGamesCount: 4, stars: 12, unlocked: true },
-        'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-        'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-        'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-        'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-      },
-      customization: {
-        skinTone: '#ffd1a4',
-        hairStyle: 'curls',
-        hairColor: '#3d2314',
-        outfitColor: '#3b82f6',
-        accessory: 'glasses',
-        companionPet: 'baby-dragon',
-        title: 'Shallow Scout'
-      }
-    },
+    FALLBACK_EXPLORER,
     {
       id: 'exp-maya',
       name: 'Maya',
@@ -90,12 +134,43 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [account, setAccount] = useState<Account>(() => {
-    const saved = localStorage.getItem('phonixia_account_v2');
-    return saved ? JSON.parse(saved) : INITIAL_ACCOUNT;
+    try {
+      const saved = localStorage.getItem('phonixia_account_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.explorers) && parsed.explorers.length > 0) {
+          parsed.explorers.forEach((exp: any) => {
+            if (!exp.landScores) {
+              exp.landScores = JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES));
+            }
+            // Enforce sequential locks accurately based on progression counts
+            LAND_ORDER.forEach((landId, idx) => {
+              if (!exp.landScores[landId]) {
+                exp.landScores[landId] = { completedGamesCount: 0, stars: 0, unlocked: idx === 0 };
+              }
+              if (idx === 0) {
+                exp.landScores[landId].unlocked = true;
+              } else {
+                const prevId = LAND_ORDER[idx - 1];
+                const prevCount = exp.landScores[prevId]?.completedGamesCount || 0;
+                exp.landScores[landId].unlocked = prevCount >= 50;
+              }
+            });
+          });
+          return parsed;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return INITIAL_ACCOUNT;
   });
 
   const [activeExplorerId, setActiveExplorerId] = useState<string>(() => {
-    return localStorage.getItem('phonixia_active_id_v2') || account.explorers[0].id;
+    return (
+      localStorage.getItem('phonixia_active_id_v2') ||
+      (account.explorers && account.explorers[0] ? account.explorers[0].id : FALLBACK_EXPLORER.id)
+    );
   });
 
   const [showHallOfFameCelebration, setShowHallOfFameCelebration] = useState(false);
@@ -108,11 +183,72 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('phonixia_active_id_v2', activeExplorerId);
   }, [activeExplorerId]);
 
-  const activeExplorer =
-    account.explorers.find((exp) => exp.id === activeExplorerId) || account.explorers[0];
+  const rawExplorer =
+    (account.explorers && account.explorers.find((exp) => exp.id === activeExplorerId)) ||
+    (account.explorers && account.explorers[0]) ||
+    FALLBACK_EXPLORER;
+
+  const activeExplorer: ExplorerProfile = {
+    ...rawExplorer,
+    landScores: {
+      ...DEFAULT_LAND_SCORES,
+      ...(rawExplorer.landScores || {}),
+      'sound-shallows': {
+        completedGamesCount: rawExplorer.landScores?.['sound-shallows']?.completedGamesCount ?? 4,
+        stars: rawExplorer.landScores?.['sound-shallows']?.stars ?? 12,
+        unlocked: true,
+      }
+    }
+  };
+
+  const checkLandUnlocked = (landId: LandId): boolean => {
+    return isLandUnlocked(landId, activeExplorer.landScores);
+  };
 
   const switchExplorer = (id: string) => {
     setActiveExplorerId(id);
+  };
+
+  const loginWithCredentials = (u: string, p: string): boolean => {
+    const savedPassword = localStorage.getItem(`phonixia_pw_${u}`) || 'phonics123';
+    return p === savedPassword;
+  };
+
+  const registerAccount = (payload: RegisterPayload) => {
+    localStorage.setItem(`phonixia_pw_${payload.username}`, payload.password);
+
+    const starter: ExplorerProfile = {
+      id: `exp-${Date.now()}`,
+      name: payload.starterExplorerName || 'Explorer',
+      ageTier: 'preschool',
+      level: 1,
+      totalStars: 0,
+      coins: 30,
+      arcadeTokens: 5,
+      isHallOfFameInducted: false,
+      timesStorylineCompleted: 0,
+      landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
+      customization: {
+        skinTone: '#ffd1a4',
+        hairStyle: 'curls',
+        hairColor: '#3d2314',
+        outfitColor: '#3b82f6',
+        accessory: 'none',
+        companionPet: 'woodland-fox',
+        title: 'Apprentice Reader'
+      }
+    };
+
+    const newAcc: Account = {
+      id: `acc-${Date.now()}`,
+      familyName: payload.familyName,
+      username: payload.username,
+      role: payload.role,
+      explorers: [starter]
+    };
+
+    setAccount(newAcc);
+    setActiveExplorerId(starter.id);
   };
 
   const createExplorer = (name: string, ageTier: ExplorerProfile['ageTier']) => {
@@ -140,31 +276,45 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setAccount((prev) => ({
       ...prev,
-      explorers: [...prev.explorers, newExplorer]
+      explorers: [...(prev.explorers || []), newExplorer]
     }));
     setActiveExplorerId(newExplorer.id);
   };
 
   const updateExplorerScore = (landId: LandId, gamesCompletedDelta: number, starsDelta: number) => {
     setAccount((prev) => {
-      const updatedExplorers = prev.explorers.map((exp) => {
+      const updatedExplorers = (prev.explorers || []).map((exp) => {
         if (exp.id !== activeExplorerId) return exp;
 
-        const currentLand = exp.landScores[landId] || { completedGamesCount: 0, stars: 0, unlocked: true };
+        const currentLand = exp.landScores?.[landId] || { completedGamesCount: 0, stars: 0, unlocked: false };
         const newCompleted = Math.min(50, currentLand.completedGamesCount + gamesCompletedDelta);
         const newLandStars = currentLand.stars + starsDelta;
 
         const updatedLandScores = {
-          ...exp.landScores,
+          ...(exp.landScores || DEFAULT_LAND_SCORES),
           [landId]: {
             ...currentLand,
             completedGamesCount: newCompleted,
-            stars: newLandStars
+            stars: newLandStars,
+            unlocked: true
           }
         };
 
+        // When completing all 50 games in a realm, unlock the next sequential realm
+        if (newCompleted >= 50) {
+          const currentIndex = LAND_ORDER.indexOf(landId);
+          if (currentIndex !== -1 && currentIndex + 1 < LAND_ORDER.length) {
+            const nextLandId = LAND_ORDER[currentIndex + 1];
+            const nextLand = updatedLandScores[nextLandId] || { completedGamesCount: 0, stars: 0, unlocked: false };
+            updatedLandScores[nextLandId] = {
+              ...nextLand,
+              unlocked: true
+            };
+          }
+        }
+
         const totalCompleted = Object.values(updatedLandScores).reduce(
-          (sum, l) => sum + (l.completedGamesCount || 0),
+          (sum: number, l: any) => sum + (l?.completedGamesCount || 0),
           0
         );
 
@@ -192,7 +342,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const awardCurrency = (coinsDelta: number, tokensDelta: number) => {
     setAccount((prev) => ({
       ...prev,
-      explorers: prev.explorers.map((exp) =>
+      explorers: (prev.explorers || []).map((exp) =>
         exp.id === activeExplorerId
           ? {
               ...exp,
@@ -207,7 +357,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateAvatarCustomization = (customization: ExplorerProfile['customization']) => {
     setAccount((prev) => ({
       ...prev,
-      explorers: prev.explorers.map((exp) =>
+      explorers: (prev.explorers || []).map((exp) =>
         exp.id === activeExplorerId ? { ...exp, customization } : exp
       )
     }));
@@ -215,22 +365,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetExplorerProgress = (explorerId: string) => {
     setAccount((prev) => {
-      const updatedExplorers = prev.explorers.map((exp) => {
+      const updatedExplorers = (prev.explorers || []).map((exp) => {
         if (exp.id !== explorerId) return exp;
 
         const freshLandScores = {
           'sound-shallows': { completedGamesCount: 0, stars: 0, unlocked: true },
-          'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: true },
-          'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: true },
-          'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: true },
-          'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: true }
+          'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+          'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+          'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+          'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
         };
 
         return {
           ...exp,
           totalStars: 0,
           level: 1,
-          // Permanently stays in Hall of Fame
           isHallOfFameInducted: true,
           timesStorylineCompleted: (exp.timesStorylineCompleted || 0) + 1,
           landScores: freshLandScores,
@@ -253,7 +402,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    localStorage.removeItem('phonixia_is_logged_in_v1');
+    sessionStorage.removeItem('phonixia_active_session');
   };
 
   return (
@@ -269,6 +418,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         showHallOfFameCelebration,
         dismissHallOfFameCelebration,
         resetExplorerProgress,
+        loginWithCredentials,
+        registerAccount,
+        isLandUnlocked: checkLandUnlocked,
         logout
       }}
     >

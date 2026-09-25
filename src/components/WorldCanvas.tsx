@@ -2,8 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGame, isLandUnlocked } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { LandmarkNode, LandId, MinigameId } from '../types/character';
-import { sounds } from '../utils/audio';
-import { Lock, Volume2, VolumeX, Home, Play, Star, Footprints, Sparkles, Compass, Gamepad2, Blocks, Trees, Mountain, Landmark, Waves, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { sounds, VOICE_PERSONAS } from '../utils/audio';
+import { 
+  Lock, Volume2, VolumeX, Home, Play, Star, Footprints, 
+  Sparkles, Compass, Gamepad2, Blocks, Trees, Mountain, 
+  Landmark, Waves, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Mic, X
+} from 'lucide-react';
 import phonixiaMap from '../../phonixia.png';
 
 interface WorldCanvasProps {
@@ -106,20 +110,8 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
   const [nearbyNode, setNearbyNode] = useState<{ id: string; name: string; tagline?: string; description?: string } | null>(null);
   const [lockNotice, setLockNotice] = useState<string | null>(null);
 
-  const dirKeysRef = useRef({
-    up: false,
-    down: false,
-    left: false,
-    right: false,
-    shift: false
-  });
-
-  const [activeDpad, setActiveDpad] = useState({
-    up: false,
-    down: false,
-    left: false,
-    right: false
-  });
+  const dirKeysRef = useRef({ up: false, down: false, left: false, right: false, shift: false });
+  const [activeDpad, setActiveDpad] = useState({ up: false, down: false, left: false, right: false });
 
   const lastKeyTimeRef = useRef<number>(0);
   const requestRef = useRef<number | null>(null);
@@ -128,20 +120,17 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
   const enterCooldown = useRef<number>(0);
 
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<string>(sounds.selectedVoiceName);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
 
   useEffect(() => {
     containerRef.current?.focus();
-    const timer = setTimeout(() => {
-      const v = sounds.getVoices();
-      setAvailableVoices(v);
-    }, 400);
-    return () => clearTimeout(timer);
+    return () => {
+      sounds.stopSpeech();
+    };
   }, []);
 
   const triggerNodeEnter = useCallback((targetId: string, targetName: string) => {
+    sounds.stopSpeech();
     if (targetId === 'home-hut') {
       sounds.speak('Welcome home to the Family Hub! Ready to check your reading progress?', 0.92, 1.2);
       onOpenHomeHut();
@@ -210,7 +199,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       const k = e.key ? e.key.toLowerCase() : '';
       const code = e.code || '';
-
       let matched = false;
 
       if (k === 'arrowup' || k === 'up' || k === 'w' || code === 'ArrowUp' || code === 'KeyW' || code === 'Numpad8') {
@@ -248,9 +236,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'space'].includes(k)) {
           e.preventDefault();
         }
-        if (!lastKeyTimeRef.current) {
-          lastKeyTimeRef.current = performance.now();
-        }
+        if (!lastKeyTimeRef.current) lastKeyTimeRef.current = performance.now();
       }
     };
 
@@ -279,9 +265,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       }
 
       const anyActive = dirKeysRef.current.up || dirKeysRef.current.down || dirKeysRef.current.left || dirKeysRef.current.right;
-      if (!anyActive) {
-        lastKeyTimeRef.current = 0;
-      }
+      if (!anyActive) lastKeyTimeRef.current = 0;
     };
 
     window.addEventListener('keydown', handleKeyDown, { passive: false });
@@ -387,6 +371,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
   };
 
   const handleFastTravel = (node: LandmarkNode) => {
+    sounds.stopSpeech();
     triggerNodeEnter(node.id, node.name);
   };
 
@@ -394,18 +379,14 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     containerRef.current?.focus();
     dirKeysRef.current[dir] = true;
     setActiveDpad(prev => ({ ...prev, [dir]: true }));
-    if (!lastKeyTimeRef.current) {
-      lastKeyTimeRef.current = performance.now();
-    }
+    if (!lastKeyTimeRef.current) lastKeyTimeRef.current = performance.now();
   };
 
   const handleDpadRelease = (dir: 'up' | 'down' | 'left' | 'right') => {
     dirKeysRef.current[dir] = false;
     setActiveDpad(prev => ({ ...prev, [dir]: false }));
     const anyActive = dirKeysRef.current.up || dirKeysRef.current.down || dirKeysRef.current.left || dirKeysRef.current.right;
-    if (!anyActive) {
-      lastKeyTimeRef.current = 0;
-    }
+    if (!anyActive) lastKeyTimeRef.current = 0;
   };
 
   return (
@@ -415,9 +396,8 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       onClick={() => containerRef.current?.focus()}
       className="relative w-full h-full flex flex-col justify-between select-none outline-none overflow-hidden"
     >
-      {/* IN-GAME TOP HUD (Responsive: compact on phones, full on iPad/PC) */}
+      {/* IN-GAME TOP HUD */}
       <div className="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-4 z-40 flex items-center justify-between pointer-events-none">
-        {/* Player Badge */}
         <div className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-slate-950/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl border border-amber-600/60 shadow-xl">
           <div className="relative w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-950/80 border border-amber-400 flex items-center justify-center overflow-hidden">
             <AvatarRenderer customization={activeExplorer.customization} size={30} facing="down" showPet={false} />
@@ -438,17 +418,29 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           </div>
         </div>
 
-        {/* Audio Toggle & Quick Home Hut */}
         <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => {
+              sounds.stopSpeech();
+              setShowVoiceModal(true);
+            }}
+            title="Choose Phonics Voice (Ms. Rachel, US/UK)"
+            className="h-8 sm:h-10 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-500/70 text-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-xl cursor-pointer transition-transform hover:scale-105 active:scale-95"
+          >
+            <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+            <span className="hidden sm:inline">Voice</span>
+          </button>
+
+          <button
+            onClick={() => {
+              sounds.stopSpeech();
               const next = !isAudioMuted;
               setIsAudioMuted(next);
               sounds.speechEnabled = !next;
               sounds.soundEnabled = !next;
-              if (!next) sounds.speak('Voice is on.', 0.92, 1.2);
+              if (!next) sounds.speak('Voice is on.');
             }}
-            title={isAudioMuted ? 'Unmute' : 'Mute'}
+            title={isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
             className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-500/60 flex items-center justify-center text-amber-400 shadow-xl cursor-pointer"
           >
             {isAudioMuted ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" /> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -456,18 +448,10 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
 
           <button
             onClick={() => {
-              setAvailableVoices(sounds.getVoices());
-              setShowVoiceSettings(!showVoiceSettings);
+              sounds.stopSpeech();
+              onOpenHomeHut();
             }}
-            className="hidden md:flex px-3 py-2 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-500/60 text-amber-300 font-bold text-xs shadow-xl items-center gap-1.5 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Voice</span>
-          </button>
-
-          <button
-            onClick={onOpenHomeHut}
-            className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider shadow-xl border border-amber-300 flex items-center gap-1 cursor-pointer"
+            className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider shadow-xl border border-amber-300 flex items-center gap-1 cursor-pointer transition-transform hover:scale-105 active:scale-95"
           >
             <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden xs:inline">Home Hut</span>
@@ -475,7 +459,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         </div>
       </div>
 
-      {/* Centered Lock Notice Banner */}
       {lockNotice && (
         <div className="absolute top-14 sm:top-16 left-1/2 -translate-x-1/2 z-50 w-max max-w-[92%] px-4 sm:px-5 py-2 sm:py-2.5 bg-rose-950/95 border-2 border-rose-500 rounded-2xl shadow-2xl text-rose-200 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 animate-bounce pointer-events-none">
           <Lock className="w-4 h-4 text-rose-400 shrink-0" />
@@ -495,12 +478,13 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           className="absolute inset-0 w-full h-full object-fill select-none z-0"
         />
 
-        {/* 1. HOME HUT (Harbor Pier: 10%, 65%) */}
+        {/* 1. HOME HUT */}
         <div
           className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
           style={{ left: '10%', top: '65%' }}
           onClick={(e) => {
             e.stopPropagation();
+            sounds.stopSpeech();
             onOpenHomeHut();
           }}
         >
@@ -510,10 +494,11 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           </div>
         </div>
 
-        {/* 2. ISLES OF PLAY (15%, 52%) */}
+        {/* 2. ISLES OF PLAY */}
         <div
           onClick={(e) => {
             e.stopPropagation();
+            sounds.stopSpeech();
             onSelectMinigame('isles-of-play');
           }}
           className="absolute left-[15%] top-[52%] z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
@@ -524,10 +509,11 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           </div>
         </div>
 
-        {/* 3. SHELLSHORE ARCADE (14%, 82%) */}
+        {/* 3. SHELLSHORE ARCADE */}
         <div
           onClick={(e) => {
             e.stopPropagation();
+            sounds.stopSpeech();
             onSelectMinigame('shellshore-arcade');
           }}
           className="absolute left-[14%] top-[82%] z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
@@ -538,12 +524,13 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           </div>
         </div>
 
-        {/* 4. SOUND SHALLOWS (Center: 50%, 45%) */}
+        {/* 4. SOUND SHALLOWS */}
         <div
           className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
           style={{ left: '50%', top: '45%' }}
           onClick={(e) => {
             e.stopPropagation();
+            sounds.stopSpeech();
             onSelectLand('sound-shallows');
           }}
         >
@@ -561,7 +548,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           </div>
         </div>
 
-        {/* 5. BUILDERS GUILD (18%, 28%) */}
+        {/* 5. BUILDERS GUILD */}
         {(() => {
           const unlocked = isLandUnlocked('builders-guild', activeExplorer.landScores);
           return (
@@ -570,6 +557,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
               style={{ left: '18%', top: '28%' }}
               onClick={(e) => {
                 e.stopPropagation();
+                sounds.stopSpeech();
                 if (unlocked) onSelectLand('builders-guild');
                 else triggerNodeEnter(LANDMARK_NODES[2].id, LANDMARK_NODES[2].name);
               }}
@@ -596,7 +584,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           );
         })()}
 
-        {/* 6. TRICKY TRAILS (50%, 82%) */}
+        {/* 6. TRICKY TRAILS */}
         {(() => {
           const unlocked = isLandUnlocked('tricky-trails', activeExplorer.landScores);
           return (
@@ -605,6 +593,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
               style={{ left: '50%', top: '82%' }}
               onClick={(e) => {
                 e.stopPropagation();
+                sounds.stopSpeech();
                 if (unlocked) onSelectLand('tricky-trails');
                 else triggerNodeEnter(LANDMARK_NODES[3].id, LANDMARK_NODES[3].name);
               }}
@@ -631,7 +620,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           );
         })()}
 
-        {/* 7. WHISPERING PEAKS (80%, 26%) */}
+        {/* 7. WHISPERING PEAKS */}
         {(() => {
           const unlocked = isLandUnlocked('whispering-peaks', activeExplorer.landScores);
           return (
@@ -640,6 +629,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
               style={{ left: '80%', top: '26%' }}
               onClick={(e) => {
                 e.stopPropagation();
+                sounds.stopSpeech();
                 if (unlocked) onSelectLand('whispering-peaks');
                 else triggerNodeEnter(LANDMARK_NODES[4].id, LANDMARK_NODES[4].name);
               }}
@@ -666,7 +656,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           );
         })()}
 
-        {/* 8. LEXICON EMPIRE (82%, 72%) */}
+        {/* 8. LEXICON EMPIRE */}
         {(() => {
           const unlocked = isLandUnlocked('lexicon-empire', activeExplorer.landScores);
           return (
@@ -675,6 +665,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
               style={{ left: '82%', top: '72%' }}
               onClick={(e) => {
                 e.stopPropagation();
+                sounds.stopSpeech();
                 if (unlocked) onSelectLand('lexicon-empire');
                 else triggerNodeEnter(LANDMARK_NODES[5].id, LANDMARK_NODES[5].name);
               }}
@@ -701,7 +692,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           );
         })()}
 
-        {/* PLAYER AVATAR EXPLORER */}
+        {/* PLAYER AVATAR */}
         <div
           className="absolute z-30 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
           style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }}
@@ -726,7 +717,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           />
         </div>
 
-        {/* RESPONSIVE D-PAD (Smaller on phones) */}
+        {/* D-PAD */}
         <div
           onClick={(e) => e.stopPropagation()}
           className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 z-40 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-xl sm:rounded-2xl border border-amber-600/50 shadow-2xl flex flex-col items-center gap-1 select-none pointer-events-auto"
@@ -789,7 +780,10 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           <div className="flex items-center gap-2 bg-slate-900/90 px-2.5 py-1 rounded-xl border border-amber-500/40">
             <span className="text-xs font-bold text-slate-100">{nearbyNode.name}</span>
             <button
-              onClick={() => triggerNodeEnter(nearbyNode.id, nearbyNode.name)}
+              onClick={() => {
+                sounds.stopSpeech();
+                triggerNodeEnter(nearbyNode.id, nearbyNode.name);
+              }}
               className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1 cursor-pointer"
             >
               <Play className="w-3 h-3 fill-current" />
@@ -825,6 +819,71 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           })}
         </div>
       </div>
+
+      {/* Voice Selection Studio Modal */}
+      {showVoiceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
+          <div className="relative w-full max-w-md bg-slate-900 border-2 border-amber-400 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Mic className="w-5 h-5 text-amber-400" />
+                <h3 className="text-sm font-black text-amber-300 uppercase tracking-wide">
+                  Phonics Voice Studio
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  sounds.stopSpeech();
+                  setShowVoiceModal(false);
+                }}
+                className="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+              {VOICE_PERSONAS.map((v) => {
+                const isActive = sounds.activePersonaId === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => {
+                      sounds.stopSpeech();
+                      sounds.setPersona(v.id);
+                    }}
+                    className={`w-full p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-start justify-between ${
+                      isActive
+                        ? 'bg-amber-500/20 border-amber-400 shadow-md ring-1 ring-amber-400'
+                        : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-xs font-black text-amber-200">{v.label}</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">{v.description}</div>
+                    </div>
+                    {isActive && (
+                      <span className="text-[9px] font-black uppercase bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full shrink-0">
+                        Active
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => {
+                sounds.speak('Hi there! Welcome back to Phonixia! Are you ready to read?');
+                setShowVoiceModal(false);
+              }}
+              className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer"
+            >
+              Test Voice & Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

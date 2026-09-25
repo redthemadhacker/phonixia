@@ -2,7 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGame } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
-import { ArrowLeft, Play, Sparkles, Gamepad2, Compass, CheckCircle2, Footprints, Zap, ArrowUp, ArrowDown, ArrowLeft as ArrowLeftIcon, ArrowRight } from 'lucide-react';
+import { 
+  ArrowLeft, Play, Sparkles, Gamepad2, Footprints, 
+  Zap, CheckCircle2, ArrowUp, ArrowDown, ArrowLeft as ArrowLeftIcon, 
+  ArrowRight, RotateCcw, Volume2, Flame, Award, X
+} from 'lucide-react';
 import shellshoreBg from '../../shellshore.jpeg';
 
 interface ShellshoreArcadeProps {
@@ -16,65 +20,92 @@ export interface ArcadeCabinetGame {
   skill: string;
   icon: string;
   howToPlay: string;
-  x: number; // exact % on map image
+  x: number;
   y: number;
 }
 
 export const SHELLSHORE_25_GAMES: ArcadeCabinetGame[] = [
-  // 1. Neon Tower Spire (Top-Left)
   { id: 'ssa-1', name: 'Pinball Beacon Spire', building: 'Neon Spiral Spire', skill: 'Root CHRON (Time)', icon: '⏳', howToPlay: 'Launch cyber pinballs along the spiral ramp to decode chronological roots.', x: 14, y: 15 },
   { id: 'ssa-2', name: 'Spire Arcade Portal', building: 'Spire Base Cabinets', skill: 'Root TELE (Far)', icon: '📡', howToPlay: 'Calibrate long-distance satellite signals for telescope and telepathy.', x: 19, y: 32 },
-
-  // 2. Upper Neon Hedge Maze (Top-Left Interior)
   { id: 'ssa-3', name: 'Matrix Obelisk Circuit', building: 'Neon Maze Obelisk', skill: 'Root BIO (Life)', icon: '🧬', howToPlay: 'Guide electrical circuits to the central pillar for biology and biome.', x: 30, y: 20 },
   { id: 'ssa-4', name: 'Hedge Firewall Gate', building: 'Maze Security Gate', skill: 'Root GEO (Earth)', icon: '🌍', howToPlay: 'Bypass security gates by mining geological and geothermal root words.', x: 38, y: 27 },
-
-  // 3. Binary Matrix Mountain Cleft (Top Center)
   { id: 'ssa-5', name: 'Binary Code Cleft', building: 'Binary Matrix Mountain', skill: 'Root SPEC (See)', icon: '🔬', howToPlay: 'Inspect streaming cyber code for spectator, spectacle, and conspicuous.', x: 50, y: 19 },
   { id: 'ssa-6', name: 'Matrix Data Stream', building: 'Mountain Aqueduct Run', skill: 'Quad-Syllables', icon: '⚔️', howToPlay: 'Slice streaming data packets into syllables: un-pre-dict-a-ble.', x: 58, y: 26 },
-
-  // 4. Laser Amphitheater & Hologram Ring (Top Right)
   { id: 'ssa-7', name: 'Laser Stage Rhythm', building: 'Neon Amphitheater', skill: 'Primary Stress', icon: '🎚️', howToPlay: 'Tune audio frequencies on stressed syllables: pho-TOG-ra-phy.', x: 69, y: 19 },
   { id: 'ssa-8', name: 'Hologram Projection Beam', building: 'Upper Laser Crane', skill: 'The Schwa (ə)', icon: '📻', howToPlay: 'Filter sound waves to locate unaccented schwa vowels in a-bout and pen-cil.', x: 63, y: 11 },
-
-  // 5. Vaporwave Grid Platform & Telescope (Far Top-Right Island)
   { id: 'ssa-9', name: 'Vaporwave Neon Grid', building: 'Grid Platform', skill: 'Prefixes MEGA/MICRO', icon: '💾', howToPlay: 'Sort microscopic and megabyte data crystals across the glowing grid.', x: 86, y: 22 },
   { id: 'ssa-10', name: 'Grid Telescope Radar', building: 'Observatory Tower', skill: 'Prefixes ANTI/COUNTER', icon: '🛡️', howToPlay: 'Scan for defense codes like antioxidant, counterattack, and antidote.', x: 79, y: 20 },
-
-  // 6. Lower Neon Hedge Labyrinth (Far Left)
   { id: 'ssa-11', name: 'Bioluminescent Maze', building: 'Lower Neon Maze', skill: 'Prefixes INTER/INTRA', icon: '🌐', howToPlay: 'Route maze packets along international and intracellular pathways.', x: 12, y: 52 },
   { id: 'ssa-12', name: 'Maze Neon Steps', building: 'Labyrinth Steps', skill: 'Suffix -OLOGY', icon: '📚', howToPlay: 'Unlock study archives for archaeology, neurology, and meteorology.', x: 6, y: 61 },
-
-  // 7. Letter Water Bay (Center-Left Water Canal)
   { id: 'ssa-13', name: 'Synth Rowboat Regatta', building: 'Letter Rowboats', skill: 'Suffixes -IBLE vs -ABLE', icon: '🔐', howToPlay: 'Navigate boats through canal gates for flexible, dependable, and durable.', x: 33, y: 40 },
   { id: 'ssa-14', name: 'Canal Neon Waterfall', building: 'Stone Bridge Arch', skill: 'I Before E Rule', icon: '🎹', howToPlay: 'Hit keyboard notes in rhythm for ceiling, receive, and neighbor.', x: 26, y: 48 },
-
-  // 8. Center Bioluminescent Coral Well (Middle Island)
   { id: 'ssa-15', name: 'Bioluminescent Fountain', building: 'Coral Altar Fountain', skill: 'Complex R-Vowels', icon: '⚡', howToPlay: 'Shield the fountain core against storms of thorough, murmur, and whirl.', x: 49, y: 48 },
   { id: 'ssa-16', name: 'Coral Island Boardwalk', building: 'Center Coral Walkway', skill: 'Silent Letters', icon: '🥷', howToPlay: 'Walk silently past monitors using words with silent k, w, and b.', x: 45, y: 53 },
-
-  // 9. Covered Digital Nook (Mid-Right Island)
   { id: 'ssa-17', name: 'Cyber Terminal Tent', building: 'Covered Screen Tent', skill: 'Diphthongs (OI, OU)', icon: '🌊', howToPlay: 'Synthesize audio tracks with royal, void, bounce, and prowl.', x: 63, y: 37 },
   { id: 'ssa-18', name: 'Neon Suspension Bridge', building: 'Wooden Footbridge', skill: 'Soft C and Soft G', icon: '🎸', howToPlay: 'Slap synthesizer basslines for cinema, giant, logic, and gym.', x: 60, y: 42 },
-
-  // 10. Silicon Micro-Hub Station (Far Mid-Right Island)
   { id: 'ssa-19', name: 'Silicon CPU Chip Hub', building: 'Micro-Hub Tower', skill: 'Context Clues', icon: '🏎️', howToPlay: 'Solve sentence context clues to overclock the CPU engine speed.', x: 89, y: 44 },
   { id: 'ssa-20', name: 'Chipboard Smoker', building: 'Silicon Pipes', skill: 'Denotation / Connotation', icon: '⚖️', howToPlay: 'Balance subtle word weights: curious vs nosy, and thrifty vs stingy.', x: 80, y: 45 },
-
-  // 11. High Score Neon Arcade Den (Bottom-Left Island)
   { id: 'ssa-21', name: 'High Score Cabinets', building: 'Neon Arcade', skill: 'Academic Analogies', icon: '🏁', howToPlay: 'Play CRT arcade cabinets by completing analogies at high speed.', x: 13, y: 76 },
   { id: 'ssa-22', name: 'Arcade Marquee Deck', building: 'Neon Star Marquee', skill: 'Confusing Homophones', icon: '🎯', howToPlay: 'Lock radar crosshairs on affect/effect and principal/principle.', x: 21, y: 83 },
-
-  // 12. Glowing Cyber Grimoire (Bottom-Center Beach)
   { id: 'ssa-23', name: 'Holographic Codex Page', building: 'Giant Cyber Book', skill: 'Language Lineage', icon: '🏛️', howToPlay: 'Trace word origins back to Latin, Ancient Greek, and Old English.', x: 42, y: 77 },
   { id: 'ssa-24', name: 'Tidal Crane Dock', building: 'Cyber Wharf Pier', skill: 'Base Word Extraction', icon: '💻', howToPlay: 'Decompile long words like unconstitutionally down to their base word.', x: 53, y: 89 },
-
-  // 13. Prismatic Crystal Cavern (Bottom-Right Mountain)
   { id: 'ssa-25', name: 'Prismatic Crystal Mines', building: 'Neon Crystal Mountain', skill: 'Figurative Language', icon: '🏆', howToPlay: 'Identify hyperbole, metaphor, and oxymorons to unlock the crystal chest.', x: 92, y: 82 }
 ];
 
+interface ArcadeChallenge {
+  prompt: string;
+  target: string;
+  soundCue: string;
+  choices: string[];
+  correct: string;
+  fact: string;
+}
+
+const GENERATE_ARCADE_CHALLENGE = (cabinet: ArcadeCabinetGame): ArcadeChallenge => {
+  const rootDatabase = [
+    { root: 'CHRON', meaning: 'Time', example: 'Chronological', dist: ['Space', 'Water', 'Speed'] },
+    { root: 'TELE', meaning: 'Far / Distant', example: 'Telescope', dist: ['Near', 'Small', 'Mind'] },
+    { root: 'BIO', meaning: 'Life', example: 'Biology', dist: ['Earth', 'Heat', 'Sound'] },
+    { root: 'GEO', meaning: 'Earth / Ground', example: 'Geothermal', dist: ['Sky', 'Cold', 'Air'] },
+    { root: 'SPEC', meaning: 'To Look / See', example: 'Spectator', dist: ['Hear', 'Touch', 'Taste'] },
+    { root: 'PORT', meaning: 'To Carry', example: 'Transport', dist: ['Build', 'Break', 'Drop'] },
+    { root: 'PHON', meaning: 'Sound / Voice', example: 'Symphony', dist: ['Light', 'Weight', 'Color'] },
+    { root: 'MICRO', meaning: 'Very Small', example: 'Microscopic', dist: ['Huge', 'Distant', 'Old'] },
+    { root: 'ANTI', meaning: 'Against / Opposite', example: 'Antibacterial', dist: ['Before', 'After', 'With'] },
+  ];
+
+  const advancedRules = [
+    { rule: 'I before E except after C', word: 'RECEIVE', dist: ['RECIEVE', 'RECEVE', 'RECEV'] },
+    { rule: 'Silent Letter Challenge', word: 'KNIGHT', dist: ['NIGHT', 'KITE', 'KNOT'] },
+    { rule: 'Suffix -OLOGY (Study of)', word: 'BIOLOGY', dist: ['BIOGRAPHY', 'BIOMETRIC', 'BIONIC'] },
+    { rule: 'Suffix -ABLE (Can be done)', word: 'REPAIRABLE', dist: ['REPAIRIBLE', 'REPAIREBLE', 'REPAIROBLE'] },
+  ];
+
+  if (cabinet.skill.includes('Root') || cabinet.skill.includes('Prefix')) {
+    const r = rootDatabase[Math.floor(Math.random() * rootDatabase.length)];
+    return {
+      prompt: `Cyber Root Matrix: Decompile meaning for:`,
+      target: `${r.root} (${r.example})`,
+      soundCue: `What is the core meaning of the root ${r.root}?`,
+      choices: [r.meaning, ...r.dist].sort(() => Math.random() - 0.5),
+      correct: r.meaning,
+      fact: `${r.root} translates directly to "${r.meaning}"!`
+    };
+  }
+
+  const adv = advancedRules[Math.floor(Math.random() * advancedRules.length)];
+  return {
+    prompt: `Advanced Linguistic Cabinet:`,
+    target: adv.rule,
+    soundCue: `Identify the correct spelling according to the rule: ${adv.rule}.`,
+    choices: [adv.word, ...adv.dist].sort(() => Math.random() - 0.5),
+    correct: adv.word,
+    fact: `Correct! ${adv.word} follows the rule: ${adv.rule}.`
+  };
+};
+
 export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorld }) => {
-  const { activeExplorer } = useGame();
+  const { activeExplorer, awardCurrency } = useGame();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const playerPosRef = useRef<{ x: number; y: number }>({ x: 42, y: 68 });
@@ -88,6 +119,11 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
 
   const [nearbyGame, setNearbyGame] = useState<ArcadeCabinetGame | null>(null);
   const [activeCabinet, setActiveCabinet] = useState<ArcadeCabinetGame | null>(null);
+  const [challenge, setChallenge] = useState<ArcadeChallenge | null>(null);
+  const [scoreStreak, setScoreStreak] = useState(0);
+  const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [showCelebrationAnim, setShowCelebrationAnim] = useState(false);
 
   const dirKeysRef = useRef({ up: false, down: false, left: false, right: false, shift: false });
   const [activeDpad, setActiveDpad] = useState({ up: false, down: false, left: false, right: false });
@@ -100,12 +136,26 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
 
   useEffect(() => {
     containerRef.current?.focus();
+    return () => {
+      sounds.stopSpeech();
+    };
   }, []);
 
-  const triggerCabinetLaunch = useCallback((game: ArcadeCabinetGame) => {
+  const launchCabinet = useCallback((game: ArcadeCabinetGame) => {
+    sounds.stopSpeech();
     sounds.playStep();
-    sounds.speak(`Accessing ${game.building}! Initializing ${game.name}!`);
+    sounds.speak(`Booting ${game.name}! Prepare for endless play!`);
+    const firstChallenge = GENERATE_ARCADE_CHALLENGE(game);
+    setChallenge(firstChallenge);
     setActiveCabinet(game);
+    setScoreStreak(0);
+    setSelectedChoice(null);
+    setIsCorrect(null);
+    setShowCelebrationAnim(false);
+
+    setTimeout(() => {
+      sounds.speak(firstChallenge.soundCue);
+    }, 300);
   }, []);
 
   const checkProximity = useCallback((x: number, y: number) => {
@@ -128,12 +178,12 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
       if (lastEnteredGameId.current !== target.id) {
         lastEnteredGameId.current = target.id;
         enterCooldown.current = now + 2000;
-        triggerCabinetLaunch(target);
+        launchCabinet(target);
       }
     } else if (!closest || minDistance > 5.5) {
       lastEnteredGameId.current = null;
     }
-  }, [triggerCabinetLaunch, activeCabinet]);
+  }, [launchCabinet, activeCabinet]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -168,7 +218,7 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
 
       if ((k === 'e' || k === ' ' || k === 'enter' || code === 'KeyE' || code === 'Space') && nearbyGame && !activeCabinet) {
         matched = true;
-        triggerCabinetLaunch(nearbyGame);
+        launchCabinet(nearbyGame);
       }
 
       if (matched) {
@@ -214,7 +264,7 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [nearbyGame, activeCabinet, triggerCabinetLaunch]);
+  }, [nearbyGame, activeCabinet, launchCabinet]);
 
   useEffect(() => {
     let prevTime = performance.now();
@@ -324,40 +374,74 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
     if (!anyActive) lastKeyTimeRef.current = 0;
   };
 
+  const handleAnswerPick = (choice: string) => {
+    if (!challenge || selectedChoice !== null) return;
+    sounds.stopSpeech();
+
+    setSelectedChoice(choice);
+    const correct = choice.trim().toLowerCase() === challenge.correct.trim().toLowerCase();
+    setIsCorrect(correct);
+
+    if (correct) {
+      sounds.playSuccess();
+      awardCurrency(10, 2);
+      setScoreStreak(prev => prev + 1);
+      setShowCelebrationAnim(true);
+
+      setTimeout(() => {
+        if (!activeCabinet) return;
+        const nextQ = GENERATE_ARCADE_CHALLENGE(activeCabinet);
+        setChallenge(nextQ);
+        setSelectedChoice(null);
+        setIsCorrect(null);
+        setShowCelebrationAnim(false);
+        sounds.speak(nextQ.soundCue);
+      }, 1200);
+    } else {
+      sounds.playError();
+      sounds.speak(`Access Denied! Recalibrate and try again!`);
+      setTimeout(() => {
+        setSelectedChoice(null);
+        setIsCorrect(null);
+      }, 1000);
+    }
+  };
+
   return (
     <div
       ref={containerRef}
       tabIndex={0}
       onClick={() => containerRef.current?.focus()}
-      className="relative w-full h-[88vh] sm:h-[92vh] max-w-[1500px] mx-auto rounded-3xl overflow-hidden border-4 border-fuchsia-500/60 shadow-2xl bg-slate-950 flex flex-col justify-between select-none outline-none focus:ring-2 focus:ring-fuchsia-400/40"
+      className="relative w-full h-full flex flex-col justify-between select-none outline-none overflow-hidden"
     >
-      {/* Top Neon HUD */}
-      <div className="absolute top-3 inset-x-4 z-40 flex items-center justify-between pointer-events-none">
+      {/* Top HUD */}
+      <div className="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-4 z-40 flex items-center justify-between pointer-events-none">
         <button
           onClick={() => {
+            sounds.stopSpeech();
             sounds.playStep();
             onBackToWorld();
           }}
-          className="pointer-events-auto px-4 py-2 rounded-2xl bg-slate-950/85 backdrop-blur-md hover:bg-slate-900 text-fuchsia-300 border-2 border-fuchsia-400/70 text-xs font-black flex items-center gap-2 cursor-pointer shadow-xl transition-transform hover:scale-105 active:scale-95"
+          className="pointer-events-auto px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-slate-950/85 backdrop-blur-md hover:bg-slate-900 text-fuchsia-300 border border-fuchsia-400/70 text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-xl transition-transform hover:scale-105 active:scale-95"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to World Map</span>
+          <span>Citadel Map</span>
         </button>
 
-        <div className="pointer-events-auto text-center bg-slate-950/85 backdrop-blur-md px-4 py-1.5 rounded-2xl border border-fuchsia-400/50 shadow-xl hidden sm:block">
-          <div className="flex items-center justify-center gap-2">
-            <Zap className="w-4 h-4 text-fuchsia-400" />
-            <span className="text-sm font-black text-fuchsia-200 font-display uppercase tracking-wide">
+        <div className="pointer-events-auto text-center bg-slate-950/85 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl border border-fuchsia-400/50 shadow-xl">
+          <div className="flex items-center justify-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-fuchsia-400" />
+            <span className="text-xs sm:text-sm font-black text-fuchsia-200 font-display uppercase tracking-wide">
               Shellshore Arcade
             </span>
           </div>
-          <span className="text-[10px] text-fuchsia-300/80 font-medium">
-            Tap or walk to any neon terminal on the cyber reef!
+          <span className="text-[9px] sm:text-[10px] text-fuchsia-300/80 font-medium hidden sm:block">
+            Endless Cyber Phonics Arena
           </span>
         </div>
 
-        <div className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-fuchsia-400/60 text-fuchsia-300 text-xs font-mono font-bold shadow-xl">
-          <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" />
+        <div className="pointer-events-auto flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl bg-slate-950/85 backdrop-blur-md border border-fuchsia-400/60 text-fuchsia-300 text-[11px] sm:text-xs font-mono font-bold shadow-xl">
+          <Sparkles className="w-3 h-3 text-fuchsia-400" />
           <span>{activeExplorer.name}</span>
         </div>
       </div>
@@ -374,22 +458,20 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
           className="absolute inset-0 w-full h-full object-fill select-none pointer-events-none z-0"
         />
 
-        {/* 25 Dedicated Landmark Icons (Positioned Directly on the Structures) */}
+        {/* 25 Dedicated Landmark Icons */}
         {SHELLSHORE_25_GAMES.map((cab) => (
           <div
             key={cab.id}
             style={{ left: `${cab.x}%`, top: `${cab.y}%` }}
             onClick={(e) => {
               e.stopPropagation();
-              triggerCabinetLaunch(cab);
+              launchCabinet(cab);
             }}
             className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-125 active:scale-95 group"
           >
-            {/* Compact Glowing Cyber Circle Badge */}
             <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-950/90 hover:bg-fuchsia-950/90 border-2 border-fuchsia-400 hover:border-cyan-300 shadow-[0_0_15px_rgba(217,70,239,0.6)] flex items-center justify-center backdrop-blur-sm transition-all">
               <span className="text-sm sm:text-base">{cab.icon}</span>
 
-              {/* Hover Name Tag that only shows on hover */}
               <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/95 border border-fuchsia-400/80 px-2 py-0.5 rounded-md whitespace-nowrap pointer-events-none z-30 shadow-lg">
                 <span className="text-[10px] font-black text-fuchsia-200">{cab.name}</span>
               </div>
@@ -422,122 +504,105 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
           />
         </div>
 
-        {/* On-Screen D-Pad Arrow Controls */}
+        {/* Controls */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-4 left-4 z-40 bg-slate-950/90 backdrop-blur-md p-2 rounded-2xl border-2 border-fuchsia-600/50 shadow-2xl flex flex-col items-center gap-1 select-none pointer-events-auto"
+          className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 z-40 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-xl sm:rounded-2xl border border-fuchsia-600/50 shadow-2xl flex flex-col items-center gap-1 select-none pointer-events-auto"
         >
-          <div className="text-[9px] font-black text-fuchsia-400 uppercase tracking-widest text-center -mb-0.5">
-            Controls
-          </div>
           <button
             onMouseDown={() => handleDpadPress('up')}
             onMouseUp={() => handleDpadRelease('up')}
-            onMouseLeave={() => handleDpadRelease('up')}
             onTouchStart={() => handleDpadPress('up')}
             onTouchEnd={() => handleDpadRelease('up')}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold border transition-all cursor-pointer ${
-              activeDpad.up
-                ? 'bg-fuchsia-400 text-slate-950 border-fuchsia-300 scale-95 shadow-inner'
-                : 'bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border-fuchsia-500/40'
+            className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+              activeDpad.up ? 'bg-fuchsia-400 text-slate-950 border-fuchsia-300' : 'bg-slate-900 text-fuchsia-300 border-fuchsia-500/40'
             }`}
           >
-            <ArrowUp className="w-5 h-5 stroke-[2.5]" />
+            <ArrowUp className="w-4 h-4 stroke-[2.5]" />
           </button>
 
           <div className="flex items-center gap-1">
             <button
               onMouseDown={() => handleDpadPress('left')}
               onMouseUp={() => handleDpadRelease('left')}
-              onMouseLeave={() => handleDpadRelease('left')}
               onTouchStart={() => handleDpadPress('left')}
               onTouchEnd={() => handleDpadRelease('left')}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold border transition-all cursor-pointer ${
-                activeDpad.left
-                  ? 'bg-fuchsia-400 text-slate-950 border-fuchsia-300 scale-95 shadow-inner'
-                  : 'bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border-fuchsia-500/40'
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                activeDpad.left ? 'bg-fuchsia-400 text-slate-950 border-fuchsia-300' : 'bg-slate-900 text-fuchsia-300 border-fuchsia-500/40'
               }`}
             >
-              <ArrowLeftIcon className="w-5 h-5 stroke-[2.5]" />
+              <ArrowLeftIcon className="w-4 h-4 stroke-[2.5]" />
             </button>
 
             <button
               onMouseDown={() => handleDpadPress('down')}
               onMouseUp={() => handleDpadRelease('down')}
-              onMouseLeave={() => handleDpadRelease('down')}
               onTouchStart={() => handleDpadPress('down')}
               onTouchEnd={() => handleDpadRelease('down')}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold border transition-all cursor-pointer ${
-                activeDpad.down
-                  ? 'bg-fuchsia-400 text-slate-950 border-fuchsia-300 scale-95 shadow-inner'
-                  : 'bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border-fuchsia-500/40'
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                activeDpad.down ? 'bg-fuchsia-400 text-slate-950 border-fuchsia-300' : 'bg-slate-900 text-fuchsia-300 border-fuchsia-500/40'
               }`}
             >
-              <ArrowDown className="w-5 h-5 stroke-[2.5]" />
+              <ArrowDown className="w-4 h-4 stroke-[2.5]" />
             </button>
 
             <button
               onMouseDown={() => handleDpadPress('right')}
               onMouseUp={() => handleDpadRelease('right')}
-              onMouseLeave={() => handleDpadRelease('right')}
               onTouchStart={() => handleDpadPress('right')}
               onTouchEnd={() => handleDpadRelease('right')}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold border transition-all cursor-pointer ${
-                activeDpad.right
-                  ? 'bg-fuchsia-400 text-slate-950 border-fuchsia-300 scale-95 shadow-inner'
-                  : 'bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border-fuchsia-500/40'
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                activeDpad.right ? 'bg-fuchsia-400 text-slate-950 border-fuchsia-300' : 'bg-slate-900 text-fuchsia-300 border-fuchsia-500/40'
               }`}
             >
-              <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Bottom Proximity Bar & Quick Jump */}
-      <div className="p-3 bg-slate-950/95 border-t-2 border-fuchsia-900/60 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      {/* Bottom Proximity Bar */}
+      <div className="p-2 sm:p-2.5 bg-slate-950/95 border-t border-fuchsia-900/60 flex items-center justify-between gap-2 overflow-x-auto">
+        <div className="flex items-center gap-2">
           {nearbyGame ? (
-            <div className="flex items-center gap-2.5 bg-slate-900/90 px-3 py-1.5 rounded-2xl border border-fuchsia-500/40">
-              <span className="text-xl">{nearbyGame.icon}</span>
+            <div className="flex items-center gap-2 bg-slate-900/90 px-2.5 py-1 rounded-xl border border-fuchsia-500/40">
+              <span className="text-base sm:text-xl">{nearbyGame.icon}</span>
               <div>
-                <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
+                <div className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
                   <span>{nearbyGame.name}</span>
-                  <span className="text-[11px] text-cyan-300 font-normal">({nearbyGame.building})</span>
-                </div>
-                <div className="text-[10px] text-slate-400 line-clamp-1 max-w-sm">
-                  {nearbyGame.howToPlay}
+                  <span className="text-[10px] text-cyan-300">({nearbyGame.building})</span>
                 </div>
               </div>
               <button
-                onClick={() => triggerCabinetLaunch(nearbyGame)}
-                className="ml-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 hover:from-fuchsia-400 hover:to-cyan-400 text-slate-950 text-xs font-black shadow-md cursor-pointer flex items-center gap-1"
+                onClick={() => {
+                  sounds.stopSpeech();
+                  launchCabinet(nearbyGame);
+                }}
+                className="ml-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-fuchsia-500 to-cyan-500 hover:from-fuchsia-400 text-slate-950 text-xs font-black shadow cursor-pointer flex items-center gap-1"
               >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Play</span>
+                <Play className="w-3 h-3 fill-current" />
+                <span>Play Now</span>
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-xs text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-2xl border border-slate-800">
-              <Footprints className="w-4 h-4 text-fuchsia-400" />
-              <span>
-                Move with <b>Arrow Keys / WASD</b> or <b>Click on Buildings</b> to launch arcade cabinets!
-              </span>
+            <div className="flex items-center gap-1.5 text-xs text-slate-400 pl-1">
+              <Footprints className="w-3.5 h-3.5 text-fuchsia-400" />
+              <span className="text-[11px] hidden xs:inline">Walk to any neon station for endless cyber phonics!</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-          <span className="text-[10px] text-fuchsia-400 font-bold uppercase tracking-wider mr-1">Locations:</span>
+        <div className="flex items-center gap-1 overflow-x-auto">
           {SHELLSHORE_25_GAMES.slice(0, 8).map((g) => (
             <button
               key={g.id}
               onClick={() => {
+                sounds.stopSpeech();
                 playerPosRef.current = { x: g.x, y: g.y };
                 setPlayerPos({ x: g.x, y: g.y });
-                triggerCabinetLaunch(g);
+                launchCabinet(g);
               }}
-              className="px-2.5 py-1 text-[11px] font-bold rounded-xl bg-slate-900 hover:bg-fuchsia-950/60 text-slate-200 hover:text-fuchsia-300 border border-fuchsia-500/30 transition-all cursor-pointer whitespace-nowrap"
+              className="px-2 py-1 text-[10px] sm:text-xs font-bold rounded-lg bg-slate-900 hover:bg-fuchsia-950/60 text-slate-200 border border-fuchsia-500/30 whitespace-nowrap cursor-pointer"
             >
               {g.building}
             </button>
@@ -545,49 +610,109 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
         </div>
       </div>
 
-      {/* Active Cabinet Modal */}
-      {activeCabinet && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-lg bg-slate-900 border-2 border-fuchsia-400 rounded-3xl p-6 sm:p-8 text-center space-y-5 shadow-[0_0_50px_rgba(217,70,239,0.5)] animate-scale-up">
-            <div className="text-5xl">{activeCabinet.icon}</div>
-
-            <div className="space-y-1">
-              <div className="inline-block px-3 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 text-[10px] font-mono font-bold border border-fuchsia-400/40">
-                {activeCabinet.building}
+      {/* ACTIVE ENDLESS PLAYABLE MINI-GAME LOOP MODAL */}
+      {activeCabinet && challenge && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
+          <div className="relative w-full max-w-lg bg-gradient-to-b from-slate-900 via-slate-900 to-fuchsia-950/80 border-4 border-fuchsia-400 rounded-3xl p-5 sm:p-7 text-center space-y-4 shadow-[0_0_60px_rgba(217,70,239,0.6)] animate-scale-up">
+            
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{activeCabinet.icon}</span>
+                <div className="text-left">
+                  <div className="text-xs font-black text-fuchsia-300 uppercase tracking-wide">
+                    {activeCabinet.name}
+                  </div>
+                  <div className="text-[10px] text-slate-400">{activeCabinet.skill}</div>
+                </div>
               </div>
-              <h2 className="text-2xl font-black text-slate-100 font-display">
-                {activeCabinet.name}
-              </h2>
-              <p className="text-xs text-cyan-300 font-bold">Skill Focus: {activeCabinet.skill}</p>
-              <p className="text-xs text-slate-300 max-w-sm mx-auto pt-2">
-                {activeCabinet.howToPlay}
-              </p>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-400 text-cyan-300 font-mono text-xs font-black animate-pulse">
+                  <Flame className="w-3.5 h-3.5 fill-cyan-400" />
+                  <span>{scoreStreak} Streak</span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    sounds.stopSpeech();
+                    setActiveCabinet(null);
+                  }}
+                  className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 flex items-center justify-center cursor-pointer transition-colors"
+                  title="Exit Cabinet"
+                >
+                  <X className="w-4 h-4 stroke-[3]" />
+                </button>
+              </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-slate-300 text-xs space-y-2">
-              <p className="font-bold text-fuchsia-300 text-sm">🕹️ Advanced Linguistic Cabinet Active</p>
-              <p className="text-[11px] text-slate-400">
-                Explore roots, affixes, and complex rules freely without any score impact.
+            <div className="space-y-2">
+              <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                {challenge.prompt}
               </p>
+
+              <div className="inline-flex items-center gap-3 bg-fuchsia-500/20 border-2 border-fuchsia-400 px-6 py-3 rounded-2xl shadow-inner animate-bounce">
+                <span className="text-2xl sm:text-3xl font-black text-fuchsia-200 font-display tracking-widest">
+                  {challenge.target}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => sounds.speak(challenge.soundCue)}
+                  className="p-2 rounded-xl bg-fuchsia-400 hover:bg-fuchsia-300 text-slate-950 shadow-md cursor-pointer transition-transform hover:scale-115 active:scale-95"
+                  title="Listen"
+                >
+                  <Volume2 className="w-5 h-5 stroke-[2.5]" />
+                </button>
+              </div>
             </div>
 
-            <div className="flex justify-center gap-3 pt-2">
-              <button
-                onClick={() => setActiveCabinet(null)}
-                className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer"
-              >
-                Quit Cabinet
-              </button>
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              {challenge.choices.map((choice) => {
+                const isSelected = selectedChoice === choice;
+                let btnStyle = 'bg-slate-950 hover:bg-fuchsia-950/70 border-slate-700 text-slate-200';
+
+                if (selectedChoice !== null) {
+                  if (choice.trim().toLowerCase() === challenge.correct.trim().toLowerCase()) {
+                    btnStyle = 'bg-cyan-600 border-cyan-400 text-white font-black scale-105 shadow-[0_0_20px_rgba(6,182,212,0.7)]';
+                  } else if (isSelected) {
+                    btnStyle = 'bg-rose-900 border-rose-500 text-rose-200';
+                  } else {
+                    btnStyle = 'bg-slate-950 border-slate-800 text-slate-600 opacity-40';
+                  }
+                }
+
+                return (
+                  <button
+                    key={choice}
+                    onClick={() => handleAnswerPick(choice)}
+                    disabled={selectedChoice !== null}
+                    className={`py-4 sm:py-5 px-3 rounded-2xl border-2 text-base sm:text-xl font-black font-display tracking-wide shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 ${btnStyle}`}
+                  >
+                    <span>{choice}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {showCelebrationAnim && (
+              <div className="p-2.5 rounded-xl bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-xs font-black animate-scale-up flex items-center justify-center gap-2">
+                <Sparkles className="w-4 h-4 animate-spin text-amber-400" />
+                <span>Cyber Match Decoded! +10 Tokens · Streak +1!</span>
+                <Sparkles className="w-4 h-4 animate-spin text-amber-400" />
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+              <span className="text-[10px] text-slate-400 font-mono">
+                🕹️ Mario-Style Endless Play (Auto-replaying)
+              </span>
               <button
                 onClick={() => {
-                  sounds.playFanfare();
-                  sounds.speak('Cabinet cleared! Excellent reading!');
+                  sounds.stopSpeech();
                   setActiveCabinet(null);
                 }}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-500 via-pink-500 to-cyan-500 hover:from-fuchsia-400 hover:to-cyan-400 text-slate-950 font-black text-xs shadow-lg cursor-pointer flex items-center gap-2 transition-transform hover:scale-105 active:scale-95"
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4 stroke-[3]" />
-                <span>Finish Round & Return</span>
+                Exit to Arcade
               </button>
             </div>
           </div>

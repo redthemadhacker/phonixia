@@ -12,7 +12,6 @@ import { LandId, MinigameId } from './types/character';
 const GameShell: React.FC = () => {
   const { showHallOfFameCelebration, dismissHallOfFameCelebration } = useGame();
   
-  // Check if an active session is currently authenticated
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('phonixia_active_session') === 'true';
   });
@@ -22,70 +21,65 @@ const GameShell: React.FC = () => {
   const [isHomeHutOpen, setIsHomeHutOpen] = useState(false);
   const [manualCelebrationOpen, setManualCelebrationOpen] = useState(false);
 
-  // If not logged in, render the Auth Gateway (Login / Sign Up)
   if (!isAuthenticated) {
     return <AuthGateway onAuthenticated={() => setIsAuthenticated(true)} />;
   }
 
   return (
-    <div className="w-full h-[100dvh] bg-slate-950 flex items-center justify-center p-0 sm:p-2 md:p-4 overflow-hidden select-none">
-      {/* App Shell Container */}
-      <main className="w-full h-full max-w-[1400px] max-h-[900px] flex flex-col justify-center relative rounded-none sm:rounded-3xl overflow-hidden shadow-2xl border-0 sm:border-2 sm:border-amber-500/30 bg-slate-900">
-        
-        {/* 1. Main Interactive World Map */}
-        {currentView === 'world' && (
-          <WorldCanvas
-            onSelectLand={(landId) => {
-              setSelectedLand(landId);
-              setCurrentView('land');
-            }}
-            onSelectMinigame={(minigameId: MinigameId) => {
-              if (minigameId === 'isles-of-play') setCurrentView('isles');
-              if (minigameId === 'shellshore-arcade') setCurrentView('arcade');
-            }}
-            onOpenHomeHut={() => setIsHomeHutOpen(true)}
-          />
-        )}
+    <div className="w-full h-[100dvh] w-screen h-screen bg-slate-950 flex flex-col justify-between overflow-hidden select-none relative">
+      {/* 1. Main Interactive World Map */}
+      {currentView === 'world' && (
+        <WorldCanvas
+          onSelectLand={(landId) => {
+            setSelectedLand(landId);
+            setCurrentView('land');
+          }}
+          onSelectMinigame={(minigameId: MinigameId) => {
+            if (minigameId === 'isles-of-play') setCurrentView('isles');
+            if (minigameId === 'shellshore-arcade') setCurrentView('arcade');
+          }}
+          onOpenHomeHut={() => setIsHomeHutOpen(true)}
+        />
+      )}
 
-        {/* 2. Structured Curriculum Realm View */}
-        {currentView === 'land' && (
-          <LandLevelView
-            landId={selectedLand}
-            onBackToWorld={() => setCurrentView('world')}
-          />
-        )}
+      {/* 2. Structured Curriculum Realm View */}
+      {currentView === 'land' && (
+        <LandLevelView
+          landId={selectedLand}
+          onBackToWorld={() => setCurrentView('world')}
+        />
+      )}
 
-        {/* 3. Isles of Play Sandbox (Preschool - Early Elementary) */}
-        {currentView === 'isles' && (
-          <IslesOfPlay onBackToWorld={() => setCurrentView('world')} />
-        )}
+      {/* 3. Isles of Play Sandbox */}
+      {currentView === 'isles' && (
+        <IslesOfPlay onBackToWorld={() => setCurrentView('world')} />
+      )}
 
-        {/* 4. Shellshore Arcade Sandbox (Late Elementary - High School) */}
-        {currentView === 'arcade' && (
-          <ShellshoreArcade onBackToWorld={() => setCurrentView('world')} />
-        )}
+      {/* 4. Shellshore Arcade Sandbox */}
+      {currentView === 'arcade' && (
+        <ShellshoreArcade onBackToWorld={() => setCurrentView('world')} />
+      )}
 
-        {/* 5. Home Hut Modal */}
-        {isHomeHutOpen && (
-          <HomeHutModal
-            onClose={() => setIsHomeHutOpen(false)}
-            onOpenCelebration={() => {
-              setIsHomeHutOpen(false);
-              setManualCelebrationOpen(true);
-            }}
-          />
-        )}
+      {/* 5. Home Hut Modal */}
+      {isHomeHutOpen && (
+        <HomeHutModal
+          onClose={() => setIsHomeHutOpen(false)}
+          onOpenCelebration={() => {
+            setIsHomeHutOpen(false);
+            setManualCelebrationOpen(true);
+          }}
+        />
+      )}
 
-        {/* 6. Grand Hall of Fame Celebration Modal */}
-        {(showHallOfFameCelebration || manualCelebrationOpen) && (
-          <HallOfFameCelebration
-            onDismiss={() => {
-              dismissHallOfFameCelebration();
-              setManualCelebrationOpen(false);
-            }}
-          />
-        )}
-      </main>
+      {/* 6. Grand Hall of Fame Celebration Modal */}
+      {(showHallOfFameCelebration || manualCelebrationOpen) && (
+        <HallOfFameCelebration
+          onDismiss={() => {
+            dismissHallOfFameCelebration();
+            setManualCelebrationOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

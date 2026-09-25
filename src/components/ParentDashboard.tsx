@@ -4,7 +4,7 @@ import { PHONIXIA_LANDS } from '../data/curriculumData';
 import { ExplorerProfile } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
-import { Users, UserPlus, Star, Trophy, CheckCircle, BarChart3, BookOpen, Printer, Sparkles, LogOut, ArrowLeft, Palette, Unlock, ChevronDown, ChevronUp, Award } from 'lucide-react';
+import { Users, UserPlus, Star, Trophy, BarChart3, Printer, LogOut, ArrowLeft, Palette, ChevronDown, ChevronUp, RotateCcw, Award } from 'lucide-react';
 
 interface ParentDashboardProps {
   onClose: () => void;
@@ -17,20 +17,25 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   onOpenCharacterCreator,
   onOpenAuthModal
 }) => {
-  const { account, activeExplorer, switchExplorer, createExplorer, logout } = useGame();
+  const { account, activeExplorer, switchExplorer, createExplorer, resetExplorerProgress, logout } = useGame();
 
   const [isAddingKid, setIsAddingKid] = useState(false);
   const [newKidName, setNewKidName] = useState('');
   const [newKidAge, setNewKidAge] = useState<ExplorerProfile['ageTier']>('preschool');
   const [isHallOfFameExpanded, setIsHallOfFameExpanded] = useState(false);
 
-  // An explorer qualifies for the Hall of Fame if all 5 lands are completed (total 250 games)
+  // Deduplicated roster: an explorer is only included once by their unique profile ID
   const hallOfFameExplorers = account.explorers.filter((exp) => {
     const totalCompleted = Object.values(exp.landScores).reduce(
       (sum, land) => sum + (land.completedGamesCount || 0),
       0
     );
-    return totalCompleted >= 250 || exp.totalStars >= 750;
+    return (
+      exp.isHallOfFameInducted ||
+      (exp.timesStorylineCompleted && exp.timesStorylineCompleted > 0) ||
+      totalCompleted >= 250 ||
+      exp.totalStars >= 750
+    );
   });
 
   const handleCreateKid = (e: React.FormEvent) => {
@@ -59,10 +64,16 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     if (onOpenAuthModal) onOpenAuthModal();
   };
 
+  const isEligibleToReset =
+    activeExplorer.isHallOfFameInducted ||
+    (activeExplorer.timesStorylineCompleted && activeExplorer.timesStorylineCompleted > 0) ||
+    activeExplorer.totalStars >= 750 ||
+    Object.values(activeExplorer.landScores).every((l) => l.completedGamesCount >= 50);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md">
       <div className="relative w-full max-w-4xl bg-slate-900 border-2 border-amber-500/50 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-        {/* Header matching game theme */}
+        {/* Header */}
         <div className="px-6 py-4 bg-slate-950/95 border-b border-amber-900/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/40 text-2xl shadow-inner">
@@ -95,99 +106,108 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           </div>
         </div>
 
-        {/* Body Content */}
+        {/* Content Body */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
-          {/* HALL OF FAME EXPANDABLE BANNER */}
-          <div className="rounded-2xl border-2 border-yellow-500/60 bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 shadow-xl overflow-hidden transition-all">
+          {/* EXPANDABLE DEDUPLICATED HALL OF FAME BANNER */}
+          <div className="rounded-3xl border-2 border-amber-400/70 bg-gradient-to-r from-amber-950/70 via-slate-900 to-amber-950/70 shadow-2xl overflow-hidden transition-all duration-300">
             <div
               onClick={() => {
                 setIsHallOfFameExpanded(!isHallOfFameExpanded);
                 sounds.playStep();
               }}
-              className="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer hover:bg-amber-500/10 transition-colors select-none"
+              className="p-4 sm:p-5 flex items-center justify-between cursor-pointer hover:bg-amber-500/10 transition-colors select-none"
             >
-              <div className="flex items-center gap-3">
-                <span className="text-3xl filter drop-shadow animate-bounce-gentle">🏆</span>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-3xl shadow-inner animate-bounce-gentle">
+                  🏆
+                </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm sm:text-base font-black text-amber-300 font-display tracking-wide uppercase">
+                    <span className="text-base sm:text-lg font-black text-amber-300 font-display tracking-wide uppercase">
                       Phonixia Hall of Fame
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/40">
-                      {hallOfFameExplorers.length} Champion{hallOfFameExplorers.length === 1 ? '' : 's'}
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-black border border-amber-400/40">
+                      {hallOfFameExplorers.length} Champions Inducted
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-300">
-                    Grand honor roll for students and explorers who completed all 5 reading realms!
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Permanent Classroom Honor Roll. Explorers earn a permanent spot upon finishing the story!
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 text-amber-400 text-xs font-bold bg-slate-950/80 px-2.5 py-1 rounded-xl border border-amber-500/40">
-                <span>{isHallOfFameExpanded ? 'Hide Roster' : 'View Champions'}</span>
+              <div className="flex items-center gap-1.5 text-amber-300 text-xs font-black bg-slate-950 px-3 py-1.5 rounded-xl border border-amber-500/40 shadow-sm">
+                <span>{isHallOfFameExpanded ? 'Close Honor Roll' : 'View Classroom Champions'}</span>
                 {isHallOfFameExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </div>
             </div>
 
-            {/* EXPANDABLE SCROLLABLE CLASSROOM ROSTER */}
             {isHallOfFameExpanded && (
-              <div className="p-4 pt-1 border-t border-amber-500/30 bg-slate-950/90 space-y-3">
+              <div className="p-4 sm:p-5 pt-1 border-t border-amber-500/30 bg-slate-950/95 space-y-3">
                 {hallOfFameExplorers.length === 0 ? (
-                  <div className="text-center py-6 text-slate-400 text-xs space-y-1">
-                    <Trophy className="w-8 h-8 mx-auto text-amber-500/40" />
-                    <p className="font-bold text-slate-300">No Hall of Fame inductees yet!</p>
-                    <p className="text-[11px] text-slate-500">
-                      Finish all 50 games in every realm with any explorer to induct them here.
+                  <div className="text-center py-8 text-slate-400 text-xs space-y-2">
+                    <Trophy className="w-10 h-10 mx-auto text-amber-500/40 animate-pulse" />
+                    <p className="font-bold text-slate-200 text-sm">No champions yet!</p>
+                    <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                      Complete all 5 realms with Maya or any explorer to induct your first student!
                     </p>
                   </div>
                 ) : (
-                  <div className="max-h-60 overflow-y-auto pr-1 space-y-2.5 divide-y divide-slate-800/60">
-                    {hallOfFameExplorers.map((exp, index) => (
-                      <div
-                        key={exp.id}
-                        className="pt-2 first:pt-0 flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-slate-900/60 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 text-center text-xs font-black text-amber-400 font-mono">
-                            #{index + 1}
-                          </div>
-                          <div className="w-10 h-10 rounded-xl bg-amber-950/60 border border-amber-400 flex items-center justify-center overflow-hidden shrink-0">
-                            <AvatarRenderer customization={exp.customization} size={36} showPet={false} />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-extrabold text-amber-200">{exp.name}</span>
-                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
-                                Grand Phonixian
-                              </span>
+                  <div className="max-h-72 overflow-y-auto pr-2 space-y-2.5">
+                    {hallOfFameExplorers.map((exp, index) => {
+                      const loops = exp.timesStorylineCompleted || 0;
+                      return (
+                        <div
+                          key={exp.id}
+                          className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-900/60 border border-amber-500/30 hover:border-amber-400 transition-all shadow-md"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-xs font-black text-amber-300 font-mono">
+                              #{index + 1}
                             </div>
-                            <div className="text-[10px] text-slate-400">
-                              Completed 250/250 Reading Games · 5 Realms Mastered
+                            <div className="relative w-12 h-12 rounded-2xl bg-amber-950/60 border-2 border-amber-400 flex items-center justify-center overflow-hidden shrink-0 shadow">
+                              <AvatarRenderer customization={exp.customization} size={42} showPet={false} />
+                              <span className="absolute bottom-0 right-0 text-[10px]">👑</span>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-amber-200">{exp.name}</span>
+                                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-400 text-slate-950">
+                                  Grand Scholar
+                                </span>
+                                {loops > 0 && (
+                                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 flex items-center gap-1">
+                                    <Award className="w-2.5 h-2.5" />
+                                    <span>Cleared x{loops}</span>
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[11px] text-slate-400">
+                                Permanent Hall of Fame Inductee · Master of Phonixia
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-3 font-mono text-xs text-right">
-                          <div className="hidden sm:block">
-                            <div className="text-amber-400 font-bold flex items-center justify-end gap-1">
-                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                              <span>{exp.totalStars} Stars</span>
+                          <div className="flex items-center gap-3 font-mono text-xs text-right">
+                            <div>
+                              <div className="text-amber-400 font-black flex items-center justify-end gap-1 text-sm">
+                                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                                <span>{exp.totalStars}</span>
+                              </div>
+                              <div className="text-[10px] text-slate-400">Current Run Stars</div>
                             </div>
-                            <div className="text-[10px] text-slate-500">
-                              Lv.{exp.level} Champion
-                            </div>
+                            <span className="text-2xl">🎖️</span>
                           </div>
-                          <span className="text-xl">🎖️</span>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* Active Explorer Profile Showcase & Customization */}
+          {/* Active Explorer Profile Showcase */}
           <div className="p-4 rounded-2xl bg-slate-950 border border-amber-500/30 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-amber-950/40 border-2 border-amber-400 flex items-center justify-center overflow-hidden">
@@ -200,6 +220,11 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
                     Active Explorer
                   </span>
+                  {activeExplorer.isHallOfFameInducted && (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase">
+                      🏆 Hall of Famer
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-slate-400 mt-0.5">
                   Title: <span className="text-slate-200">{activeExplorer.customization.title}</span> · Companion: <span className="capitalize text-slate-200">{activeExplorer.customization.companionPet.replace('-', ' ')}</span>
@@ -212,18 +237,36 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               </div>
             </div>
 
-            {onOpenCharacterCreator && (
-              <button
-                onClick={() => {
-                  onClose();
-                  onOpenCharacterCreator();
-                }}
-                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-black flex items-center gap-1.5 cursor-pointer shadow"
-              >
-                <Palette className="w-4 h-4" />
-                <span>Customize Explorer</span>
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {isEligibleToReset && (
+                <button
+                  onClick={() => {
+                    if (window.confirm(`Restart ${activeExplorer.name}'s story from Level 1? Your spot in the Hall of Fame is permanent and will NEVER be removed.`)) {
+                      resetExplorerProgress(activeExplorer.id);
+                      sounds.playFanfare();
+                      sounds.speak(`Story restarted for ${activeExplorer.name}! Welcome back to Sound Shallows!`);
+                    }
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-rose-950/80 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Restart Storyline (New Game+)</span>
+                </button>
+              )}
+
+              {onOpenCharacterCreator && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenCharacterCreator();
+                  }}
+                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-black flex items-center gap-1.5 cursor-pointer shadow"
+                >
+                  <Palette className="w-4 h-4" />
+                  <span>Customize Explorer</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Switch Kid / Explorer Section */}
@@ -244,7 +287,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               )}
             </div>
 
-            {/* Add Kid Form */}
             {isAddingKid && (
               <form onSubmit={handleCreateKid} className="p-4 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-3">
                 <div className="text-xs font-bold text-amber-300">Register New Child Explorer</div>
@@ -293,7 +335,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               </form>
             )}
 
-            {/* Explorers List */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {account.explorers.map((exp) => {
                 const isActive = exp.id === activeExplorer.id;
@@ -331,7 +372,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       <div className="text-[11px] text-amber-400 font-mono tabular-nums">
                         ★ {exp.totalStars} stars · Lv.{exp.level}
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-[10px] text-slate-400 truncate">
                         {exp.customization.title}
                       </div>
                     </div>
@@ -341,7 +382,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             </div>
           </div>
 
-          {/* Synced 5-Land Scores & Real-Time Phonics Mastery */}
+          {/* Real-Time Realm Scores */}
           <div className="space-y-4 pt-4 border-t border-slate-800">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -366,10 +407,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               </div>
             </div>
 
-            {/* Lands Progress Table */}
             <div className="space-y-3">
               {PHONIXIA_LANDS.map((land, idx) => {
-                const landStats = activeExplorer.landScores[land.id];
+                const landStats = activeExplorer.landScores[land.id] || { completedGamesCount: 0, stars: 0 };
                 const pct = Math.round((landStats.completedGamesCount / 50) * 100);
 
                 return (
@@ -407,7 +447,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       </div>
                     </div>
 
-                    {/* Progress Bar */}
                     <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-500"
@@ -424,7 +463,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           </div>
         </div>
 
-        {/* Footer with Return to Phonixia and Log Out */}
+        {/* Footer */}
         <div className="px-6 py-4 bg-slate-950/95 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <button
             onClick={handleLogout}

@@ -1,4 +1,4 @@
-export type LandId = 
+export type LandId =
   | 'sound-shallows'
   | 'builders-guild'
   | 'tricky-trails'
@@ -7,13 +7,19 @@ export type LandId =
 
 export type MinigameId = 'isles-of-play' | 'shellshore-arcade';
 
-export interface CharacterCustomization {
+export interface LandProgress {
+  completedGamesCount: number;
+  stars: number;
+  unlocked: boolean;
+}
+
+export interface AvatarCustomization {
   skinTone: string;
-  hairStyle: 'short' | 'spiky' | 'curly' | 'wavy' | 'afro' | 'braids' | 'explorer-bun';
+  hairStyle: string;
   hairColor: string;
-  outfit: 'ranger-vest' | 'phoenix-cloak' | 'scholar-robe' | 'safari-suit' | 'cyber-tunic';
-  headgear: 'explorer-hat' | 'phoenix-crown' | 'pilot-goggles' | 'bandana' | 'cap' | 'none';
-  companionPet: 'phoenix-chick' | 'clever-fox' | 'golden-eagle' | 'coral-turtle' | 'gem-golem';
+  outfitColor: string;
+  accessory: string;
+  companionPet: string;
   title: string;
 }
 
@@ -21,58 +27,21 @@ export interface ExplorerProfile {
   id: string;
   name: string;
   ageTier: 'preschool' | 'kindergarten' | 'early-elementary' | 'late-elementary' | 'middle-school';
-  customization: CharacterCustomization;
-  createdAt: string;
+  level: number;
   totalStars: number;
   coins: number;
   arcadeTokens: number;
-  level: number;
-  streakDays: number;
-  lastPlayed: string;
-  landScores: Record<LandId, {
-    stars: number;
-    highestLevelUnlocked: number;
-    completedGamesCount: number;
-    totalAccuracy: number;
-    attemptsCount: number;
-    levels: Record<number, {
-      stars: number;
-      unlocked: boolean;
-      highScore: number;
-      completedGames: number[];
-    }>;
-  }>;
-  minigameScores: {
-    bubblePopper: number;
-    wordBlastMiner: number;
-    rhymeRiver: number;
-    syllableSmasher: number;
-    pearlDiver: number;
-    clawCrane: number;
-    vowelPinball: number;
-    whackASound: number;
-  };
-  achievements: string[];
+  landScores: Record<LandId, LandProgress>;
+  customization: AvatarCustomization;
+  // Permanent Hall of Fame & Storyline markers
+  isHallOfFameInducted?: boolean;
+  timesStorylineCompleted?: number;
 }
 
-export interface ParentAccount {
+export interface Account {
   id: string;
-  username: string;
-  email: string;
   familyName: string;
+  username: string;
+  role: 'parent' | 'teacher';
   explorers: ExplorerProfile[];
-  activeExplorerId: string;
-}
-
-export interface LandmarkNode {
-  id: LandId | MinigameId | 'phoenix-castle' | 'home-hut';
-  name: string;
-  tagline: string;
-  targetAge: string;
-  x: number; // percentage coordinates 0-100 on the world map
-  y: number;
-  icon: string;
-  color: string;
-  accentColor: string;
-  description: string;
 }

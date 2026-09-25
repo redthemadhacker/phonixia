@@ -15,25 +15,21 @@ import phonixiaMap from '../phonixia.png';
 
 const GameContent: React.FC = () => {
   const {
-    account,
     activeExplorer,
     showHallOfFameCelebration,
     dismissHallOfFameCelebration
   } = useGame();
 
-  // Signed-in session check (starts on landing if user clicked logout or has no active session)
   const [isSignedIn, setIsSignedIn] = useState<boolean>(() => {
     return Boolean(localStorage.getItem('phonixia_is_logged_in_v1'));
   });
 
-  // Navigation states
   const [activeLandId, setActiveLandId] = useState<LandId | null>(null);
   const [activeMinigameHub, setActiveMinigameHub] = useState<MinigameId | null>(null);
   const [isHomeHutOpen, setIsHomeHutOpen] = useState(false);
   const [isCharacterCreatorOpen, setIsCharacterCreatorOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Sign out handler
   const handleLogoutSession = () => {
     localStorage.removeItem('phonixia_is_logged_in_v1');
     setIsSignedIn(false);
@@ -51,10 +47,8 @@ const GameContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-2 sm:p-4 selection:bg-amber-500 selection:text-slate-950 font-sans">
-      {/* 0. WELCOME / LANDING SCREEN (WHEN NOT SIGNED IN) */}
       {!isSignedIn ? (
         <div className="relative w-full h-[88vh] sm:h-[92vh] max-w-[1500px] mx-auto rounded-3xl overflow-hidden border-4 border-amber-900/80 shadow-2xl bg-slate-950 flex flex-col items-center justify-center p-6 text-center select-none">
-          {/* Background Map Art with Dark Blur Overlay */}
           <img
             src={phonixiaMap}
             alt="Phonixia"
@@ -62,9 +56,7 @@ const GameContent: React.FC = () => {
           />
           <div className="absolute inset-0 bg-radial-gradient from-slate-950/60 via-slate-950/85 to-slate-950" />
 
-          {/* Welcome Card */}
           <div className="relative z-10 max-w-xl mx-auto space-y-6 bg-slate-900/90 border-2 border-amber-500/60 p-6 sm:p-10 rounded-3xl backdrop-blur-md shadow-2xl">
-            {/* Crest */}
             <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-red-800 via-amber-600 to-red-800 border-2 border-amber-400 text-amber-100 font-display text-xl sm:text-2xl font-black uppercase tracking-widest shadow-xl">
               <Flame className="w-5 h-5 text-amber-300 animate-pulse fill-amber-400" />
               <span>PHONIXIA</span>
@@ -80,9 +72,7 @@ const GameContent: React.FC = () => {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              {/* Create Parent / Teacher Profile */}
               <button
                 onClick={() => setIsAuthModalOpen(true)}
                 className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95"
@@ -91,11 +81,8 @@ const GameContent: React.FC = () => {
                 <span>Create Parent / Teacher Profile</span>
               </button>
 
-              {/* Login Current Explorer / Family */}
               <button
-                onClick={() => {
-                  handleEnterGame();
-                }}
+                onClick={handleEnterGame}
                 className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-950/90 hover:bg-slate-800 text-amber-300 border border-amber-500/60 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95"
               >
                 <LogIn className="w-4 h-4 stroke-[2.5]" />
@@ -110,19 +97,15 @@ const GameContent: React.FC = () => {
           </div>
         </div>
       ) : activeLandId ? (
-        /* 1. EXPLORABLE LAND REALM VIEW */
         <LandLevelView
           landId={activeLandId}
           onBackToWorld={() => setActiveLandId(null)}
         />
       ) : activeMinigameHub === 'isles-of-play' ? (
-        /* 2. ISLES OF PLAY HUB */
         <IslesOfPlay onBackToWorld={() => setActiveMinigameHub(null)} />
       ) : activeMinigameHub === 'shellshore-arcade' ? (
-        /* 3. SHELLSHORE ARCADE HUB */
         <ShellshoreArcade onBackToWorld={() => setActiveMinigameHub(null)} />
       ) : (
-        /* 4. MAIN WORLD MAP */
         <WorldCanvas
           onSelectLand={(landId) => setActiveLandId(landId)}
           onSelectMinigame={(minigameId) => setActiveMinigameHub(minigameId)}
@@ -130,7 +113,6 @@ const GameContent: React.FC = () => {
         />
       )}
 
-      {/* HOME HUT / PARENT & EDUCATOR DASHBOARD */}
       {isHomeHutOpen && (
         <ParentDashboard
           onClose={() => setIsHomeHutOpen(false)}
@@ -142,14 +124,12 @@ const GameContent: React.FC = () => {
         />
       )}
 
-      {/* CHARACTER CREATOR MODAL */}
       {isCharacterCreatorOpen && (
         <CharacterCreator
           onClose={() => setIsCharacterCreatorOpen(false)}
         />
       )}
 
-      {/* AUTHENTICATION / ACCOUNT SWITCH MODAL */}
       {isAuthModalOpen && (
         <AuthModal
           onClose={() => {
@@ -159,7 +139,6 @@ const GameContent: React.FC = () => {
         />
       )}
 
-      {/* HALL OF FAME CELEBRATION MODAL */}
       {showHallOfFameCelebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-lg">
           <div className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-slate-900 via-amber-950/80 to-slate-900 border-4 border-amber-400 p-6 sm:p-8 text-center shadow-2xl space-y-5 animate-scale-up">

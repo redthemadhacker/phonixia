@@ -886,7 +886,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         </div>
       </div>
 
-      {/* FAST TRAVEL & DOCK */}
+      {/* FAST TRAVEL */}
       <div className="p-3 bg-slate-950/95 border-t-2 border-amber-900/60 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {nearbyNode ? (

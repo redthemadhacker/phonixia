@@ -93,10 +93,8 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
   onOpenHomeHut
 }) => {
   const { activeExplorer } = useGame();
-
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 1. Beginner spawn: near Home Hut (10, 65) outside on the path without triggering auto-enter
   const playerPosRef = useRef<{ x: number; y: number }>({ x: 18, y: 64 });
   const [playerPos, setPlayerPos] = useState<{ x: number; y: number }>({ x: 18, y: 64 });
 
@@ -175,7 +173,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     }
   }, [activeExplorer, onOpenHomeHut, onSelectLand, onSelectMinigame]);
 
-  // 2. Check proximity including lands AND minigames for passover triggers
   const checkProximity = useCallback((x: number, y: number) => {
     const allLocations = [
       ...LANDMARK_NODES,
@@ -289,14 +286,9 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
 
     window.addEventListener('keydown', handleKeyDown, { passive: false });
     window.addEventListener('keyup', handleKeyUp, { passive: false });
-    document.addEventListener('keydown', handleKeyDown, { passive: false });
-    document.addEventListener('keyup', handleKeyUp, { passive: false });
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
     };
   }, [nearbyNode, triggerNodeEnter]);
 
@@ -421,48 +413,45 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       ref={containerRef}
       tabIndex={0}
       onClick={() => containerRef.current?.focus()}
-      onMouseEnter={() => containerRef.current?.focus()}
-      className="relative w-full h-[88vh] sm:h-[92vh] max-w-[1500px] mx-auto rounded-3xl overflow-hidden border-4 border-amber-900/70 shadow-2xl bg-slate-950 flex flex-col justify-between outline-none focus:ring-2 focus:ring-amber-500/40"
+      className="relative w-full h-full flex flex-col justify-between select-none outline-none overflow-hidden"
     >
-      {/* IN-GAME TOP HUD */}
-      <div className="absolute top-3 inset-x-4 z-40 flex items-center justify-between pointer-events-none">
+      {/* IN-GAME TOP HUD (Responsive: compact on phones, full on iPad/PC) */}
+      <div className="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-4 z-40 flex items-center justify-between pointer-events-none">
         {/* Player Badge */}
-        <div className="pointer-events-auto flex items-center gap-3 bg-slate-950/85 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border-2 border-amber-600/60 shadow-xl">
-          <div className="relative w-9 h-9 rounded-xl bg-amber-950/80 border border-amber-400 flex items-center justify-center overflow-hidden">
-            <AvatarRenderer customization={activeExplorer.customization} size={36} facing="down" showPet={false} />
+        <div className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-slate-950/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl border border-amber-600/60 shadow-xl">
+          <div className="relative w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-950/80 border border-amber-400 flex items-center justify-center overflow-hidden">
+            <AvatarRenderer customization={activeExplorer.customization} size={30} facing="down" showPet={false} />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-black text-amber-300 font-display">{activeExplorer.name}</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300">Lv.{activeExplorer.level}</span>
+              <span className="text-xs sm:text-sm font-black text-amber-300 font-display">{activeExplorer.name}</span>
+              <span className="text-[9px] sm:text-[10px] font-bold px-1 rounded bg-amber-500/20 text-amber-300">Lv.{activeExplorer.level}</span>
             </div>
-            <div className="flex items-center gap-3 text-xs font-mono">
+            <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-mono">
               <span className="text-amber-400 font-bold flex items-center gap-0.5">
-                <Star className="w-3 h-3 fill-amber-400" />
+                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-amber-400" />
                 {activeExplorer.totalStars}
               </span>
-              <span className="text-yellow-400 font-bold">Coins {activeExplorer.coins}</span>
-              <span className="text-sky-300 font-bold">Tokens {activeExplorer.arcadeTokens}</span>
+              <span className="text-yellow-400 font-bold hidden xs:inline">{activeExplorer.coins}c</span>
+              <span className="text-sky-300 font-bold hidden sm:inline">{activeExplorer.arcadeTokens}t</span>
             </div>
           </div>
         </div>
 
-        {/* Audio Toggle, Voice Settings & Quick Home Hut */}
-        <div className="pointer-events-auto flex items-center gap-2">
+        {/* Audio Toggle & Quick Home Hut */}
+        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => {
               const next = !isAudioMuted;
               setIsAudioMuted(next);
               sounds.speechEnabled = !next;
               sounds.soundEnabled = !next;
-              if (!next) {
-                sounds.speak('Voice is on. Ready to read.', 0.92, 1.2);
-              }
+              if (!next) sounds.speak('Voice is on.', 0.92, 1.2);
             }}
-            title={isAudioMuted ? 'Unmute Voice' : 'Mute Voice'}
-            className="w-10 h-10 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-500/60 hover:border-amber-400 flex items-center justify-center text-amber-400 shadow-xl cursor-pointer transition-transform hover:scale-105"
+            title={isAudioMuted ? 'Unmute' : 'Mute'}
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-500/60 flex items-center justify-center text-amber-400 shadow-xl cursor-pointer"
           >
-            {isAudioMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            {isAudioMuted ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" /> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
 
           <button
@@ -470,88 +459,27 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
               setAvailableVoices(sounds.getVoices());
               setShowVoiceSettings(!showVoiceSettings);
             }}
-            title="Kid-Friendly Teacher Voice Settings"
-            className="px-3 py-2 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-500/60 hover:border-amber-400 text-amber-300 font-bold text-xs shadow-xl cursor-pointer flex items-center gap-1.5 transition-transform hover:scale-105"
+            className="hidden md:flex px-3 py-2 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-500/60 text-amber-300 font-bold text-xs shadow-xl items-center gap-1.5 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Teacher Voice</span>
+            <span>Voice</span>
           </button>
 
           <button
             onClick={onOpenHomeHut}
-            title="Open Home Hut (Family / Teacher Hub)"
-            className="px-3.5 py-2 rounded-2xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl border border-amber-300 flex items-center gap-1.5 cursor-pointer transition-transform hover:scale-105"
+            className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider shadow-xl border border-amber-300 flex items-center gap-1 cursor-pointer"
           >
-            <Home className="w-4 h-4" />
-            <span>Home Hut</span>
+            <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden xs:inline">Home Hut</span>
           </button>
         </div>
       </div>
 
-      {/* TEACHER VOICE SETTINGS MODAL */}
-      {showVoiceSettings && (
-        <div className="absolute top-16 right-4 z-50 w-84 p-4 rounded-2xl bg-slate-900/95 border-2 border-amber-500/80 shadow-2xl backdrop-blur-md text-slate-100 space-y-3">
-          <div className="flex items-center justify-between border-b border-amber-500/30 pb-2">
-            <div>
-              <div className="text-xs font-black text-amber-300 uppercase tracking-wider">Teacher Phonics Voice</div>
-              <div className="text-[10px] text-slate-400">Warm & Clear Pronunciation</div>
-            </div>
-            <button
-              onClick={() => setShowVoiceSettings(false)}
-              className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-slate-800 cursor-pointer"
-            >
-              Close
-            </button>
-          </div>
-
-          <p className="text-[11px] text-slate-300 leading-relaxed">
-            Phonixia uses clear inflections with focused phoneme pronunciation so children hear friendly, encouraging sounds.
-          </p>
-
-          <button
-            onClick={() => {
-              sounds.speak('Hi friend! Great job reading! Are you ready for an adventure? You can do it!', 0.92, 1.22);
-            }}
-            className="w-full py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Hear Voice Sample</span>
-          </button>
-
-          {availableVoices.length > 0 && (
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Select Voice:
-              </label>
-              <select
-                value={selectedVoice}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSelectedVoice(val);
-                  sounds.setVoice(val);
-                  sounds.speak('Hello! I am ready to read with you!', 0.92, 1.2);
-                }}
-                className="w-full px-2.5 py-1.5 rounded-xl bg-slate-950 border border-amber-500/40 text-xs text-amber-200 focus:outline-none focus:border-amber-400"
-              >
-                <option value="">Default Friendly Voice</option>
-                {availableVoices
-                  .filter(v => v.lang.startsWith('en'))
-                  .map((v, i) => (
-                    <option key={i} value={v.name}>
-                      {v.name} ({v.lang})
-                    </option>
-                  ))}
-              </select>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Lock Notice Banner */}
+      {/* Centered Lock Notice Banner */}
       {lockNotice && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-rose-950/95 border-2 border-rose-500 rounded-2xl shadow-2xl text-rose-200 text-xs sm:text-sm font-bold flex items-center gap-2 animate-bounce">
-          <Lock className="w-4 h-4 text-rose-400" />
-          <span>{lockNotice}</span>
+        <div className="absolute top-14 sm:top-16 left-1/2 -translate-x-1/2 z-50 w-max max-w-[92%] px-4 sm:px-5 py-2 sm:py-2.5 bg-rose-950/95 border-2 border-rose-500 rounded-2xl shadow-2xl text-rose-200 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 animate-bounce pointer-events-none">
+          <Lock className="w-4 h-4 text-rose-400 shrink-0" />
+          <span className="text-center">{lockNotice}</span>
         </div>
       )}
 
@@ -559,9 +487,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       <div
         onClick={handleMapClick}
         className="relative flex-1 w-full cursor-crosshair overflow-hidden select-none"
-        style={{
-          backgroundColor: '#0c1a2c'
-        }}
+        style={{ backgroundColor: '#0c1a2c' }}
       >
         <img
           src={phonixiaMap}
@@ -569,25 +495,22 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           className="absolute inset-0 w-full h-full object-fill select-none z-0"
         />
 
-        {/* 1. HOME HUT (Harbor Pier at Left - 10%, 65%) */}
+        {/* 1. HOME HUT (Harbor Pier: 10%, 65%) */}
         <div
-          className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105 group"
+          className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
           style={{ left: '10%', top: '65%' }}
           onClick={(e) => {
             e.stopPropagation();
             onOpenHomeHut();
           }}
         >
-          <div className="w-24 h-20 rounded-2xl bg-amber-950/80 hover:bg-amber-900/90 p-2 shadow-xl border-2 border-amber-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-            <Home className="w-5 h-5 text-amber-300" />
-            <span className="text-[10px] font-black text-amber-200 uppercase tracking-wider mt-1">Home Hut</span>
-            <div className="absolute -bottom-3 bg-slate-950/90 border border-amber-400/80 px-2 py-0.5 rounded-full text-center whitespace-nowrap">
-              <span className="text-[9px] font-bold text-amber-300">Family Hub</span>
-            </div>
+          <div className="w-20 sm:w-24 h-16 sm:h-20 rounded-2xl bg-amber-950/80 hover:bg-amber-900/90 p-1.5 sm:p-2 shadow-xl border-2 border-amber-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
+            <Home className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
+            <span className="text-[9px] sm:text-[10px] font-black text-amber-200 uppercase tracking-wider mt-0.5">Home Hut</span>
           </div>
         </div>
 
-        {/* 3. ISLES OF PLAY (Letter A & C Islands in Bay - 15%, 52%) */}
+        {/* 2. ISLES OF PLAY (15%, 52%) */}
         <div
           onClick={(e) => {
             e.stopPropagation();
@@ -595,13 +518,13 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           }}
           className="absolute left-[15%] top-[52%] z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
         >
-          <div className="px-3 py-1.5 rounded-xl bg-slate-950/90 border border-teal-400 shadow-xl flex items-center gap-1.5 text-teal-200 backdrop-blur-sm">
-            <Gamepad2 className="w-4 h-4 text-teal-300" />
-            <span className="text-[11px] font-black uppercase tracking-wider">Isles of Play</span>
+          <div className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-950/90 border border-teal-400 shadow-xl flex items-center gap-1 sm:gap-1.5 text-teal-200 backdrop-blur-sm">
+            <Gamepad2 className="w-3.5 h-3.5 text-teal-300" />
+            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">Isles of Play</span>
           </div>
         </div>
 
-        {/* 3. SHELLSHORE ARCADE (Letter Shells Cove - 14%, 82%) */}
+        {/* 3. SHELLSHORE ARCADE (14%, 82%) */}
         <div
           onClick={(e) => {
             e.stopPropagation();
@@ -609,43 +532,41 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           }}
           className="absolute left-[14%] top-[82%] z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
         >
-          <div className="px-3 py-1.5 rounded-xl bg-slate-950/90 border border-sky-400 shadow-xl flex items-center gap-1.5 text-sky-200 backdrop-blur-sm">
-            <Compass className="w-4 h-4 text-sky-300" />
-            <span className="text-[11px] font-black uppercase tracking-wider">Shellshore Arcade</span>
+          <div className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-950/90 border border-sky-400 shadow-xl flex items-center gap-1 sm:gap-1.5 text-sky-200 backdrop-blur-sm">
+            <Compass className="w-3.5 h-3.5 text-sky-300" />
+            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">Shellshore Arcade</span>
           </div>
         </div>
 
-        {/* 2. SOUND SHALLOWS (Grand Phoenix Citadel in Center - 50%, 45%) */}
+        {/* 4. SOUND SHALLOWS (Center: 50%, 45%) */}
         <div
-          className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105 group"
+          className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
           style={{ left: '50%', top: '45%' }}
           onClick={(e) => {
             e.stopPropagation();
             onSelectLand('sound-shallows');
           }}
         >
-          <div className="w-34 h-24 rounded-2xl bg-sky-950/80 hover:bg-sky-900/90 p-2 shadow-2xl border-2 border-sky-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-            <Waves className="w-6 h-6 text-sky-300" />
-            <div className="text-[11px] font-black text-sky-200 uppercase tracking-wider text-center mt-1 leading-tight">
+          <div className="w-28 sm:w-34 h-20 sm:h-24 rounded-2xl bg-sky-950/80 hover:bg-sky-900/90 p-1.5 sm:p-2 shadow-2xl border-2 border-sky-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
+            <Waves className="w-5 h-5 sm:w-6 sm:h-6 text-sky-300" />
+            <div className="text-[10px] sm:text-[11px] font-black text-sky-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
               Sound Shallows
             </div>
-            <div className="absolute -bottom-3 bg-slate-950/95 border border-sky-400 px-2.5 py-0.5 rounded-full text-center whitespace-nowrap flex items-center gap-1">
-              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-              <span className="text-[10px] font-bold text-amber-300">
+            <div className="absolute -bottom-2.5 bg-slate-950/95 border border-sky-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+              <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
                 {activeExplorer.landScores['sound-shallows'].stars}
               </span>
             </div>
           </div>
         </div>
 
-        {/* 4. BUILDERS GUILD (Top-Left Workshop Crane - 18%, 28%) */}
+        {/* 5. BUILDERS GUILD (18%, 28%) */}
         {(() => {
           const unlocked = isLandUnlocked('builders-guild', activeExplorer.landScores);
           return (
             <div
-              className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105 group ${
-                !unlocked ? 'opacity-90' : ''
-              }`}
+              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
               style={{ left: '18%', top: '28%' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -653,18 +574,18 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
                 else triggerNodeEnter(LANDMARK_NODES[2].id, LANDMARK_NODES[2].name);
               }}
             >
-              <div className="w-32 h-24 rounded-2xl bg-amber-950/80 hover:bg-amber-900/90 p-2 shadow-2xl border-2 border-amber-500/80 flex flex-col items-center justify-center backdrop-blur-sm">
-                <Blocks className="w-6 h-6 text-amber-300" />
-                <div className="text-[11px] font-black text-amber-200 uppercase tracking-wider text-center mt-1 leading-tight">
+              <div className="w-26 sm:w-32 h-20 sm:h-24 rounded-2xl bg-amber-950/80 p-1.5 sm:p-2 shadow-2xl border-2 border-amber-500/80 flex flex-col items-center justify-center backdrop-blur-sm">
+                <Blocks className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300" />
+                <div className="text-[10px] sm:text-[11px] font-black text-amber-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
                   Builders Guild
                 </div>
-                <div className="absolute -bottom-3 bg-slate-950/95 border border-amber-400 px-2.5 py-0.5 rounded-full text-center whitespace-nowrap flex items-center gap-1">
+                <div className="absolute -bottom-2.5 bg-slate-950/95 border border-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1">
                   {!unlocked ? (
-                    <Lock className="w-3 h-3 text-amber-400" />
+                    <Lock className="w-2.5 h-2.5 text-amber-400" />
                   ) : (
                     <>
-                      <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                      <span className="text-[10px] font-bold text-amber-300">
+                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                      <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
                         {activeExplorer.landScores['builders-guild'].stars}
                       </span>
                     </>
@@ -675,14 +596,12 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           );
         })()}
 
-        {/* 5. TRICKY TRAILS (Bottom-Center Mossy Forest Arch - 50%, 82%) */}
+        {/* 6. TRICKY TRAILS (50%, 82%) */}
         {(() => {
           const unlocked = isLandUnlocked('tricky-trails', activeExplorer.landScores);
           return (
             <div
-              className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105 group ${
-                !unlocked ? 'opacity-90' : ''
-              }`}
+              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
               style={{ left: '50%', top: '82%' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -690,18 +609,18 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
                 else triggerNodeEnter(LANDMARK_NODES[3].id, LANDMARK_NODES[3].name);
               }}
             >
-              <div className="w-32 h-24 rounded-2xl bg-emerald-950/80 hover:bg-emerald-900/90 p-2 shadow-2xl border-2 border-emerald-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-                <Trees className="w-6 h-6 text-emerald-300" />
-                <div className="text-[11px] font-black text-emerald-200 uppercase tracking-wider text-center mt-1 leading-tight">
+              <div className="w-26 sm:w-32 h-20 sm:h-24 rounded-2xl bg-emerald-950/80 p-1.5 sm:p-2 shadow-2xl border-2 border-emerald-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
+                <Trees className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300" />
+                <div className="text-[10px] sm:text-[11px] font-black text-emerald-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
                   Tricky Trails
                 </div>
-                <div className="absolute -bottom-3 bg-slate-950/95 border border-emerald-400 px-2.5 py-0.5 rounded-full text-center whitespace-nowrap flex items-center gap-1">
+                <div className="absolute -bottom-2.5 bg-slate-950/95 border border-emerald-400 px-2 py-0.5 rounded-full flex items-center gap-1">
                   {!unlocked ? (
-                    <Lock className="w-3 h-3 text-emerald-400" />
+                    <Lock className="w-2.5 h-2.5 text-emerald-400" />
                   ) : (
                     <>
-                      <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                      <span className="text-[10px] font-bold text-amber-300">
+                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                      <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
                         {activeExplorer.landScores['tricky-trails'].stars}
                       </span>
                     </>
@@ -712,14 +631,12 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           );
         })()}
 
-        {/* 6. WHISPERING PEAKS (Top-Right Snowy Mountain - 80%, 26%) */}
+        {/* 7. WHISPERING PEAKS (80%, 26%) */}
         {(() => {
           const unlocked = isLandUnlocked('whispering-peaks', activeExplorer.landScores);
           return (
             <div
-              className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105 group ${
-                !unlocked ? 'opacity-90' : ''
-              }`}
+              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
               style={{ left: '80%', top: '26%' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -727,18 +644,18 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
                 else triggerNodeEnter(LANDMARK_NODES[4].id, LANDMARK_NODES[4].name);
               }}
             >
-              <div className="w-32 h-24 rounded-2xl bg-indigo-950/80 hover:bg-indigo-900/90 p-2 shadow-2xl border-2 border-indigo-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-                <Mountain className="w-6 h-6 text-indigo-300" />
-                <div className="text-[11px] font-black text-indigo-200 uppercase tracking-wider text-center mt-1 leading-tight">
+              <div className="w-26 sm:w-32 h-20 sm:h-24 rounded-2xl bg-indigo-950/80 p-1.5 sm:p-2 shadow-2xl border-2 border-indigo-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
+                <Mountain className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-300" />
+                <div className="text-[10px] sm:text-[11px] font-black text-indigo-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
                   Whispering Peaks
                 </div>
-                <div className="absolute -bottom-3 bg-slate-950/95 border border-indigo-400 px-2.5 py-0.5 rounded-full text-center whitespace-nowrap flex items-center gap-1">
+                <div className="absolute -bottom-2.5 bg-slate-950/95 border border-indigo-400 px-2 py-0.5 rounded-full flex items-center gap-1">
                   {!unlocked ? (
-                    <Lock className="w-3 h-3 text-indigo-400" />
+                    <Lock className="w-2.5 h-2.5 text-indigo-400" />
                   ) : (
                     <>
-                      <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                      <span className="text-[10px] font-bold text-amber-300">
+                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                      <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
                         {activeExplorer.landScores['whispering-peaks'].stars}
                       </span>
                     </>
@@ -749,14 +666,12 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           );
         })()}
 
-        {/* 7. LEXICON EMPIRE (Bottom-Right Classical Citadel - 82%, 72%) */}
+        {/* 8. LEXICON EMPIRE (82%, 72%) */}
         {(() => {
           const unlocked = isLandUnlocked('lexicon-empire', activeExplorer.landScores);
           return (
             <div
-              className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105 group ${
-                !unlocked ? 'opacity-90' : ''
-              }`}
+              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
               style={{ left: '82%', top: '72%' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -764,18 +679,18 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
                 else triggerNodeEnter(LANDMARK_NODES[5].id, LANDMARK_NODES[5].name);
               }}
             >
-              <div className="w-32 h-24 rounded-2xl bg-amber-950/80 hover:bg-amber-900/90 p-2 shadow-2xl border-2 border-amber-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-                <Landmark className="w-6 h-6 text-amber-300" />
-                <div className="text-[11px] font-black text-amber-200 uppercase tracking-wider text-center mt-1 leading-tight">
+              <div className="w-26 sm:w-32 h-20 sm:h-24 rounded-2xl bg-amber-950/80 p-1.5 sm:p-2 shadow-2xl border-2 border-amber-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
+                <Landmark className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300" />
+                <div className="text-[10px] sm:text-[11px] font-black text-amber-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
                   Lexicon Empire
                 </div>
-                <div className="absolute -bottom-3 bg-slate-950/95 border border-amber-400 px-2.5 py-0.5 rounded-full text-center whitespace-nowrap flex items-center gap-1">
+                <div className="absolute -bottom-2.5 bg-slate-950/95 border border-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1">
                   {!unlocked ? (
-                    <Lock className="w-3 h-3 text-amber-400" />
+                    <Lock className="w-2.5 h-2.5 text-amber-400" />
                   ) : (
                     <>
-                      <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                      <span className="text-[10px] font-bold text-amber-300">
+                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                      <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
                         {activeExplorer.landScores['lexicon-empire'].stars}
                       </span>
                     </>
@@ -789,23 +704,20 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         {/* PLAYER AVATAR EXPLORER */}
         <div
           className="absolute z-30 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          style={{
-            left: `${playerPos.x}%`,
-            top: `${playerPos.y}%`
-          }}
+          style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }}
         >
           {targetPosRef.current && (
-            <div className="absolute -inset-4 rounded-full border-2 border-amber-400 animate-ping opacity-40 pointer-events-none" />
+            <div className="absolute -inset-3 rounded-full border border-amber-400 animate-ping opacity-40 pointer-events-none" />
           )}
 
-          <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-950/95 border border-amber-400/90 px-2.5 py-0.5 rounded-full shadow-xl whitespace-nowrap flex items-center gap-1.5">
-            <span className="text-[11px] font-extrabold text-amber-300">{activeExplorer.name}</span>
-            {isRunning && <span className="text-[9px] text-amber-400 font-black uppercase tracking-wider">Run</span>}
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-950/95 border border-amber-400/90 px-2 py-0.5 rounded-full shadow-xl whitespace-nowrap flex items-center gap-1">
+            <span className="text-[10px] font-extrabold text-amber-300">{activeExplorer.name}</span>
+            {isRunning && <span className="text-[8px] text-amber-400 font-black uppercase">Run</span>}
           </div>
 
           <AvatarRenderer
             customization={activeExplorer.customization}
-            size={54}
+            size={46}
             isWalking={isMoving}
             isRunning={isRunning}
             facing={facing}
@@ -814,116 +726,84 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           />
         </div>
 
-        {/* ON-SCREEN ARROW CONTROLS */}
+        {/* RESPONSIVE D-PAD (Smaller on phones) */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-4 left-4 z-40 bg-slate-950/90 backdrop-blur-md p-2 rounded-2xl border-2 border-amber-600/50 shadow-2xl flex flex-col items-center gap-1 select-none pointer-events-auto"
+          className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 z-40 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-xl sm:rounded-2xl border border-amber-600/50 shadow-2xl flex flex-col items-center gap-1 select-none pointer-events-auto"
         >
-          <div className="text-[9px] font-black text-amber-400 uppercase tracking-widest text-center -mb-0.5">
-            Controls
-          </div>
           <button
             onMouseDown={() => handleDpadPress('up')}
             onMouseUp={() => handleDpadRelease('up')}
-            onMouseLeave={() => handleDpadRelease('up')}
             onTouchStart={() => handleDpadPress('up')}
             onTouchEnd={() => handleDpadRelease('up')}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold border transition-all cursor-pointer ${
-              activeDpad.up
-                ? 'bg-amber-400 text-slate-950 border-amber-300 scale-95 shadow-inner'
-                : 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-amber-500/40'
+            className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+              activeDpad.up ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
             }`}
           >
-            <ArrowUp className="w-5 h-5 stroke-[2.5]" />
+            <ArrowUp className="w-4 h-4 stroke-[2.5]" />
           </button>
 
           <div className="flex items-center gap-1">
             <button
               onMouseDown={() => handleDpadPress('left')}
               onMouseUp={() => handleDpadRelease('left')}
-              onMouseLeave={() => handleDpadRelease('left')}
               onTouchStart={() => handleDpadPress('left')}
               onTouchEnd={() => handleDpadRelease('left')}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold border transition-all cursor-pointer ${
-                activeDpad.left
-                  ? 'bg-amber-400 text-slate-950 border-amber-300 scale-95 shadow-inner'
-                  : 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-amber-500/40'
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                activeDpad.left ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
               }`}
             >
-              <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+              <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
             </button>
 
             <button
               onMouseDown={() => handleDpadPress('down')}
               onMouseUp={() => handleDpadRelease('down')}
-              onMouseLeave={() => handleDpadRelease('down')}
               onTouchStart={() => handleDpadPress('down')}
               onTouchEnd={() => handleDpadRelease('down')}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold border transition-all cursor-pointer ${
-                activeDpad.down
-                  ? 'bg-amber-400 text-slate-950 border-amber-300 scale-95 shadow-inner'
-                  : 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-amber-500/40'
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                activeDpad.down ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
               }`}
             >
-              <ArrowDown className="w-5 h-5 stroke-[2.5]" />
+              <ArrowDown className="w-4 h-4 stroke-[2.5]" />
             </button>
 
             <button
               onMouseDown={() => handleDpadPress('right')}
               onMouseUp={() => handleDpadRelease('right')}
-              onMouseLeave={() => handleDpadRelease('right')}
               onTouchStart={() => handleDpadPress('right')}
               onTouchEnd={() => handleDpadRelease('right')}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold border transition-all cursor-pointer ${
-                activeDpad.right
-                  ? 'bg-amber-400 text-slate-950 border-amber-300 scale-95 shadow-inner'
-                  : 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-amber-500/40'
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                activeDpad.right ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
               }`}
             >
-              <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* FAST TRAVEL */}
-      <div className="p-3 bg-slate-950/95 border-t-2 border-amber-900/60 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {nearbyNode ? (
-            <div className="flex items-center gap-2.5 bg-slate-900/90 px-3 py-1.5 rounded-2xl border border-amber-500/40">
-              <div>
-                <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
-                  <span>{nearbyNode.name}</span>
-                  {nearbyNode.tagline && (
-                    <span className="text-[11px] text-amber-400 font-normal">({nearbyNode.tagline})</span>
-                  )}
-                </div>
-                {nearbyNode.description && (
-                  <div className="text-[10px] text-slate-400 line-clamp-1 max-w-sm">
-                    {nearbyNode.description}
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => triggerNodeEnter(nearbyNode.id, nearbyNode.name)}
-                className="ml-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black shadow-md cursor-pointer flex items-center gap-1"
-              >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Enter</span>
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-xs text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-2xl border border-slate-800">
-              <Footprints className="w-4 h-4 text-amber-400" />
-              <span>
-                Move with <b>Arrow Keys / WASD</b> or <b>Click on Map</b>
-              </span>
-            </div>
-          )}
-        </div>
+      {/* BOTTOM TRAVEL / PROXIMITY BAR */}
+      <div className="p-2 sm:p-2.5 bg-slate-950/95 border-t border-amber-900/60 flex items-center justify-between gap-2 overflow-x-auto">
+        {nearbyNode ? (
+          <div className="flex items-center gap-2 bg-slate-900/90 px-2.5 py-1 rounded-xl border border-amber-500/40">
+            <span className="text-xs font-bold text-slate-100">{nearbyNode.name}</span>
+            <button
+              onClick={() => triggerNodeEnter(nearbyNode.id, nearbyNode.name)}
+              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1 cursor-pointer"
+            >
+              <Play className="w-3 h-3 fill-current" />
+              <span>Enter</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 pl-1">
+            <Footprints className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-[11px] hidden xs:inline">Tap map or use arrows to explore!</span>
+          </div>
+        )}
 
-        <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-          <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider mr-1">Fast Travel:</span>
+        <div className="flex items-center gap-1 overflow-x-auto">
           {LANDMARK_NODES.map((node) => {
             const isHome = node.id === 'home-hut';
             const unlocked = isHome || isLandUnlocked(node.id as LandId, activeExplorer.landScores);
@@ -932,14 +812,14 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
               <button
                 key={node.id}
                 onClick={() => handleFastTravel(node)}
-                className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 border shadow-sm ${
+                className={`px-2 py-1 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 border ${
                   unlocked
-                    ? 'bg-slate-900 hover:bg-amber-950/60 text-slate-200 hover:text-amber-300 border-amber-500/30 hover:border-amber-400'
-                    : 'bg-slate-950 text-slate-600 border-slate-800 cursor-not-allowed opacity-60'
+                    ? 'bg-slate-900 text-slate-200 border-amber-500/30'
+                    : 'bg-slate-950 text-slate-600 border-slate-800 opacity-60'
                 }`}
               >
                 <span>{node.name}</span>
-                {!unlocked && <Lock className="w-3 h-3 text-slate-500" />}
+                {!unlocked && <Lock className="w-2.5 h-2.5 text-slate-500" />}
               </button>
             );
           })}

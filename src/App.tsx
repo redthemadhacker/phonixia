@@ -4,234 +4,96 @@ import { WorldCanvas } from './components/WorldCanvas';
 import { LandLevelView } from './components/LandLevelView';
 import { IslesOfPlay } from './components/IslesOfPlay';
 import { ShellshoreArcade } from './components/ShellshoreArcade';
-import { ParentDashboard } from './components/ParentDashboard';
-import { CharacterCreator } from './components/CharacterCreator';
-import { AuthModal } from './components/AuthModal';
-import { AvatarRenderer } from './components/AvatarRenderer';
+import { HomeHutModal } from './components/HomeHutModal';
+import { HallOfFameCelebration } from './components/HallOfFameCelebration';
+import { AuthGateway } from './components/AuthGateway';
 import { LandId, MinigameId } from './types/character';
-import { sounds } from './utils/audio';
-import { Star, Sparkles, UserPlus, LogIn, Compass, Flame, RotateCcw } from 'lucide-react';
-import phonixiaMap from '../phonixia.png';
 
-const GameContent: React.FC = () => {
-  const {
-    activeExplorer,
-    showHallOfFameCelebration,
-    dismissHallOfFameCelebration,
-    resetExplorerProgress
-  } = useGame();
-
-  // No auto-login on startup: must authenticate per session
-  const [isSignedIn, setIsSignedIn] = useState<boolean>(() => {
-    return Boolean(sessionStorage.getItem('phonixia_active_session'));
+const GameShell: React.FC = () => {
+  const { showHallOfFameCelebration, dismissHallOfFameCelebration } = useGame();
+  
+  // Check if an active session is currently authenticated
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('phonixia_active_session') === 'true';
   });
 
-  const [activeLandId, setActiveLandId] = useState<LandId | null>(null);
-  const [activeMinigameHub, setActiveMinigameHub] = useState<MinigameId | null>(null);
+  const [currentView, setCurrentView] = useState<'world' | 'land' | 'isles' | 'arcade'>('world');
+  const [selectedLand, setSelectedLand] = useState<LandId>('sound-shallows');
   const [isHomeHutOpen, setIsHomeHutOpen] = useState(false);
-  const [isCharacterCreatorOpen, setIsCharacterCreatorOpen] = useState(false);
+  const [manualCelebrationOpen, setManualCelebrationOpen] = useState(false);
 
-  // Modal Auth State
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-
-  const handleOpenAuth = (mode: 'login' | 'signup') => {
-    setAuthMode(mode);
-    setIsAuthModalOpen(true);
-  };
-
-  const handleAuthSuccess = () => {
-    sessionStorage.setItem('phonixia_active_session', 'true');
-    setIsSignedIn(true);
-    setIsAuthModalOpen(false);
-  };
-
-  const handleLogoutSession = () => {
-    sessionStorage.removeItem('phonixia_active_session');
-    setIsSignedIn(false);
-    setIsHomeHutOpen(false);
-    setActiveLandId(null);
-    setActiveMinigameHub(null);
-  };
+  // If not logged in, render the Auth Gateway (Login / Sign Up)
+  if (!isAuthenticated) {
+    return <AuthGateway onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-2 sm:p-4 selection:bg-amber-500 selection:text-slate-950 font-sans">
-      {/* 0. WELCOME / LANDING SCREEN (WHEN NOT SIGNED IN) */}
-      {!isSignedIn ? (
-        <div className="relative w-full h-[90vh] max-w-[1500px] mx-auto rounded-3xl overflow-hidden border-4 border-amber-500/50 shadow-2xl bg-slate-950 flex flex-col items-center justify-center p-6 text-center select-none animate-pulse-glow">
-          <img
-            src={phonixiaMap}
-            alt="Phonixia World Map"
-            className="absolute inset-0 w-full h-full object-cover opacity-30 filter blur-[1px] scale-105 transition-transform duration-1000"
+    <div className="w-full h-[100dvh] bg-slate-950 flex items-center justify-center p-0 sm:p-2 md:p-4 overflow-hidden select-none">
+      {/* App Shell Container */}
+      <main className="w-full h-full max-w-[1400px] max-h-[900px] flex flex-col justify-center relative rounded-none sm:rounded-3xl overflow-hidden shadow-2xl border-0 sm:border-2 sm:border-amber-500/30 bg-slate-900">
+        
+        {/* 1. Main Interactive World Map */}
+        {currentView === 'world' && (
+          <WorldCanvas
+            onSelectLand={(landId) => {
+              setSelectedLand(landId);
+              setCurrentView('land');
+            }}
+            onSelectMinigame={(minigameId: MinigameId) => {
+              if (minigameId === 'isles-of-play') setCurrentView('isles');
+              if (minigameId === 'shellshore-arcade') setCurrentView('arcade');
+            }}
+            onOpenHomeHut={() => setIsHomeHutOpen(true)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/90" />
+        )}
 
-          <div className="relative z-10 max-w-xl mx-auto space-y-6 bg-slate-900/90 border-2 border-amber-400/80 p-8 sm:p-12 rounded-3xl backdrop-blur-xl shadow-[0_0_50px_rgba(0,0,0,0.9)]">
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-gradient-to-r from-red-950 via-amber-900 to-red-950 border-2 border-amber-400 shadow-xl animate-float">
-              <Flame className="w-5 h-5 text-amber-300 fill-amber-400 animate-pulse" />
-              <span className="font-display text-xl sm:text-2xl font-black uppercase tracking-widest shimmer-gold">
-                PHONIXIA
-              </span>
-              <Flame className="w-5 h-5 text-amber-300 fill-amber-400 animate-pulse" />
-            </div>
+        {/* 2. Structured Curriculum Realm View */}
+        {currentView === 'land' && (
+          <LandLevelView
+            landId={selectedLand}
+            onBackToWorld={() => setCurrentView('world')}
+          />
+        )}
 
-            <div className="space-y-3">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-100 font-display tracking-tight leading-snug">
-                Explore the world of Phonixia with <span className="text-amber-400 underline decoration-amber-500/50">Kam</span> and <span className="text-rose-400 underline decoration-rose-500/50">Celine</span>!
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md mx-auto">
-                Embark on an epic reading journey across ancient sound shallows, treacherous phonics trails, and soaring vowel peaks.
-              </p>
-            </div>
+        {/* 3. Isles of Play Sandbox (Preschool - Early Elementary) */}
+        {currentView === 'isles' && (
+          <IslesOfPlay onBackToWorld={() => setCurrentView('world')} />
+        )}
 
-            <div className="flex items-center justify-center gap-2 sm:gap-3 text-[11px] font-mono font-bold text-amber-300">
-              <span className="px-3 py-1 rounded-xl bg-slate-950/80 border border-amber-500/30">📖 5 Explorable Realms</span>
-              <span className="px-3 py-1 rounded-xl bg-slate-950/80 border border-amber-500/30">🕹️ 250 Reading Games</span>
-              <span className="px-3 py-1 rounded-xl bg-slate-950/80 border border-amber-500/30">🏆 Hall of Fame</span>
-            </div>
+        {/* 4. Shellshore Arcade Sandbox (Late Elementary - High School) */}
+        {currentView === 'arcade' && (
+          <ShellshoreArcade onBackToWorld={() => setCurrentView('world')} />
+        )}
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
-              <button
-                onClick={() => handleOpenAuth('signup')}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95 border-b-4 border-amber-700"
-              >
-                <UserPlus className="w-4 h-4 stroke-[3]" />
-                <span>Create Parent / Teacher Profile</span>
-              </button>
+        {/* 5. Home Hut Modal */}
+        {isHomeHutOpen && (
+          <HomeHutModal
+            onClose={() => setIsHomeHutOpen(false)}
+            onOpenCelebration={() => {
+              setIsHomeHutOpen(false);
+              setManualCelebrationOpen(true);
+            }}
+          />
+        )}
 
-              <button
-                onClick={() => handleOpenAuth('login')}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-amber-300 border-2 border-amber-400/80 font-black text-xs uppercase tracking-wider shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95 border-b-4 border-amber-900"
-              >
-                <LogIn className="w-4 h-4 stroke-[3]" />
-                <span>Login Current Explorer</span>
-              </button>
-            </div>
-
-            <div className="pt-2 text-[11px] text-slate-400 flex items-center justify-center gap-2">
-              <Compass className="w-3.5 h-3.5 text-amber-400 animate-spin-slow" />
-              <span>Kid-friendly phonics adventure adapted for classrooms & homes</span>
-            </div>
-          </div>
-        </div>
-      ) : activeLandId ? (
-        /* 1. EXPLORABLE LAND REALM VIEW */
-        <LandLevelView
-          landId={activeLandId}
-          onBackToWorld={() => setActiveLandId(null)}
-        />
-      ) : activeMinigameHub === 'isles-of-play' ? (
-        /* 2. ISLES OF PLAY HUB */
-        <IslesOfPlay onBackToWorld={() => setActiveMinigameHub(null)} />
-      ) : activeMinigameHub === 'shellshore-arcade' ? (
-        /* 3. SHELLSHORE ARCADE HUB */
-        <ShellshoreArcade onBackToWorld={() => setActiveMinigameHub(null)} />
-      ) : (
-        /* 4. MAIN WORLD MAP */
-        <WorldCanvas
-          onSelectLand={(landId) => setActiveLandId(landId)}
-          onSelectMinigame={(minigameId) => setActiveMinigameHub(minigameId)}
-          onOpenHomeHut={() => setIsHomeHutOpen(true)}
-        />
-      )}
-
-      {/* HOME HUT / PARENT & EDUCATOR DASHBOARD */}
-      {isHomeHutOpen && (
-        <ParentDashboard
-          onClose={() => setIsHomeHutOpen(false)}
-          onOpenCharacterCreator={() => setIsCharacterCreatorOpen(true)}
-          onOpenAuthModal={() => {
-            handleLogoutSession();
-            handleOpenAuth('login');
-          }}
-        />
-      )}
-
-      {/* CHARACTER CREATOR MODAL */}
-      {isCharacterCreatorOpen && (
-        <CharacterCreator
-          onClose={() => setIsCharacterCreatorOpen(false)}
-        />
-      )}
-
-      {/* AUTHENTICATION / LOGIN / SIGNUP MODAL */}
-      {isAuthModalOpen && (
-        <AuthModal
-          initialMode={authMode}
-          onClose={() => setIsAuthModalOpen(false)}
-          onSuccess={handleAuthSuccess}
-        />
-      )}
-
-      {/* HALL OF FAME CELEBRATION & REPLAY STORYLINE MODAL */}
-      {showHallOfFameCelebration && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-lg">
-          <div className="relative w-full max-w-lg rounded-3xl bg-gradient-to-b from-slate-900 via-amber-950/80 to-slate-900 border-4 border-amber-400 p-6 sm:p-8 text-center shadow-2xl space-y-5 animate-scale-up">
-            <div className="text-5xl animate-bounce">🏆</div>
-
-            <div className="space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-black text-amber-300 font-display tracking-wide uppercase">
-                Grand Phonixian Champion!
-              </h2>
-              <p className="text-sm sm:text-base text-amber-100 font-semibold leading-relaxed">
-                {activeExplorer.name} has completed all 5 realms of Phonixia! You are officially inducted into the Hall of Fame.
-              </p>
-            </div>
-
-            <div className="mx-auto w-24 h-24 rounded-2xl bg-amber-950/60 border-2 border-amber-400 flex items-center justify-center overflow-hidden shadow-xl">
-              <AvatarRenderer customization={activeExplorer.customization} size={72} facing="down" showPet={true} />
-            </div>
-
-            <div className="text-xs font-mono text-amber-300 flex items-center justify-center gap-3">
-              <span className="flex items-center gap-1 font-bold">
-                <Star className="w-4 h-4 fill-amber-400" />
-                750 / 750 Stars
-              </span>
-              <span>·</span>
-              <span>250 / 250 Games Mastered</span>
-            </div>
-
-            <div className="space-y-2.5 pt-2">
-              <button
-                onClick={() => {
-                  sounds.playFanfare();
-                  sounds.speak(`Inducted ${activeExplorer.name} into the Phonixia Hall of Fame! Outstanding work!`);
-                  dismissHallOfFameCelebration();
-                }}
-                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl cursor-pointer flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95 border-b-4 border-amber-700"
-              >
-                <Sparkles className="w-5 h-5 fill-current" />
-                <span>Save to Hall of Fame & Keep Progress</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  if (window.confirm(`Restart ${activeExplorer.name}'s adventure from the beginning? Your Hall of Fame record stays permanent, but your games and stars will reset to 0.`)) {
-                    sounds.playFanfare();
-                    sounds.speak(`Storyline restarted! Welcome back to Sound Shallows, Champion ${activeExplorer.name}!`);
-                    dismissHallOfFameCelebration();
-                    resetExplorerProgress(activeExplorer.id);
-                  }
-                }}
-                className="w-full py-3 px-6 rounded-2xl bg-slate-950 hover:bg-slate-800 text-rose-300 hover:text-rose-200 border-2 border-rose-500/40 hover:border-rose-400 font-bold text-xs uppercase tracking-wider shadow-lg cursor-pointer flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Restart Storyline from Beginning (New Game+)</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* 6. Grand Hall of Fame Celebration Modal */}
+        {(showHallOfFameCelebration || manualCelebrationOpen) && (
+          <HallOfFameCelebration
+            onDismiss={() => {
+              dismissHallOfFameCelebration();
+              setManualCelebrationOpen(false);
+            }}
+          />
+        )}
+      </main>
     </div>
   );
 };
 
-export const App: React.FC = () => {
+export default function App() {
   return (
     <GameProvider>
-      <GameContent />
+      <GameShell />
     </GameProvider>
   );
-};
-
-export default App;
+}

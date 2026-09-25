@@ -9,24 +9,20 @@ export const LAND_ORDER: LandId[] = [
   'lexicon-empire',
 ];
 
-// Sequential lock logic: Sound Shallows is open; each next land requires 50 games in the previous land
 export const isLandUnlocked = (arg1: any, arg2?: any): boolean => {
   const landId: LandId = (typeof arg1 === 'string' ? arg1 : typeof arg2 === 'string' ? arg2 : '') as LandId;
   const scores = (typeof arg1 === 'object' && arg1 !== null)
     ? (arg1.landScores || arg1)
     : (typeof arg2 === 'object' && arg2 !== null ? (arg2.landScores || arg2) : null);
 
-  // Sound Shallows is ALWAYS unlocked
   if (landId === 'sound-shallows') return true;
   if (!LAND_ORDER.includes(landId)) return true;
 
   const landIndex = LAND_ORDER.indexOf(landId);
   if (landIndex <= 0) return true;
 
-  // Check if explicitly unlocked in saved score state
   if (scores && scores[landId]?.unlocked === true) return true;
 
-  // Otherwise check if the preceding realm completed all 50 games
   const prevLandId = LAND_ORDER[landIndex - 1];
   const prevLand = scores ? scores[prevLandId] : null;
   return Boolean(prevLand && prevLand.completedGamesCount >= 50);
@@ -45,6 +41,7 @@ interface GameContextType {
   activeExplorer: ExplorerProfile;
   switchExplorer: (id: string) => void;
   createExplorer: (name: string, ageTier: ExplorerProfile['ageTier']) => void;
+  updateExplorerName: (id: string, newName: string) => void;
   updateExplorerScore: (landId: LandId, gamesCompletedDelta: number, starsDelta: number) => void;
   awardCurrency: (coinsDelta: number, tokensDelta: number) => void;
   updateAvatarCustomization: (customization: ExplorerProfile['customization']) => void;
@@ -54,6 +51,8 @@ interface GameContextType {
   loginWithCredentials: (u: string, p: string) => boolean;
   registerAccount: (payload: RegisterPayload) => void;
   isLandUnlocked: (landId: LandId) => boolean;
+  exportSaveData: () => string;
+  importSaveData: (jsonStr: string) => boolean;
   logout: () => void;
 }
 
@@ -105,17 +104,17 @@ const INITIAL_ACCOUNT: Account = {
       name: 'Maya',
       ageTier: 'late-elementary',
       level: 50,
-      totalStars: 747,
+      totalStars: 750,
       coins: 850,
       arcadeTokens: 120,
-      isHallOfFameInducted: false,
-      timesStorylineCompleted: 0,
+      isHallOfFameInducted: true,
+      timesStorylineCompleted: 1,
       landScores: {
         'sound-shallows': { completedGamesCount: 50, stars: 150, unlocked: true },
         'builders-guild': { completedGamesCount: 50, stars: 150, unlocked: true },
         'tricky-trails': { completedGamesCount: 50, stars: 150, unlocked: true },
         'whispering-peaks': { completedGamesCount: 50, stars: 150, unlocked: true },
-        'lexicon-empire': { completedGamesCount: 49, stars: 147, unlocked: true }
+        'lexicon-empire': { completedGamesCount: 50, stars: 150, unlocked: true }
       },
       customization: {
         skinTone: '#d99058',
@@ -124,7 +123,7 @@ const INITIAL_ACCOUNT: Account = {
         outfitColor: '#a855f7',
         accessory: 'sparkles',
         companionPet: 'golden-phonix',
-        title: 'Vowel Valkyrie'
+        title: 'Hall of Fame Grand Scholar'
       }
     }
   ]
@@ -143,7 +142,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!exp.landScores) {
               exp.landScores = JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES));
             }
-            // Enforce sequential locks accurately based on progression counts
             LAND_ORDER.forEach((landId, idx) => {
               if (!exp.landScores[landId]) {
                 exp.landScores[landId] = { completedGamesCount: 0, stars: 0, unlocked: idx === 0 };
@@ -207,6 +205,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const switchExplorer = (id: string) => {
     setActiveExplorerId(id);
+  };
+
+  const updateExplorerName = (id: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    setAccount((prev) => ({
+      ...prev,
+      explorers: (prev.explorers || []).map((exp) =>
+        exp.id === id ? { ...exp, name: trimmed } : exp
+      )
+    }));
   };
 
   const loginWithCredentials = (u: string, p: string): boolean => {
@@ -300,7 +309,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         };
 
-        // When completing all 50 games in a realm, unlock the next sequential realm
         if (newCompleted >= 50) {
           const currentIndex = LAND_ORDER.indexOf(landId);
           if (currentIndex !== -1 && currentIndex + 1 < LAND_ORDER.length) {
@@ -397,6 +405,26 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const exportSaveData = (): string => {
+    return JSON.stringify(account);
+  };
+
+  const importSaveData = (jsonStr: string): boolean => {
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (parsed && Array.isArray(parsed.explorers) && parsed.explorers.length > 0) {
+        setAccount(parsed);
+        if (parsed.explorers[0]) {
+          setActiveExplorerId(parsed.explorers[0].id);
+        }
+        return true;
+      }
+    } catch {
+      // invalid
+    }
+    return false;
+  };
+
   const dismissHallOfFameCelebration = () => {
     setShowHallOfFameCelebration(false);
   };
@@ -412,6 +440,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activeExplorer,
         switchExplorer,
         createExplorer,
+        updateExplorerName,
         updateExplorerScore,
         awardCurrency,
         updateAvatarCustomization,
@@ -421,6 +450,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithCredentials,
         registerAccount,
         isLandUnlocked: checkLandUnlocked,
+        exportSaveData,
+        importSaveData,
         logout
       }}
     >

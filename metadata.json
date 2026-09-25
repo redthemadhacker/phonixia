@@ -1,0 +1,6 @@
+{
+  "name": "Phonixia - Phonics Educational Adventure Game",
+  "description": "An immersive educational phonics adventure game for preschool through middle school explorers, bridging reading gaps across five magical lands with interactive gameplay, character creation, multi-explorer accounts, and arcade minigames.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

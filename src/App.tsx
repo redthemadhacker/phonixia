@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Component, ErrorInfo, ReactNode } from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import { WorldCanvas } from './components/WorldCanvas';
 import { LandLevelView } from './components/LandLevelView';
@@ -8,6 +8,36 @@ import { HomeHutModal } from './components/HomeHutModal';
 import { HallOfFameCelebration } from './components/HallOfFameCelebration';
 import { AuthGateway } from './components/AuthGateway';
 import { LandId, MinigameId } from './types/character';
+
+// Fallback screen to display any crash in plain text
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("ErrorBoundary caught:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '2rem', color: '#ff6b6b', background: '#111', minHeight: '100vh', fontFamily: 'monospace' }}>
+          <h2>⚠️ Frontend Render Crash:</h2>
+          <pre style={{ whiteSpace: 'pre-wrap', background: '#222', padding: '1rem', borderRadius: '8px' }}>
+            {this.state.error?.stack || this.state.error?.message}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const GameShell: React.FC = () => {
   const { showHallOfFameCelebration, dismissHallOfFameCelebration } = useGame();
@@ -25,7 +55,6 @@ const GameShell: React.FC = () => {
 
   return (
     <div className="w-full h-full min-h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col justify-between overflow-hidden select-none fixed inset-0">
-      {/* 1. Main Interactive World Map */}
       {currentView === 'world' && (
         <WorldCanvas
           onSelectLand={(landId) => {
@@ -40,7 +69,6 @@ const GameShell: React.FC = () => {
         />
       )}
 
-      {/* 2. Structured Curriculum Realm View */}
       {currentView === 'land' && (
         <LandLevelView
           landId={selectedLand}
@@ -48,17 +76,14 @@ const GameShell: React.FC = () => {
         />
       )}
 
-      {/* 3. Isles of Play Sandbox */}
       {currentView === 'isles' && (
         <IslesOfPlay onBackToWorld={() => setCurrentView('world')} />
       )}
 
-      {/* 4. Shellshore Arcade Sandbox */}
       {currentView === 'arcade' && (
         <ShellshoreArcade onBackToWorld={() => setCurrentView('world')} />
       )}
 
-      {/* 5. Home Hut Modal */}
       {isHomeHutOpen && (
         <HomeHutModal
           onClose={() => setIsHomeHutOpen(false)}
@@ -69,7 +94,6 @@ const GameShell: React.FC = () => {
         />
       )}
 
-      {/* 6. Grand Hall of Fame Celebration Modal */}
       {(showHallOfFameCelebration || manualCelebrationOpen) && (
         <HallOfFameCelebration
           onDismiss={() => {
@@ -84,8 +108,10 @@ const GameShell: React.FC = () => {
 
 export default function App() {
   return (
-    <GameProvider>
-      <GameShell />
-    </GameProvider>
+    <ErrorBoundary>
+      <GameProvider>
+        <GameShell />
+      </GameProvider>
+    </ErrorBoundary>
   );
 }

@@ -401,17 +401,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
             </button>
           </form>
         )}
-
-{/* Quick Guest Play */}
-        <div className="pt-2 border-t border-slate-800 text-center">
-          <button
-            type="button"
-            onClick={handleGuestPlay}
-            className="text-xs text-slate-400 hover:text-amber-300 font-bold transition-colors cursor-pointer"
-          >
-            Or play immediately as Guest Explorer →
-          </button>
-        </div>
       </div>
     </div>
   );

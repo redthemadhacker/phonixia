@@ -1,0 +1,115 @@
+{
+  "readingheroes": {
+    "id": "acc-readingheroes",
+    "username": "readingheroes",
+    "salt": "edea1da3976daae316c4f23cf622edf9",
+    "passwordHash": "ed8a89c0cf8e8ba4bb2b8eefee265284219bba24d40c467c6cf2b4c776403cc3",
+    "updatedAt": "2026-09-26T06:24:44.233Z",
+    "accountData": {
+      "id": "acc-1",
+      "familyName": "Explorer Family",
+      "username": "readingheroes",
+      "role": "parent",
+      "explorers": [
+        {
+          "id": "exp-leo",
+          "name": "Leo",
+          "gender": "boy",
+          "companionGuide": "kam",
+          "ageTier": "preschool",
+          "level": 1,
+          "totalStars": 12,
+          "coins": 40,
+          "arcadeTokens": 5,
+          "isHallOfFameInducted": false,
+          "timesStorylineCompleted": 0,
+          "landScores": {
+            "sound-shallows": {
+              "completedGamesCount": 4,
+              "stars": 12,
+              "unlocked": true
+            },
+            "builders-guild": {
+              "completedGamesCount": 0,
+              "stars": 0,
+              "unlocked": false
+            },
+            "tricky-trails": {
+              "completedGamesCount": 0,
+              "stars": 0,
+              "unlocked": false
+            },
+            "whispering-peaks": {
+              "completedGamesCount": 0,
+              "stars": 0,
+              "unlocked": false
+            },
+            "lexicon-empire": {
+              "completedGamesCount": 0,
+              "stars": 0,
+              "unlocked": false
+            }
+          },
+          "customization": {
+            "skinTone": "#ffd1a4",
+            "hairStyle": "curls",
+            "hairColor": "#3d2314",
+            "outfitColor": "#3b82f6",
+            "accessory": "glasses",
+            "companionPet": "baby-dragon",
+            "title": "Shallow Scout"
+          }
+        },
+        {
+          "id": "exp-maya",
+          "name": "Maya",
+          "gender": "girl",
+          "companionGuide": "celine",
+          "ageTier": "late-elementary",
+          "level": 50,
+          "totalStars": 750,
+          "coins": 850,
+          "arcadeTokens": 120,
+          "isHallOfFameInducted": true,
+          "timesStorylineCompleted": 1,
+          "landScores": {
+            "sound-shallows": {
+              "completedGamesCount": 50,
+              "stars": 150,
+              "unlocked": true
+            },
+            "builders-guild": {
+              "completedGamesCount": 50,
+              "stars": 150,
+              "unlocked": true
+            },
+            "tricky-trails": {
+              "completedGamesCount": 50,
+              "stars": 150,
+              "unlocked": true
+            },
+            "whispering-peaks": {
+              "completedGamesCount": 50,
+              "stars": 150,
+              "unlocked": true
+            },
+            "lexicon-empire": {
+              "completedGamesCount": 50,
+              "stars": 150,
+              "unlocked": true
+            }
+          },
+          "customization": {
+            "skinTone": "#d99058",
+            "hairStyle": "braids",
+            "hairColor": "#1e1b18",
+            "outfitColor": "#a855f7",
+            "accessory": "sparkles",
+            "companionPet": "golden-phonix",
+            "title": "Hall of Fame Grand Scholar"
+          }
+        }
+      ]
+    }
+  }
+}

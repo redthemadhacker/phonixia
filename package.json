@@ -6,9 +6,8 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
-    "lint": "tsc --noEmit",
-    "preview": "vite preview",
-    "start": "node server.ts"
+    "heroku-postbuild": "npm run build",
+    "start": "tsx server.ts"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
@@ -16,7 +15,8 @@
     "express": "^5.2.1",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
@@ -26,7 +26,6 @@
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
-    "tsx": "^4.23.15",
     "typescript": "^5.2.2",
     "vite": "^8.3.1"
   }

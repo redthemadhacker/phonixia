@@ -402,8 +402,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
           </form>
         )}
 
-<<<<<<< HEAD
-        {/* Quick Guest Play */}
+{/* Quick Guest Play */}
         <div className="pt-2 border-t border-slate-800 text-center">
           <button
             type="button"
@@ -413,8 +412,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
             Or play immediately as Guest Explorer →
           </button>
         </div>
-=======
->>>>>>> 808c3dabcbdec261c1a37cd3d1fb381493e541ce
       </div>
     </div>
   );

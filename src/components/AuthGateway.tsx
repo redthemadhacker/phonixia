@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useGame, KAM_GUIDE, CELINE_GUIDE } from '../context/GameContext';
 import { sounds } from '../utils/audio';
-import { validatePassword, PASSWORD_REQUIREMENTS } from '../utils/security';
+import { validatePassword } from '../utils/security';
 import { 
   User, KeyRound, ArrowRight, UserPlus, Sparkles, Star, Heart, 
-  Compass, ShieldCheck, Check, X, ShieldAlert, Wifi
+  Compass, ShieldCheck, Check, Wifi, GraduationCap
 } from 'lucide-react';
 import { AvatarRenderer } from './AvatarRenderer';
 
@@ -61,15 +61,17 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
       return;
     }
 
+    const companionId = characterGender === 'boy' ? 'kam' : 'celine';
     const companionName = characterGender === 'boy' ? 'Kam' : 'Celine';
 
     registerAccount({
       username: regUsername.trim().toLowerCase(),
       password: regPassword,
-      familyName: regFamilyName.trim() || `${characterName}'s Family`,
+      familyName: regFamilyName.trim() || (regRole === 'teacher' ? `${characterName}'s Classroom` : `${characterName}'s Family`),
       role: regRole,
       starterExplorerName: characterName.trim(),
       gender: characterGender,
+      companionGuide: companionId,
     });
 
     sessionStorage.setItem('phonixia_active_session', 'true');
@@ -128,7 +130,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
                 <span className="text-xs font-black text-amber-200">Kam</span>
                 <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
               </div>
-              <span className="text-[10px] text-amber-400/80 font-bold block">Adventure Companion</span>
+              <span className="text-[10px] text-amber-400/80 font-bold block">Boy Companion</span>
             </div>
           </div>
 
@@ -144,7 +146,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
                 <span className="text-xs font-black text-amber-200">Celine</span>
                 <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
               </div>
-              <span className="text-[10px] text-pink-400/80 font-bold block">Adventure Companion</span>
+              <span className="text-[10px] text-pink-400/80 font-bold block">Girl Companion</span>
             </div>
           </div>
         </div>
@@ -242,6 +244,22 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
         {mode === 'register' && (
           <form onSubmit={handleRegister} className="space-y-3.5 max-h-[50vh] overflow-y-auto pr-1">
             
+            {/* Account Role Dropdown: Parent vs Teacher/Educator */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                <span>Account Role</span>
+              </label>
+              <select
+                value={regRole}
+                onChange={(e) => setRegRole(e.target.value as 'parent' | 'teacher')}
+                className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-amber-500/40 text-amber-200 text-xs font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
+              >
+                <option value="parent">Parent / Family Account</option>
+                <option value="teacher">Teacher / Educator Account</option>
+              </select>
+            </div>
+
             {/* Create Your Own Character */}
             <div className="p-3 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-2.5">
               <span className="text-[11px] font-black text-amber-300 uppercase tracking-wider flex items-center gap-1">
@@ -372,13 +390,13 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
 
             <div className="space-y-1">
               <label className="text-[10px] font-black text-amber-300 uppercase tracking-wider block">
-                Family / School Name
+                {regRole === 'teacher' ? 'School / Classroom Name' : 'Family Name'}
               </label>
               <input
                 type="text"
                 value={regFamilyName}
                 onChange={(e) => setRegFamilyName(e.target.value)}
-                placeholder="Family or Classroom Name"
+                placeholder={regRole === 'teacher' ? 'e.g. Ms. Smith Room 102' : 'Family Name'}
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-amber-500/40 text-slate-100 text-xs focus:outline-none focus:border-amber-400 font-medium"
               />
             </div>

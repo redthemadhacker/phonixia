@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Account, ExplorerProfile, LandId, MinigameId } from '../types/character';
+import { Account, ExplorerProfile, LandId } from '../types/character';
 
 export const LAND_ORDER: LandId[] = [
   'sound-shallows',
@@ -35,6 +35,7 @@ interface RegisterPayload {
   role: 'parent' | 'teacher';
   starterExplorerName: string;
   gender?: 'boy' | 'girl';
+  companionGuide?: 'kam' | 'celine';
 }
 
 interface GameContextType {
@@ -43,6 +44,7 @@ interface GameContextType {
   switchExplorer: (id: string) => void;
   createExplorer: (name: string, ageTier: ExplorerProfile['ageTier'], gender?: 'boy' | 'girl') => void;
   updateExplorerName: (id: string, newName: string) => void;
+  updateExplorerGender: (id: string, gender: 'boy' | 'girl') => void;
   updateExplorerScore: (landId: LandId, gamesCompletedDelta: number, starsDelta: number) => void;
   awardCurrency: (coinsDelta: number, tokensDelta: number) => void;
   updateAvatarCustomization: (customization: ExplorerProfile['customization']) => void;
@@ -50,6 +52,7 @@ interface GameContextType {
   dismissHallOfFameCelebration: () => void;
   resetExplorerProgress: (explorerId: string) => void;
   restartLandProgress: (landId: LandId) => void;
+  resetClassroomAndGameData: () => void;
   loginWithCredentials: (u: string, p: string) => boolean;
   registerAccount: (payload: RegisterPayload) => void;
   isLandUnlocked: (landId: LandId) => boolean;
@@ -65,6 +68,66 @@ const DEFAULT_LAND_SCORES = {
   'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
   'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
   'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+};
+
+// KAM: Red adv vest, adv bandana, wise turtle, curls, 3rd brown hair, 2nd light skin
+export const KAM_GUIDE: ExplorerProfile = {
+  id: 'guide-kam',
+  name: 'Kam',
+  gender: 'boy',
+  companionGuide: 'kam',
+  ageTier: 'preschool',
+  level: 1,
+  totalStars: 20,
+  coins: 50,
+  arcadeTokens: 10,
+  isHallOfFameInducted: false,
+  timesStorylineCompleted: 0,
+  landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
+  customization: {
+    skinTone: '#fcd5b5', // 2nd light skin
+    hairStyle: 'curls',
+    hairColor: '#5c3818', // 3rd brown hair
+    outfitStyle: 'adventurer',
+    outfitColor: '#dc2626', // Red adv vest
+    accessory: 'bandana',
+    companionPet: 'sea-turtle', // Wise turtle
+    title: 'Adventure Guide'
+  }
+};
+
+// CELINE: Purple wizard cloak, glasses, curls, baby dragon, 3rd brown hair, 3rd brown skin
+export const CELINE_GUIDE: ExplorerProfile = {
+  id: 'guide-celine',
+  name: 'Celine',
+  gender: 'girl',
+  companionGuide: 'celine',
+  ageTier: 'kindergarten',
+  level: 1,
+  totalStars: 20,
+  coins: 50,
+  arcadeTokens: 10,
+  isHallOfFameInducted: false,
+  timesStorylineCompleted: 0,
+  landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
+  customization: {
+    skinTone: '#d99058', // 3rd brown skin
+    hairStyle: 'curls',
+    hairColor: '#5c3818', // 3rd brown hair
+    outfitStyle: 'wizard',
+    outfitColor: '#7e22ce', // Purple wizard cloak
+    accessory: 'glasses',
+    companionPet: 'baby-dragon', // Baby dragon
+    title: 'Adventure Guide'
+  }
+};
+
+export const getCompanionGuide = (explorer?: ExplorerProfile | null): ExplorerProfile => {
+  if (!explorer) return KAM_GUIDE;
+  if (explorer.gender === 'girl' || explorer.companionGuide === 'celine') {
+    return CELINE_GUIDE;
+  }
+  return KAM_GUIDE;
 };
 
 const FALLBACK_EXPLORER: ExplorerProfile = {
@@ -87,70 +150,15 @@ const FALLBACK_EXPLORER: ExplorerProfile = {
     'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
   },
   customization: {
-    skinTone: '#ffd1a4',
+    skinTone: '#fcd5b5',
     hairStyle: 'curls',
-    hairColor: '#3d2314',
-    outfitColor: '#3b82f6',
-    accessory: 'glasses',
-    companionPet: 'baby-dragon',
-    title: 'Shallow Scout'
+    hairColor: '#5c3818',
+    outfitStyle: 'adventurer',
+    outfitColor: '#dc2626',
+    accessory: 'bandana',
+    companionPet: 'sea-turtle',
+    title: 'Adventurer with Kam'
   }
-};
-
-export const KAM_GUIDE: ExplorerProfile = {
-  id: 'guide-kam',
-  name: 'Kam',
-  gender: 'boy',
-  companionGuide: 'kam',
-  ageTier: 'preschool',
-  level: 1,
-  totalStars: 20,
-  coins: 50,
-  arcadeTokens: 10,
-  isHallOfFameInducted: false,
-  timesStorylineCompleted: 0,
-  landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
-  customization: {
-    skinTone: '#ffd1a4',
-    hairStyle: 'curls',
-    hairColor: '#3d2314',
-    outfitColor: '#3b82f6',
-    accessory: 'glasses',
-    companionPet: 'baby-dragon',
-    title: 'Adventure Guide'
-  }
-};
-
-export const CELINE_GUIDE: ExplorerProfile = {
-  id: 'guide-celine',
-  name: 'Celine',
-  gender: 'girl',
-  companionGuide: 'celine',
-  ageTier: 'kindergarten',
-  level: 1,
-  totalStars: 20,
-  coins: 50,
-  arcadeTokens: 10,
-  isHallOfFameInducted: false,
-  timesStorylineCompleted: 0,
-  landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
-  customization: {
-    skinTone: '#fcd34d',
-    hairStyle: 'pigtails',
-    hairColor: '#451a03',
-    outfitColor: '#ec4899',
-    accessory: 'explorer-hat',
-    companionPet: 'feather-owl',
-    title: 'Adventure Guide'
-  }
-};
-
-export const getCompanionGuide = (explorer?: ExplorerProfile | null): ExplorerProfile => {
-  if (!explorer) return KAM_GUIDE;
-  if (explorer.gender === 'girl' || explorer.companionGuide === 'celine') {
-    return CELINE_GUIDE;
-  }
-  return KAM_GUIDE;
 };
 
 const INITIAL_ACCOUNT: Account = {
@@ -181,11 +189,12 @@ const INITIAL_ACCOUNT: Account = {
       },
       customization: {
         skinTone: '#d99058',
-        hairStyle: 'braids',
-        hairColor: '#1e1b18',
-        outfitColor: '#a855f7',
-        accessory: 'sparkles',
-        companionPet: 'golden-phonix',
+        hairStyle: 'curls',
+        hairColor: '#5c3818',
+        outfitStyle: 'wizard',
+        outfitColor: '#7e22ce',
+        accessory: 'glasses',
+        companionPet: 'baby-dragon',
         title: 'Hall of Fame Grand Scholar'
       }
     }
@@ -202,6 +211,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const parsed = JSON.parse(saved);
         if (parsed && Array.isArray(parsed.explorers) && parsed.explorers.length > 0) {
           parsed.explorers.forEach((exp: any) => {
+            if (!exp.gender) {
+              exp.gender = exp.name?.toLowerCase() === 'maya' || exp.name?.toLowerCase() === 'celine' ? 'girl' : 'boy';
+            }
+            if (!exp.companionGuide) {
+              exp.companionGuide = exp.gender === 'girl' ? 'celine' : 'kam';
+            }
             if (!exp.landScores) {
               exp.landScores = JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES));
             }
@@ -272,6 +287,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const activeExplorer: ExplorerProfile = {
     ...rawExplorer,
+    gender: rawExplorer.gender || 'boy',
+    companionGuide: rawExplorer.gender === 'girl' ? 'celine' : 'kam',
     landScores: {
       ...DEFAULT_LAND_SCORES,
       ...(rawExplorer.landScores || {}),
@@ -302,10 +319,41 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
+  const updateExplorerGender = (id: string, gender: 'boy' | 'girl') => {
+    const companionGuide = gender === 'boy' ? 'kam' : 'celine';
+    const companionPet = gender === 'boy' ? 'sea-turtle' : 'baby-dragon';
+    const outfitStyle = gender === 'boy' ? 'adventurer' : 'wizard';
+    const outfitColor = gender === 'boy' ? '#dc2626' : '#7e22ce';
+    const accessory = gender === 'boy' ? 'bandana' : 'glasses';
+    const skinTone = gender === 'boy' ? '#fcd5b5' : '#d99058';
+
+    setAccount((prev) => ({
+      ...prev,
+      explorers: (prev.explorers || []).map((exp) =>
+        exp.id === id
+          ? {
+              ...exp,
+              gender,
+              companionGuide,
+              customization: {
+                ...exp.customization,
+                skinTone,
+                hairStyle: 'curls',
+                hairColor: '#5c3818',
+                outfitStyle,
+                outfitColor,
+                accessory,
+                companionPet,
+                title: gender === 'boy' ? 'Adventurer with Kam' : 'Adventurer with Celine'
+              }
+            }
+          : exp
+      )
+    }));
+  };
+
   const loginWithCredentials = (u: string, p: string): boolean => {
     const cleanUser = u.trim().toLowerCase();
-    
-    // Asynchronous backend multi-device cloud fetch
     fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -353,12 +401,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       timesStorylineCompleted: 0,
       landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
       customization: {
-        skinTone: '#ffd1a4',
-        hairStyle: starterGender === 'boy' ? 'short' : 'pigtails',
-        hairColor: '#3d2314',
-        outfitColor: starterGender === 'boy' ? '#3b82f6' : '#ec4899',
-        accessory: 'none',
-        companionPet: starterGender === 'boy' ? 'baby-dragon' : 'feather-owl',
+        skinTone: starterGender === 'boy' ? '#fcd5b5' : '#d99058',
+        hairStyle: 'curls',
+        hairColor: '#5c3818',
+        outfitStyle: starterGender === 'boy' ? 'adventurer' : 'wizard',
+        outfitColor: starterGender === 'boy' ? '#dc2626' : '#7e22ce',
+        accessory: starterGender === 'boy' ? 'bandana' : 'glasses',
+        companionPet: starterGender === 'boy' ? 'sea-turtle' : 'baby-dragon',
         title: starterGender === 'boy' ? 'Adventurer with Kam' : 'Adventurer with Celine'
       }
     };
@@ -374,14 +423,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAccount(newAcc);
     setActiveExplorerId(starter.id);
 
-    // Save account to backend for instant multi-device access
     fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...payload,
         username: cleanUser,
-        gender: starterGender
+        gender: starterGender,
+        companionGuide: guide
       })
     }).catch(() => {});
   };
@@ -403,12 +452,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       timesStorylineCompleted: 0,
       landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
       customization: {
-        skinTone: '#ffd1a4',
-        hairStyle: explorerGender === 'boy' ? 'curls' : 'pigtails',
-        hairColor: '#3d2314',
-        outfitColor: explorerGender === 'boy' ? '#3b82f6' : '#ec4899',
-        accessory: 'none',
-        companionPet: explorerGender === 'boy' ? 'baby-dragon' : 'feather-owl',
+        skinTone: explorerGender === 'boy' ? '#fcd5b5' : '#d99058',
+        hairStyle: 'curls',
+        hairColor: '#5c3818',
+        outfitStyle: explorerGender === 'boy' ? 'adventurer' : 'wizard',
+        outfitColor: explorerGender === 'boy' ? '#dc2626' : '#7e22ce',
+        accessory: explorerGender === 'boy' ? 'bandana' : 'glasses',
+        companionPet: explorerGender === 'boy' ? 'sea-turtle' : 'baby-dragon',
         title: explorerGender === 'boy' ? 'Adventurer with Kam' : 'Adventurer with Celine'
       }
     };
@@ -518,12 +568,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...exp,
           totalStars: 0,
           level: 1,
-          isHallOfFameInducted: true,
-          timesStorylineCompleted: (exp.timesStorylineCompleted || 0) + 1,
+          isHallOfFameInducted: false,
           landScores: freshLandScores,
           customization: {
             ...exp.customization,
-            title: 'Veteran Grand Scholar'
+            title: exp.gender === 'boy' ? 'Adventurer with Kam' : 'Adventurer with Celine'
           }
         };
       });
@@ -533,6 +582,46 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         explorers: updatedExplorers
       };
     });
+  };
+
+  const resetClassroomAndGameData = () => {
+    const freshLandScores = {
+      'sound-shallows': { completedGamesCount: 0, stars: 0, unlocked: true },
+      'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+      'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+      'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+      'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+    };
+
+    setAccount((prev) => {
+      const clearedExplorers = (prev.explorers || []).map((exp) => ({
+        ...exp,
+        level: 1,
+        totalStars: 0,
+        coins: 50,
+        arcadeTokens: 10,
+        isHallOfFameInducted: false,
+        timesStorylineCompleted: 0,
+        landScores: JSON.parse(JSON.stringify(freshLandScores))
+      }));
+
+      return {
+        ...prev,
+        explorers: clearedExplorers
+      };
+    });
+
+    try {
+      localStorage.removeItem('phonixia_leaderboard');
+      localStorage.removeItem('phonixia_classroom_scores');
+      localStorage.removeItem('phonixia_high_scores');
+    } catch {}
+
+    fetch('/api/leaderboard/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId: account.id, username: account.username })
+    }).catch(() => {});
   };
 
   const restartLandProgress = (landId: LandId) => {
@@ -612,6 +701,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         switchExplorer,
         createExplorer,
         updateExplorerName,
+        updateExplorerGender,
         updateExplorerScore,
         awardCurrency,
         updateAvatarCustomization,
@@ -619,6 +709,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dismissHallOfFameCelebration,
         resetExplorerProgress,
         restartLandProgress,
+        resetClassroomAndGameData,
         loginWithCredentials,
         registerAccount,
         isLandUnlocked: checkLandUnlocked,

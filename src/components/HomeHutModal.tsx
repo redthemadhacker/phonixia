@@ -6,7 +6,7 @@ import { PHONIXIA_LANDS } from '../data/curriculumData';
 import { 
   X, Users, Palette, BarChart3, Settings, Star, Crown, Award, 
   UserPlus, RefreshCw, LogOut, CheckCircle2, 
-  Sparkles, Flame, Scroll, Edit3, Check, Shirt
+  Sparkles, Flame, Scroll, Edit3, Check, Shirt, GraduationCap, Trash2, Camera
 } from 'lucide-react';
 
 interface HomeHutModalProps {
@@ -21,19 +21,23 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     switchExplorer,
     createExplorer,
     updateExplorerName,
+    updateExplorerGender,
     updateAvatarCustomization,
     resetExplorerProgress,
+    resetClassroomAndGameData,
     logout
   } = useGame();
 
   const [activeTab, setActiveTab] = useState<'explorers' | 'customizer' | 'progress' | 'halloffame' | 'settings'>('customizer');
   const [newExplorerName, setNewExplorerName] = useState('');
+  const [newExplorerGender, setNewExplorerGender] = useState<'boy' | 'girl'>('boy');
   const [newExplorerTier, setNewExplorerTier] = useState<'preschool' | 'kindergarten' | 'early-elementary' | 'late-elementary' | 'middle-high'>('preschool');
   const [isCreating, setIsCreating] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   // Explorer Name & Customization Draft State
   const [draftName, setDraftName] = useState(activeExplorer.name);
+  const [draftGender, setDraftGender] = useState<'boy' | 'girl'>(activeExplorer.gender || 'boy');
   const [isEditingName, setIsEditingName] = useState(false);
   const [draftCustomization, setDraftCustomization] = useState({ 
     ...activeExplorer.customization,
@@ -43,7 +47,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
   // Customization Palettes
   const SKIN_TONES = ['#ffd1a4', '#fcd5b5', '#d99058', '#b0703c', '#8a4b1e', '#5c3818'];
   
-  // Themed Outfit Suits
   const OUTFIT_STYLES = [
     { id: 'ranger', label: 'Ranger Suit', icon: '🏹', desc: 'Forest tracker gear' },
     { id: 'scholar', label: 'Scholar Robes', icon: '📜', desc: 'Citadel academic wear' },
@@ -84,32 +87,65 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
   ];
 
   const COMPANIONS = [
-    { id: 'baby-dragon', name: 'Baby Dragon', icon: '🐲', desc: 'Fiery & Brave' },
-    { id: 'golden-phonix', name: 'Golden Phoenix', icon: '🦅', desc: 'Legendary Guide' },
+    { id: 'baby-dragon', name: 'Baby Dragon', icon: '🐲', desc: 'Kam’s Dragon Companion' },
+    { id: 'feather-owl', name: 'Starlight Owl', icon: '🦉', desc: 'Celine’s Owl Companion' },
+    { id: 'golden-phonix', name: 'Golden Phoenix', icon: '🦅', desc: 'Legendary Flamekeeper Guide' },
     { id: 'woodland-fox', name: 'Curious Fox', icon: '🦊', desc: 'Clever & Quick' },
     { id: 'sea-turtle', name: 'Wise Turtle', icon: '🐢', desc: 'Patient & Steady' },
-    { id: 'owl', name: 'Scholar Owl', icon: '🦉', desc: 'Knowledge Seeker' },
     { id: 'bunny', name: 'Brisk Bunny', icon: '🐰', desc: 'Speedy Reader' }
   ];
+
+  const handleGenderToggle = (gender: 'boy' | 'girl') => {
+    setDraftGender(gender);
+    sounds.playStep();
+    if (gender === 'boy') {
+      setDraftCustomization(prev => ({
+        ...prev,
+        companionPet: 'baby-dragon',
+        title: 'Adventurer with Kam',
+        outfitColor: prev.outfitColor === '#ec4899' ? '#3b82f6' : prev.outfitColor
+      }));
+    } else {
+      setDraftCustomization(prev => ({
+        ...prev,
+        companionPet: 'feather-owl',
+        title: 'Adventurer with Celine',
+        outfitColor: prev.outfitColor === '#3b82f6' ? '#ec4899' : prev.outfitColor
+      }));
+    }
+  };
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newExplorerName.trim()) return;
-    createExplorer(newExplorerName.trim(), newExplorerTier);
+    createExplorer(newExplorerName.trim(), newExplorerTier, newExplorerGender);
     setNewExplorerName('');
     setIsCreating(false);
     sounds.playFanfare();
-    sounds.speak(`Welcome to Phonixia, ${newExplorerName}!`);
+    sounds.speak(`Welcome to Phonixia, ${newExplorerName}! Traveling with ${newExplorerGender === 'boy' ? 'Kam' : 'Celine'}!`);
   };
 
   const handleSaveAll = () => {
     if (draftName.trim() && draftName.trim() !== activeExplorer.name) {
       updateExplorerName(activeExplorer.id, draftName.trim());
     }
+    updateExplorerGender(activeExplorer.id, draftGender);
     updateAvatarCustomization(draftCustomization);
     setIsEditingName(false);
     sounds.playSuccess();
     sounds.speak(`Profile updated for ${draftName.trim() || activeExplorer.name}!`);
+  };
+
+  const handleTeacherClassroomReset = () => {
+    const confirmation = confirm(
+      '⚠️ EDUCATOR YEAR-END RESET:\n\nThis will reset student game progress to Level 1 and PERMANENTLY ERASE the entire leaderboard so you can welcome a new class this school year.\n\nAre you sure you want to proceed?'
+    );
+    if (confirmation) {
+      resetClassroomAndGameData();
+      sounds.playFanfare();
+      setSyncStatus('Classroom and leaderboard have been reset for the new school year!');
+      setTimeout(() => setSyncStatus(null), 4000);
+    }
   };
 
   return (
@@ -130,11 +166,19 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
               🛖
             </span>
             <div>
-              <h2 className="text-base sm:text-lg font-black text-amber-300 font-display uppercase tracking-wide">
-                Home Hut
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-black text-amber-300 font-display uppercase tracking-wide">
+                  Home Hut
+                </h2>
+                {account.role === 'teacher' && (
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/60 text-blue-300 text-[10px] font-black uppercase flex items-center gap-1">
+                    <GraduationCap className="w-3 h-3" />
+                    <span>Educator</span>
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] text-slate-400">
-                Family & Educator Hub · {account.familyName}
+                {account.role === 'teacher' ? 'Classroom Hub' : 'Family Hub'} · {account.familyName}
               </p>
             </div>
           </div>
@@ -227,8 +271,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 )}
               </div>
 
+              {/* Explorer Creation Form */}
               {isCreating && (
-                <form onSubmit={handleCreateSubmit} className="p-4 rounded-2xl bg-slate-950 border-2 border-amber-500/50 space-y-3">
+                <form onSubmit={handleCreateSubmit} className="p-4 rounded-2xl bg-slate-950 border-2 border-amber-500/50 space-y-3.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-200">New Explorer Profile</span>
                     <button type="button" onClick={() => setIsCreating(false)} className="text-slate-400 hover:text-white text-xs">
@@ -237,33 +282,77 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="Explorer Name"
-                      value={newExplorerName}
-                      onChange={(e) => setNewExplorerName(e.target.value)}
-                      className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400"
-                      required
-                    />
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Explorer Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Liam"
+                        value={newExplorerName}
+                        onChange={(e) => setNewExplorerName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400"
+                        required
+                      />
+                    </div>
 
-                    <select
-                      value={newExplorerTier}
-                      onChange={(e) => setNewExplorerTier(e.target.value as any)}
-                      className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400"
-                    >
-                      <option value="preschool">Preschool (Ages 3-4)</option>
-                      <option value="kindergarten">Kindergarten (Ages 5-6)</option>
-                      <option value="early-elementary">Early Elementary (Ages 6-8)</option>
-                      <option value="late-elementary">Late Elementary (Ages 8-11)</option>
-                      <option value="middle-high">Middle & High (Ages 11+)</option>
-                    </select>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Grade / Reading Level
+                      </label>
+                      <select
+                        value={newExplorerTier}
+                        onChange={(e) => setNewExplorerTier(e.target.value as any)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400"
+                      >
+                        <option value="preschool">Preschool (Ages 3-4)</option>
+                        <option value="kindergarten">Kindergarten (Ages 5-6)</option>
+                        <option value="early-elementary">Early Elementary (Ages 6-8)</option>
+                        <option value="late-elementary">Late Elementary (Ages 8-11)</option>
+                        <option value="middle-high">Middle &amp; High (Ages 11+)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Gender Selector with Kam / Celine Auto-Binding */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Gender &amp; Traveling Companion
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewExplorerGender('boy')}
+                        className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
+                          newExplorerGender === 'boy'
+                            ? 'bg-blue-950/70 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)] ring-1 ring-amber-400'
+                            : 'bg-slate-900 border-slate-800 opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <div className="text-xs font-black text-amber-200">👦 Boy Explorer</div>
+                        <div className="text-[10px] text-blue-300 font-bold">Kam Travels with You</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setNewExplorerGender('girl')}
+                        className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
+                          newExplorerGender === 'girl'
+                            ? 'bg-pink-950/70 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)] ring-1 ring-amber-400'
+                            : 'bg-slate-900 border-slate-800 opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <div className="text-xs font-black text-amber-200">👧 Girl Explorer</div>
+                        <div className="text-[10px] text-pink-300 font-bold">Celine Travels with You</div>
+                      </button>
+                    </div>
                   </div>
 
                   <button
                     type="submit"
                     className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer"
                   >
-                    Create & Switch
+                    Create &amp; Switch Explorer
                   </button>
                 </form>
               )}
@@ -277,6 +366,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       onClick={() => {
                         switchExplorer(exp.id);
                         setDraftName(exp.name);
+                        setDraftGender(exp.gender || 'boy');
                         setDraftCustomization({ 
                           ...exp.customization,
                           outfitStyle: exp.customization.outfitStyle || 'ranger'
@@ -308,7 +398,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                             )}
                           </div>
                           <div className="text-[11px] text-slate-400">
-                            Lv. {exp.level} · {exp.customization.title}
+                            {exp.gender === 'girl' ? '👧 Girl' : '👦 Boy'} · Companion: {exp.gender === 'girl' ? 'Celine' : 'Kam'}
                           </div>
                         </div>
                       </div>
@@ -365,7 +455,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <Edit3 className="w-4 h-4 text-slate-400 group-hover:text-amber-400 transition-colors" />
                     </div>
                   )}
-                  <div className="text-[11px] text-slate-400">{draftCustomization.title}</div>
+                  <div className="text-[11px] text-slate-400">
+                    {draftGender === 'boy' ? '👦 Traveling with Kam' : '👧 Traveling with Celine'}
+                  </div>
                 </div>
 
                 <button
@@ -378,18 +470,44 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
 
               {/* Right Customization Controls */}
               <div className="md:col-span-2 space-y-5 max-h-[60vh] overflow-y-auto pr-1">
-                {/* Name Edit Input Box */}
-                <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+                {/* GENDER & COMPANION EDIT IN STUDIO */}
+                <div className="p-3.5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-2">
                   <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
-                    Explorer Name
+                    Explorer Gender &amp; Companion
                   </label>
-                  <input
-                    type="text"
-                    value={draftName}
-                    onChange={(e) => setDraftName(e.target.value)}
-                    placeholder="Enter explorer name"
-                    className="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs font-bold focus:outline-none focus:border-amber-400"
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleGenderToggle('boy')}
+                      className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+                        draftGender === 'boy'
+                          ? 'bg-blue-950/70 border-amber-400 text-amber-300 shadow ring-1 ring-amber-400'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <span className="text-xl">👦</span>
+                      <div className="text-left">
+                        <div className="leading-tight">Boy Explorer</div>
+                        <div className="text-[10px] text-blue-300">Kam as Companion</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleGenderToggle('girl')}
+                      className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+                        draftGender === 'girl'
+                          ? 'bg-pink-950/70 border-amber-400 text-amber-300 shadow ring-1 ring-amber-400'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <span className="text-xl">👧</span>
+                      <div className="text-left">
+                        <div className="leading-tight">Girl Explorer</div>
+                        <div className="text-[10px] text-pink-300">Celine as Companion</div>
+                      </div>
+                    </button>
+                  </div>
                 </div>
 
                 {/* THEMED OUTFIT SUITS */}
@@ -607,7 +725,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             </div>
           )}
 
-          {/* TAB 4: HALL OF FAME SHOWCASE */}
+          {/* TAB 4: HALL OF FAME & REWATCH CORONATION */}
           {activeTab === 'halloffame' && (
             <div className="space-y-5">
               {activeExplorer.isHallOfFameInducted ? (
@@ -629,7 +747,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                     </h3>
                     <p className="text-xs text-amber-200 font-bold">{activeExplorer.customization.title}</p>
                     <p className="text-[11px] text-slate-300 max-w-md mx-auto pt-2 leading-relaxed">
-                      Legendary savior of the Golden Phoenix! Conquered all 5 boss realms, vanquished the Shadow King, and liberated Phonixia to earn your place among the Eternal Flamekeepers!
+                      Legendary savior of the Golden Phoenix! Conquered all 5 realms, vanquished the Shadow King, and earned your place on the permanent Wall of Fame!
                     </p>
                   </div>
 
@@ -651,10 +769,10 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   {onOpenCelebration && (
                     <button
                       onClick={onOpenCelebration}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-1.5 mx-auto cursor-pointer transition-transform hover:scale-105"
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:from-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 mx-auto cursor-pointer transition-transform hover:scale-105 active:scale-95"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Replay Victory Ceremony</span>
+                      <Camera className="w-4 h-4 stroke-[2.5]" />
+                      <span>Rewatch Coronation &amp; Wall of Fame Ceremony</span>
                     </button>
                   )}
                 </div>
@@ -668,7 +786,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       {activeExplorer.name}'s Rescue Quest in Progress
                     </h3>
                     <p className="text-xs text-slate-400 max-w-sm mx-auto pt-1">
-                      Conquer all 50 challenge stages across all five realms (250 total) to defeat the Shadow King, rescue the Golden Phoenix, and earn your place among the Eternal Flamekeepers!
+                      Conquer all 50 challenge stages across all five realms to defeat the Shadow King, rescue the Golden Phoenix, and unlock your Coronation Aisle &amp; Wall of Fame picture!
                     </p>
                   </div>
                 </div>
@@ -714,15 +832,16 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             </div>
           )}
 
-          {/* TAB 5: SETTINGS & CLOUD SYNC */}
+          {/* TAB 5: SETTINGS & TEACHER CLASSROOM RESET */}
           {activeTab === 'settings' && (
             <div className="space-y-4">
               {syncStatus && (
-                <div className="p-3 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-300 text-xs font-bold text-center">
+                <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-bold text-center animate-fade-in">
                   {syncStatus}
                 </div>
               )}
 
+              {/* Automatic Cloud Save Status */}
               <div className="p-4 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-base">
@@ -736,24 +855,49 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
-                      Just like inserting a game cartridge with saved data! All your stars, unlocked lands, and Eternal Flamekeeper honors automatically sync in the backend. Log in with your unique user &amp; password on your phone or computer to access your game anywhere.
+                      Your progress, stars, and character customization automatically sync across all your devices.
                     </p>
                   </div>
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                  <span>Synced Account: <b className="text-amber-400">@{account.username}</b></span>
+                  <span>Signed in as: <b className="text-amber-400">@{account.username}</b> ({account.role === 'teacher' ? 'Educator' : 'Parent/Family'})</span>
                   <span className="text-emerald-400 font-bold">● Cloud Connected</span>
                 </div>
               </div>
 
+              {/* TEACHER ONLY: CLASSROOM & LEADERBOARD RESET FOR NEW SCHOOL YEAR */}
+              {account.role === 'teacher' && (
+                <div className="p-4 rounded-2xl bg-slate-950 border-2 border-rose-500/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-black text-rose-400 uppercase tracking-wide flex items-center gap-1.5">
+                        <GraduationCap className="w-4 h-4 text-rose-400" />
+                        <span>Educator Year-End Reset</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5 max-w-md">
+                        Resets all classroom explorer progress to Stage 1 and <b>completely purges the class leaderboard</b> so you can start a fresh cohort of students every school year.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleTeacherClassroomReset}
+                      className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-lg transition-transform hover:scale-105 active:scale-95"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Reset Class &amp; Board</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Reset Single Explorer Story Progress */}
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
                 <div>
                   <div className="text-xs font-black text-rose-400 uppercase tracking-wide">
                     Reset Active Story Progress
                   </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Resets completed lands back to Sound Shallows (keeps Eternal Flamekeepers status).
+                    Resets completed lands for {activeExplorer.name} back to Sound Shallows.
                   </p>
                 </div>
                 <button
@@ -763,13 +907,14 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       sounds.playFanfare();
                     }
                   }}
-                  className="px-3 py-2 rounded-xl bg-rose-950 hover:bg-rose-900 border border-rose-500/60 text-rose-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Reset</span>
+                  <span>Reset Progress</span>
                 </button>
               </div>
 
+              {/* Log Out */}
               <div className="pt-2">
                 <button
                   onClick={() => {

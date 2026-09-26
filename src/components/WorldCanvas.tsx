@@ -5,8 +5,8 @@ import { LandmarkNode, LandId, MinigameId } from '../types/character';
 import { sounds, VOICE_PERSONAS } from '../utils/audio';
 import { 
   Lock, Volume2, VolumeX, Home, Play, Star, Footprints, 
-  Sparkles, Compass, Gamepad2, Blocks, Trees, Mountain, 
-  Landmark, Waves, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Mic, X, ChevronsUp
+  Sparkles, Compass, Gamepad2, ArrowUp, ArrowDown, 
+  ArrowLeft, ArrowRight, Mic, X, ChevronsUp, Flag, CheckCircle2
 } from 'lucide-react';
 import phonixiaMap from '../../phonixia.png';
 
@@ -24,10 +24,10 @@ export const LANDMARK_NODES: LandmarkNode[] = [
     targetAge: 'All Explorers',
     x: 10,
     y: 65,
-    icon: '',
+    icon: '🛖',
     color: '#854d0e',
     accentColor: '#fde047',
-    description: 'Harbor pier hut. View synced scores, switch explorers, check reading progress, and manage settings.'
+    description: 'Harbor pier hub. View synced scores, switch explorers, check reading progress, and manage settings.'
   },
   {
     id: 'sound-shallows',
@@ -36,10 +36,10 @@ export const LANDMARK_NODES: LandmarkNode[] = [
     targetAge: 'Preschool',
     x: 50,
     y: 45,
-    icon: '',
+    icon: '🌊',
     color: '#0284c7',
     accentColor: '#38bdf8',
-    description: 'The Grand Phoenix Citadel. Pure letter sounds, rhyming shells, and gentle sound blending.'
+    description: 'The Grand Golden Phonix Citadel. Pure letter sounds, rhyming shells, and gentle sound blending.'
   },
   {
     id: 'builders-guild',
@@ -48,10 +48,10 @@ export const LANDMARK_NODES: LandmarkNode[] = [
     targetAge: 'Kindergarten',
     x: 18,
     y: 28,
-    icon: '',
+    icon: '🏗️',
     color: '#d97706',
     accentColor: '#fbbf24',
-    description: 'Harbor workshop quarries. Stack CVC blocks, weld SH/CH/TH digraphs, and learn double consonant rules.'
+    description: 'Harbor workshop quarries. Stack CVC blocks, hoist crane keystones, and learn digraph rules.'
   },
   {
     id: 'tricky-trails',
@@ -60,10 +60,10 @@ export const LANDMARK_NODES: LandmarkNode[] = [
     targetAge: 'Early Elementary',
     x: 50,
     y: 82,
-    icon: '',
+    icon: '🌿',
     color: '#059669',
     accentColor: '#34d399',
-    description: 'Enchanted mossy paths. Magic Silent E trails, tricky sight stones, and compound canopy paths.'
+    description: 'Enchanted mossy paths. Magic Silent E trails, raptor rides, and compound canopy paths.'
   },
   {
     id: 'whispering-peaks',
@@ -72,22 +72,22 @@ export const LANDMARK_NODES: LandmarkNode[] = [
     targetAge: 'Late Elementary',
     x: 80,
     y: 26,
-    icon: '',
+    icon: '🏔️',
     color: '#4f46e5',
     accentColor: '#818cf8',
-    description: 'Glacial alpine peaks. Complex vowel teams, Bossy R storms, syllable divide ridges, and silent letters.'
+    description: 'Glacial alpine peaks. Snowboard over clouds, solve vowel glaciers, and dodge frost storms.'
   },
   {
     id: 'lexicon-empire',
     name: 'Lexicon Empire',
-    tagline: 'Roots, Affixes & Rules',
+    tagline: 'Final Boss & Castle Gauntlet',
     targetAge: 'Middle to High School',
     x: 82,
     y: 72,
-    icon: '',
+    icon: '👑',
     color: '#b45309',
     accentColor: '#f59e0b',
-    description: 'Grand golden acropolis. Greek and Latin roots, advanced spelling rules, and etymology.'
+    description: 'Throne citadel fortress. Defeat the Shadow King to rescue the Golden Phonix!'
   }
 ];
 
@@ -111,9 +111,11 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
   const [nearbyNode, setNearbyNode] = useState<{ id: string; name: string; tagline?: string; description?: string } | null>(null);
   const [lockNotice, setLockNotice] = useState<string | null>(null);
 
-  // Jump physics on world map
+  // Mario World Map Jump & Leap Physics
   const [jumpOffset, setJumpOffset] = useState<number>(0);
   const [isJumping, setIsJumping] = useState<boolean>(false);
+  const [transitioningNodeId, setTransitioningNodeId] = useState<string | null>(null);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   const triggerWorldJump = useCallback(() => {
     if (isJumping) return;
@@ -162,46 +164,57 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
 
   const triggerNodeEnter = useCallback((targetId: string, targetName: string) => {
     sounds.stopSpeech();
-    if (targetId === 'home-hut') {
-      sounds.speak('Welcome home to the Family Hub! Ready to check your reading progress?', 0.92, 1.2);
-      onOpenHomeHut();
-    } else if (targetId === 'isles-of-play') {
-      sounds.playSuccess();
-      sounds.speak('Welcome to the Isles of Play!', 0.92, 1.2);
-      onSelectMinigame('isles-of-play');
-    } else if (targetId === 'shellshore-arcade') {
-      sounds.playSuccess();
-      sounds.speak('Entering Shellshore Arcade!', 0.92, 1.2);
-      onSelectMinigame('shellshore-arcade');
-    } else if (['sound-shallows', 'builders-guild', 'tricky-trails', 'whispering-peaks', 'lexicon-empire'].includes(targetId)) {
+
+    // Check lock status before triggering Mario pipe-hop
+    const isLand = ['sound-shallows', 'builders-guild', 'tricky-trails', 'whispering-peaks', 'lexicon-empire'].includes(targetId);
+    if (isLand) {
       const landId = targetId as LandId;
-      if (isLandUnlocked(landId, activeExplorer.landScores)) {
-        sounds.playSuccess();
-        sounds.speak(`Entering ${targetName}! Let's read!`, 0.92, 1.2);
-        onSelectLand(landId);
-      } else {
+      if (!isLandUnlocked(landId, activeExplorer.landScores)) {
         sounds.playError();
         const prevLandName = targetId === 'builders-guild' ? 'Sound Shallows'
           : targetId === 'tricky-trails' ? 'Builders Guild'
           : targetId === 'whispering-peaks' ? 'Tricky Trails'
           : 'Whispering Peaks';
-        const msg = `${targetName} is locked! Complete ${prevLandName} first to unlock this land.`;
+        const msg = `${targetName} is locked! Complete ${prevLandName} first to unlock this world.`;
         setLockNotice(msg);
         sounds.speak(`This land is locked. Complete ${prevLandName} to unlock!`, 0.88, 1.18);
         setTimeout(() => setLockNotice(null), 3800);
+        return;
       }
     }
+
+    // Mario Bouncy Leap Transition
+    sounds.playJump();
+    setTransitioningNodeId(targetId);
+
+    setTimeout(() => {
+      sounds.playFanfare();
+      if (targetId === 'home-hut') {
+        sounds.speak('Welcome home to the Family Hub! Ready to check your reading progress?', 0.92, 1.2);
+        onOpenHomeHut();
+      } else if (targetId === 'isles-of-play') {
+        sounds.speak('Welcome to the Isles of Play!', 0.92, 1.2);
+        onSelectMinigame('isles-of-play');
+      } else if (targetId === 'shellshore-arcade') {
+        sounds.speak('Entering Shellshore Arcade!', 0.92, 1.2);
+        onSelectMinigame('shellshore-arcade');
+      } else if (isLand) {
+        sounds.speak(`Entering ${targetName}! Let's read!`, 0.92, 1.2);
+        onSelectLand(targetId as LandId);
+      }
+      setTransitioningNodeId(null);
+    }, 550);
   }, [activeExplorer, onOpenHomeHut, onSelectLand, onSelectMinigame]);
 
   const checkProximity = useCallback((x: number, y: number) => {
     const allLocations = [
       ...LANDMARK_NODES,
-      { id: 'isles-of-play', name: 'Isles of Play', tagline: 'Letter Islands', description: 'Fun phonics games.', x: 15, y: 52 },
-      { id: 'shellshore-arcade', name: 'Shellshore Arcade', tagline: 'Seashell Beach', description: 'Fun phonics arcade.', x: 14, y: 82 }
+      { id: 'isles-of-play', name: 'Isles of Play', tagline: 'Letter Islands', description: 'Fun phonics games.', x: 15, y: 52, icon: '🎮' },
+      { id: 'shellshore-arcade', name: 'Shellshore Arcade', tagline: 'Seashell Beach', description: 'Fun phonics arcade.', x: 14, y: 82, icon: '🕹️' }
     ];
 
     let closest: { id: string; name: string; tagline?: string; description?: string; x: number; y: number } | null = null;
-    let minDistance = 8;
+    let minDistance = 7;
 
     allLocations.forEach((node) => {
       const dist = Math.hypot(node.x - x, node.y - y);
@@ -214,14 +227,14 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     setNearbyNode(closest);
 
     const now = Date.now();
-    if (closest && minDistance < 5.2 && now > enterCooldown.current) {
+    if (closest && minDistance < 4.8 && now > enterCooldown.current) {
       const target = closest;
       if (lastEnteredNodeId.current !== target.id) {
         lastEnteredNodeId.current = target.id;
-        enterCooldown.current = now + 1800;
+        enterCooldown.current = now + 2000;
         triggerNodeEnter(target.id, target.name);
       }
-    } else if (!closest || minDistance > 7.5) {
+    } else if (!closest || minDistance > 7.0) {
       lastEnteredNodeId.current = null;
     }
   }, [triggerNodeEnter]);
@@ -257,7 +270,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         matched = true;
       }
 
-      // Space bar (arrow keys) and Tab (WASD) jump action
       if (k === ' ' || k === 'tab' || code === 'Space' || code === 'Tab') {
         e.preventDefault();
         matched = true;
@@ -312,7 +324,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [nearbyNode, triggerNodeEnter]);
+  }, [nearbyNode, triggerNodeEnter, triggerWorldJump]);
 
   useEffect(() => {
     let prevTime = performance.now();
@@ -408,11 +420,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     targetPosRef.current = { x: clickX, y: clickY };
   };
 
-  const handleFastTravel = (node: LandmarkNode) => {
-    sounds.stopSpeech();
-    triggerNodeEnter(node.id, node.name);
-  };
-
   const handleDpadPress = (dir: 'up' | 'down' | 'left' | 'right') => {
     containerRef.current?.focus();
     dirKeysRef.current[dir] = true;
@@ -426,6 +433,18 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     const anyActive = dirKeysRef.current.up || dirKeysRef.current.down || dirKeysRef.current.left || dirKeysRef.current.right;
     if (!anyActive) lastKeyTimeRef.current = 0;
   };
+
+  // Helper list of all map locations for dot rendering
+  const allMapNodes = [
+    { ...LANDMARK_NODES[0], isLand: false }, // Home Hut
+    { id: 'isles-of-play', name: 'Isles of Play', tagline: '25 Phonics Island Games', description: 'Explore endless phonics mini-games across the archipelago.', x: 15, y: 52, icon: '🎮', isLand: false },
+    { id: 'shellshore-arcade', name: 'Shellshore Arcade', tagline: '25 Arcade Cabinets', description: 'Mario Party-style arcade phonics games.', x: 14, y: 82, icon: '🕹️', isLand: false },
+    { ...LANDMARK_NODES[1], isLand: true }, // Sound Shallows
+    { ...LANDMARK_NODES[2], isLand: true }, // Builders Guild
+    { ...LANDMARK_NODES[3], isLand: true }, // Tricky Trails
+    { ...LANDMARK_NODES[4], isLand: true }, // Whispering Peaks
+    { ...LANDMARK_NODES[5], isLand: true }, // Lexicon Empire (Boss Citadel)
+  ];
 
   return (
     <div
@@ -469,7 +488,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
               sounds.stopSpeech();
               setShowVoiceModal(true);
             }}
-            title="Choose Phonics Voice (Ms. Rachel, US/UK)"
+            title="Choose Phonics Voice"
             className="h-8 sm:h-10 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-500/70 text-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-xl cursor-pointer transition-transform hover:scale-105 active:scale-95"
           >
             <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
@@ -523,219 +542,103 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           className="absolute inset-0 w-full h-full object-fill select-none z-0"
         />
 
-        {/* 1. HOME HUT */}
-        <div
-          className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-          style={{ left: '10%', top: '65%' }}
-          onClick={(e) => {
-            e.stopPropagation();
-            sounds.stopSpeech();
-            onOpenHomeHut();
-          }}
-        >
-          <div className="w-20 sm:w-24 h-16 sm:h-20 rounded-2xl bg-amber-950/80 hover:bg-amber-900/90 p-1.5 sm:p-2 shadow-xl border-2 border-amber-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-            <Home className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
-            <span className="text-[9px] sm:text-[10px] font-black text-amber-200 uppercase tracking-wider mt-0.5">Home Hut</span>
-          </div>
-        </div>
+        {/* Mario World Connecting Paths */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-5 opacity-40">
+          <line x1="10%" y1="65%" x2="15%" y2="52%" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="4 3" />
+          <line x1="15%" y1="52%" x2="14%" y2="82%" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="4 3" />
+          <line x1="15%" y1="52%" x2="50%" y2="45%" stroke="#38bdf8" strokeWidth="3" strokeDasharray="5 3" />
+          <line x1="50%" y1="45%" x2="18%" y2="28%" stroke="#fbbf24" strokeWidth="3" strokeDasharray="5 3" />
+          <line x1="18%" y1="28%" x2="50%" y2="82%" stroke="#34d399" strokeWidth="3" strokeDasharray="5 3" />
+          <line x1="50%" y1="82%" x2="80%" y2="26%" stroke="#818cf8" strokeWidth="3" strokeDasharray="5 3" />
+          <line x1="80%" y1="26%" x2="82%" y2="72%" stroke="#f59e0b" strokeWidth="3.5" strokeDasharray="6 3" />
+        </svg>
 
-        {/* 2. ISLES OF PLAY */}
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            sounds.stopSpeech();
-            onSelectMinigame('isles-of-play');
-          }}
-          className="absolute left-[15%] top-[52%] z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-        >
-          <div className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-950/90 border border-teal-400 shadow-xl flex items-center gap-1 sm:gap-1.5 text-teal-200 backdrop-blur-sm">
-            <Gamepad2 className="w-3.5 h-3.5 text-teal-300" />
-            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">Isles of Play</span>
-          </div>
-        </div>
+        {/* MARIO-STYLE LEVEL & AREA DOT NODES */}
+        {allMapNodes.map((node) => {
+          const isLand = node.isLand;
+          const unlocked = !isLand || node.id === 'sound-shallows' || isLandUnlocked(node.id as LandId, activeExplorer.landScores);
+          const isBoss = node.id === 'lexicon-empire';
+          const isNearby = nearbyNode?.id === node.id;
+          const isHovered = hoveredNodeId === node.id;
+          const isLeaping = transitioningNodeId === node.id;
 
-        {/* 3. SHELLSHORE ARCADE */}
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            sounds.stopSpeech();
-            onSelectMinigame('shellshore-arcade');
-          }}
-          className="absolute left-[14%] top-[82%] z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-        >
-          <div className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-950/90 border border-sky-400 shadow-xl flex items-center gap-1 sm:gap-1.5 text-sky-200 backdrop-blur-sm">
-            <Compass className="w-3.5 h-3.5 text-sky-300" />
-            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">Shellshore Arcade</span>
-          </div>
-        </div>
+          const landStars = isLand && activeExplorer.landScores[node.id as LandId] 
+            ? activeExplorer.landScores[node.id as LandId].stars 
+            : 0;
 
-        {/* 4. SOUND SHALLOWS */}
-        <div
-          className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-          style={{ left: '50%', top: '45%' }}
-          onClick={(e) => {
-            e.stopPropagation();
-            sounds.stopSpeech();
-            onSelectLand('sound-shallows');
-          }}
-        >
-          <div className="w-28 sm:w-34 h-20 sm:h-24 rounded-2xl bg-sky-950/80 hover:bg-sky-900/90 p-1.5 sm:p-2 shadow-2xl border-2 border-sky-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-            <Waves className="w-5 h-5 sm:w-6 sm:h-6 text-sky-300" />
-            <div className="text-[10px] sm:text-[11px] font-black text-sky-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
-              Sound Shallows
-            </div>
-            <div className="absolute -bottom-2.5 bg-slate-950/95 border border-sky-400 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-              <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
-                {activeExplorer.landScores['sound-shallows'].stars}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 5. BUILDERS GUILD */}
-        {(() => {
-          const unlocked = isLandUnlocked('builders-guild', activeExplorer.landScores);
           return (
             <div
-              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-              style={{ left: '18%', top: '28%' }}
+              key={node.id}
+              style={{ left: `${node.x}%`, top: `${node.y}%` }}
+              onMouseEnter={() => setHoveredNodeId(node.id)}
+              onMouseLeave={() => setHoveredNodeId(null)}
               onClick={(e) => {
                 e.stopPropagation();
-                sounds.stopSpeech();
-                if (unlocked) onSelectLand('builders-guild');
-                else triggerNodeEnter(LANDMARK_NODES[2].id, LANDMARK_NODES[2].name);
+                triggerNodeEnter(node.id, node.name);
               }}
+              className="absolute z-15 -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
             >
-              <div className="w-26 sm:w-32 h-20 sm:h-24 rounded-2xl bg-amber-950/80 p-1.5 sm:p-2 shadow-2xl border-2 border-amber-500/80 flex flex-col items-center justify-center backdrop-blur-sm">
-                <Blocks className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300" />
-                <div className="text-[10px] sm:text-[11px] font-black text-amber-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
-                  Builders Guild
-                </div>
-                <div className="absolute -bottom-2.5 bg-slate-950/95 border border-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  {!unlocked ? (
-                    <Lock className="w-2.5 h-2.5 text-amber-400" />
-                  ) : (
-                    <>
-                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                      <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
-                        {activeExplorer.landScores['builders-guild'].stars}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+              {/* Lil Black Mario Dot / Castle Checkpoint */}
+              <div
+                className={`relative rounded-full flex items-center justify-center transition-all ${
+                  isBoss
+                    ? 'w-9 h-9 sm:w-11 sm:h-11 bg-rose-950 border-3 border-amber-400 shadow-[0_0_20px_rgba(244,63,94,0.8)]'
+                    : isLand
+                    ? 'w-6 h-6 sm:w-7 sm:h-7 bg-black border-2 shadow-lg'
+                    : 'w-5 h-5 sm:w-6 sm:h-6 bg-black border-2 border-slate-600'
+                } ${
+                  unlocked
+                    ? isBoss
+                      ? 'border-amber-300 ring-2 ring-rose-500'
+                      : isNearby
+                      ? 'scale-130 border-amber-300 bg-amber-500 ring-4 ring-amber-400/80 animate-bounce'
+                      : 'border-amber-400 hover:scale-120'
+                    : 'border-slate-700 bg-slate-900 opacity-60'
+                }`}
+              >
+                {/* Node Icon / Checkpoint Flag */}
+                {isBoss ? (
+                  <span className="text-base sm:text-lg">🏰</span>
+                ) : !unlocked ? (
+                  <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-500" />
+                ) : isNearby ? (
+                  <span className="w-2 h-2 rounded-full bg-slate-950" />
+                ) : (
+                  <span className="text-[11px] sm:text-xs">{node.icon}</span>
+                )}
 
-        {/* 6. TRICKY TRAILS */}
-        {(() => {
-          const unlocked = isLandUnlocked('tricky-trails', activeExplorer.landScores);
-          return (
-            <div
-              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-              style={{ left: '50%', top: '82%' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                sounds.stopSpeech();
-                if (unlocked) onSelectLand('tricky-trails');
-                else triggerNodeEnter(LANDMARK_NODES[3].id, LANDMARK_NODES[3].name);
-              }}
-            >
-              <div className="w-26 sm:w-32 h-20 sm:h-24 rounded-2xl bg-emerald-950/80 p-1.5 sm:p-2 shadow-2xl border-2 border-emerald-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-                <Trees className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300" />
-                <div className="text-[10px] sm:text-[11px] font-black text-emerald-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
-                  Tricky Trails
-                </div>
-                <div className="absolute -bottom-2.5 bg-slate-950/95 border border-emerald-400 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  {!unlocked ? (
-                    <Lock className="w-2.5 h-2.5 text-emerald-400" />
-                  ) : (
-                    <>
-                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                      <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
-                        {activeExplorer.landScores['tricky-trails'].stars}
-                      </span>
-                    </>
-                  )}
-                </div>
+                {/* Cleared Mario Flag on unlocked lands */}
+                {unlocked && isLand && landStars > 0 && !isBoss && (
+                  <div className="absolute -top-3.5 -right-1 text-[10px] animate-pulse">
+                    🚩
+                  </div>
+                )}
               </div>
-            </div>
-          );
-        })()}
 
-        {/* 7. WHISPERING PEAKS */}
-        {(() => {
-          const unlocked = isLandUnlocked('whispering-peaks', activeExplorer.landScores);
-          return (
-            <div
-              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-              style={{ left: '80%', top: '26%' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                sounds.stopSpeech();
-                if (unlocked) onSelectLand('whispering-peaks');
-                else triggerNodeEnter(LANDMARK_NODES[4].id, LANDMARK_NODES[4].name);
-              }}
-            >
-              <div className="w-26 sm:w-32 h-20 sm:h-24 rounded-2xl bg-indigo-950/80 p-1.5 sm:p-2 shadow-2xl border-2 border-indigo-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-                <Mountain className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-300" />
-                <div className="text-[10px] sm:text-[11px] font-black text-indigo-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
-                  Whispering Peaks
+              {/* Mario Pipe-Hop Leap Effect when clicked */}
+              {isLeaping && (
+                <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center animate-bounce">
+                  <span className="text-xl">⭐</span>
+                  <AvatarRenderer customization={activeExplorer.customization} size={42} showPet={false} />
                 </div>
-                <div className="absolute -bottom-2.5 bg-slate-950/95 border border-indigo-400 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  {!unlocked ? (
-                    <Lock className="w-2.5 h-2.5 text-indigo-400" />
-                  ) : (
-                    <>
-                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                      <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
-                        {activeExplorer.landScores['whispering-peaks'].stars}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+              )}
 
-        {/* 8. LEXICON EMPIRE */}
-        {(() => {
-          const unlocked = isLandUnlocked('lexicon-empire', activeExplorer.landScores);
-          return (
-            <div
-              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-              style={{ left: '82%', top: '72%' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                sounds.stopSpeech();
-                if (unlocked) onSelectLand('lexicon-empire');
-                else triggerNodeEnter(LANDMARK_NODES[5].id, LANDMARK_NODES[5].name);
-              }}
-            >
-              <div className="w-26 sm:w-32 h-20 sm:h-24 rounded-2xl bg-amber-950/80 p-1.5 sm:p-2 shadow-2xl border-2 border-amber-400/80 flex flex-col items-center justify-center backdrop-blur-sm">
-                <Landmark className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300" />
-                <div className="text-[10px] sm:text-[11px] font-black text-amber-200 uppercase tracking-wider text-center mt-0.5 leading-tight">
-                  Lexicon Empire
+              {/* Pop-Over Bouncy Mario Banner on Hover or Proximity */}
+              {(isHovered || isNearby) && !isLeaping && (
+                <div className="absolute bottom-8 sm:bottom-9 left-1/2 -translate-x-1/2 bg-slate-950/95 border-2 border-amber-400 px-3 py-1.5 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.6)] whitespace-nowrap z-40 text-center animate-scale-up pointer-events-none">
+                  <div className="text-[11px] font-black text-amber-200 flex items-center justify-center gap-1">
+                    <span>{node.icon}</span>
+                    <span>{node.name}</span>
+                    {!unlocked && <Lock className="w-2.5 h-2.5 text-rose-400" />}
+                  </div>
+                  <div className="text-[9px] font-bold text-slate-300">
+                    {unlocked ? (isLand ? `${landStars} Stars · Click to Enter` : 'Open Area') : 'Locked · Finish previous land'}
+                  </div>
                 </div>
-                <div className="absolute -bottom-2.5 bg-slate-950/95 border border-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  {!unlocked ? (
-                    <Lock className="w-2.5 h-2.5 text-amber-400" />
-                  ) : (
-                    <>
-                      <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                      <span className="text-[9px] sm:text-[10px] font-bold text-amber-300">
-                        {activeExplorer.landScores['lexicon-empire'].stars}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           );
-        })()}
+        })}
 
         {/* Ground Shadow underneath Avatar */}
         <div
@@ -750,7 +653,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           <div className="w-9 h-2.5 bg-black/60 rounded-full blur-[1px]" />
         </div>
 
-        {/* TRAVELING COMPANION GUIDE (Kam or Celine) */}
+        {/* TRAVELING COMPANION (Kam or Celine) */}
         <div
           className="absolute z-25 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-100"
           style={{ 
@@ -802,7 +705,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           />
         </div>
 
-        {/* D-PAD WITH JUMP BUTTON */}
+        {/* MARIO OVERWORLD D-PAD & JUMP BUTTON */}
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
@@ -863,7 +766,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
             </div>
           </div>
 
-          {/* Arcade Jump Button */}
           <button
             onMouseDown={triggerWorldJump}
             onTouchStart={(e) => { e.preventDefault(); triggerWorldJump(); }}
@@ -879,7 +781,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         </div>
       </div>
 
-      {/* BOTTOM TRAVEL / PROXIMITY BAR */}
+      {/* BOTTOM MARIO WORLD DOCK */}
       <div 
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
@@ -893,7 +795,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
             <span className="text-xs font-bold text-slate-100">{nearbyNode.name}</span>
             <button
               onClick={() => {
-                sounds.stopSpeech();
                 triggerNodeEnter(nearbyNode.id, nearbyNode.name);
               }}
               className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1 cursor-pointer"
@@ -905,7 +806,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         ) : (
           <div className="flex items-center gap-1.5 text-xs text-slate-400 pl-1">
             <Footprints className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-[11px] hidden xs:inline">Tap map or use arrows to explore!</span>
+            <span className="text-[11px] hidden xs:inline">Jump onto dots or tap landmarks to enter!</span>
           </div>
         )}
 
@@ -917,10 +818,10 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
             return (
               <button
                 key={node.id}
-                onClick={() => handleFastTravel(node)}
+                onClick={() => triggerNodeEnter(node.id, node.name)}
                 className={`px-2 py-1 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 border ${
                   unlocked
-                    ? 'bg-slate-900 text-slate-200 border-amber-500/30'
+                    ? 'bg-slate-900 text-slate-200 border-amber-500/30 hover:border-amber-400'
                     : 'bg-slate-950 text-slate-600 border-slate-800 opacity-60'
                 }`}
               >

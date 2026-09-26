@@ -4,7 +4,7 @@
     "username": "readingheroes",
     "salt": "edea1da3976daae316c4f23cf622edf9",
     "passwordHash": "ed8a89c0cf8e8ba4bb2b8eefee265284219bba24d40c467c6cf2b4c776403cc3",
-    "updatedAt": "2026-09-26T06:24:44.233Z",
+    "updatedAt": "2026-09-26T16:36:18.376Z",
     "accountData": {
       "id": "acc-1",
       "familyName": "Explorer Family",
@@ -18,15 +18,15 @@
           "companionGuide": "kam",
           "ageTier": "preschool",
           "level": 1,
-          "totalStars": 12,
-          "coins": 40,
-          "arcadeTokens": 5,
+          "totalStars": 15,
+          "coins": 55,
+          "arcadeTokens": 7,
           "isHallOfFameInducted": false,
           "timesStorylineCompleted": 0,
           "landScores": {
             "sound-shallows": {
-              "completedGamesCount": 4,
-              "stars": 12,
+              "completedGamesCount": 5,
+              "stars": 15,
               "unlocked": true
             },
             "builders-guild": {
@@ -67,35 +67,35 @@
           "companionGuide": "celine",
           "ageTier": "late-elementary",
           "level": 50,
-          "totalStars": 750,
-          "coins": 850,
-          "arcadeTokens": 120,
+          "totalStars": 774,
+          "coins": 895,
+          "arcadeTokens": 126,
           "isHallOfFameInducted": true,
           "timesStorylineCompleted": 1,
           "landScores": {
             "sound-shallows": {
               "completedGamesCount": 50,
-              "stars": 150,
+              "stars": 159,
               "unlocked": true
             },
             "builders-guild": {
               "completedGamesCount": 50,
-              "stars": 150,
+              "stars": 153,
               "unlocked": true
             },
             "tricky-trails": {
               "completedGamesCount": 50,
-              "stars": 150,
+              "stars": 156,
               "unlocked": true
             },
             "whispering-peaks": {
               "completedGamesCount": 50,
-              "stars": 150,
+              "stars": 153,
               "unlocked": true
             },
             "lexicon-empire": {
               "completedGamesCount": 50,
-              "stars": 150,
+              "stars": 153,
               "unlocked": true
             }
           },

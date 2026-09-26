@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame, KAM_GUIDE, CELINE_GUIDE } from '../context/GameContext';
 import { AvatarCustomization } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
-import { Sparkles, Check, RotateCcw } from 'lucide-react';
+import { Sparkles, Check, RotateCcw, User, Heart, Star } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
 interface CharacterCreatorProps {
@@ -40,26 +40,48 @@ const HEADGEARS: { id: string; label: string }[] = [
 ];
 
 const COMPANIONS: { id: string; label: string; icon: string; lore: string }[] = [
-  { id: 'phoenix-chick', label: 'Phoenix Chick', icon: '🔥', lore: 'Sparks flame warmth when reading tricky sounds' },
-  { id: 'clever-fox', label: 'Clever Fox', icon: '🦊', lore: 'Sniffs out hidden sight words on Tricky Trails' },
-  { id: 'golden-eagle', label: 'Golden Eagle', icon: '🦅', lore: 'Glides high across Whispering Peaks vowel glaciers' },
-  { id: 'coral-turtle', label: 'Coral Turtle', icon: '🐢', lore: 'Swims calmly through Sound Shallows rhythm waters' },
-  { id: 'gem-golem', label: 'Gem Golem', icon: '💎', lore: 'Chisels sturdy CVC stone in Builders Guild' }
+  { id: 'baby-dragon', label: 'Kam\'s Baby Dragon', icon: '🐲', lore: 'Kam\'s loyal drake that breathes sound-sparks' },
+  { id: 'feather-owl', label: 'Celine\'s Starlight Owl', icon: '🦉', lore: 'Celine\'s swift night-glider that spots vowel blends' },
+  { id: 'golden-phonix', label: 'Golden Phoenix', icon: '🔥', lore: 'Sparks flame warmth when reading tricky sounds' },
+  { id: 'woodland-fox', label: 'Clever Fox', icon: '🦊', lore: 'Sniffs out hidden sight words on Tricky Trails' },
+  { id: 'sea-turtle', label: 'Coral Turtle', icon: '🐢', lore: 'Swims calmly through Sound Shallows rhythm waters' }
 ];
 
 export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) => {
-  const { activeExplorer, updateAvatarCustomization } = useGame();
+  const { activeExplorer, updateAvatarCustomization, updateExplorerGender } = useGame();
+  const [selectedGender, setSelectedGender] = useState<'boy' | 'girl'>(activeExplorer.gender || 'boy');
   const [custom, setCustom] = useState<AvatarCustomization>({ ...activeExplorer.customization });
   const [activeTab, setActiveTab] = useState<'style' | 'outfit' | 'pet'>('style');
 
+  const handleGenderChange = (gender: 'boy' | 'girl') => {
+    setSelectedGender(gender);
+    sounds.playStep();
+    if (gender === 'boy') {
+      setCustom(prev => ({
+        ...prev,
+        companionPet: 'baby-dragon',
+        title: 'Adventurer with Kam',
+        outfitColor: prev.outfitColor === '#ec4899' ? '#3b82f6' : prev.outfitColor
+      }));
+    } else {
+      setCustom(prev => ({
+        ...prev,
+        companionPet: 'feather-owl',
+        title: 'Adventurer with Celine',
+        outfitColor: prev.outfitColor === '#3b82f6' ? '#ec4899' : prev.outfitColor
+      }));
+    }
+  };
+
   const handleSave = () => {
+    updateExplorerGender(activeExplorer.id, selectedGender);
     updateAvatarCustomization(custom);
     sounds.playFanfare();
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
       <div className="relative w-full max-w-3xl bg-slate-900 border-2 border-amber-500/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="px-6 py-4 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between">
@@ -70,7 +92,7 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
                 Explorer Studio · {activeExplorer.name}
               </h2>
               <p className="text-xs text-slate-400">
-                Customize your phonics adventurer and companion pet
+                Customize explorer gender, companion, outfit, and gear
               </p>
             </div>
           </div>
@@ -95,13 +117,56 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
             <span className="text-xs text-amber-400 font-medium">
               {custom.title}
             </span>
-            <div className="mt-4 text-[11px] text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
-              Companion: <b className="text-slate-200 capitalize">{custom.companionPet.replace('-', ' ')}</b>
+            <div className="mt-3 text-[11px] text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800 flex items-center justify-center gap-1.5">
+              <span>Companion:</span>
+              <b className="text-amber-300">
+                {selectedGender === 'boy' ? 'Kam (Boy Companion)' : 'Celine (Girl Companion)'}
+              </b>
             </div>
           </div>
 
           {/* Right Tabs & Controls */}
           <div className="md:col-span-8 space-y-4">
+            {/* Gender Toggle Selector */}
+            <div className="p-3 bg-slate-950 rounded-2xl border border-amber-500/30 space-y-1.5">
+              <label className="text-[11px] font-black text-amber-300 uppercase tracking-wider block">
+                Explorer Gender &amp; Companion
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleGenderChange('boy')}
+                  className={`p-2 rounded-xl border text-left cursor-pointer transition-all flex items-center gap-2 ${
+                    selectedGender === 'boy'
+                      ? 'bg-blue-950/70 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)] ring-1 ring-amber-400'
+                      : 'bg-slate-900 border-slate-800 opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <span className="text-xl">👦</span>
+                  <div>
+                    <div className="text-xs font-black text-amber-200">Boy Explorer</div>
+                    <div className="text-[10px] text-blue-300 font-bold">Kam Travels with You</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleGenderChange('girl')}
+                  className={`p-2 rounded-xl border text-left cursor-pointer transition-all flex items-center gap-2 ${
+                    selectedGender === 'girl'
+                      ? 'bg-pink-950/70 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)] ring-1 ring-amber-400'
+                      : 'bg-slate-900 border-slate-800 opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <span className="text-xl">👧</span>
+                  <div>
+                    <div className="text-xs font-black text-amber-200">Girl Explorer</div>
+                    <div className="text-[10px] text-pink-300 font-bold">Celine Travels with You</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             {/* Tab Navigation */}
             <div className="flex items-center gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
               <button
@@ -110,7 +175,7 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
                   activeTab === 'style' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Hair & Skin
+                Hair &amp; Skin
               </button>
               <button
                 onClick={() => setActiveTab('outfit')}
@@ -118,7 +183,7 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
                   activeTab === 'outfit' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Outfit & Gear
+                Outfit &amp; Gear
               </button>
               <button
                 onClick={() => setActiveTab('pet')}
@@ -205,11 +270,11 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
                       <button
                         key={outfit.id}
                         onClick={() => {
-                          setCustom(c => ({ ...c, outfit: outfit.id }));
+                          setCustom(c => ({ ...c, outfitStyle: outfit.id }));
                           sounds.playStep();
                         }}
                         className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                          custom.outfit === outfit.id
+                          custom.outfitStyle === outfit.id
                             ? 'bg-amber-500/20 border-amber-400 text-amber-200'
                             : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
                         }`}
@@ -218,24 +283,24 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
                           <div className="text-xs font-bold">{outfit.label}</div>
                           <div className="text-[11px] text-slate-400">{outfit.desc}</div>
                         </div>
-                        {custom.outfit === outfit.id && <Check className="w-4 h-4 text-amber-400" />}
+                        {custom.outfitStyle === outfit.id && <Check className="w-4 h-4 text-amber-400" />}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-2">Headgear</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-2">Headgear &amp; Accessories</label>
                   <div className="grid grid-cols-3 gap-2">
                     {HEADGEARS.map(gear => (
                       <button
                         key={gear.id}
                         onClick={() => {
-                          setCustom(c => ({ ...c, headgear: gear.id }));
+                          setCustom(c => ({ ...c, accessory: gear.id }));
                           sounds.playStep();
                         }}
                         className={`p-2 rounded-xl text-xs font-medium border text-center transition-all cursor-pointer ${
-                          custom.headgear === gear.id
+                          custom.accessory === gear.id
                             ? 'bg-amber-500/20 border-amber-400 text-amber-200'
                             : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                         }`}

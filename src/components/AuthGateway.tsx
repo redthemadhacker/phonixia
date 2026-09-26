@@ -253,7 +253,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
           </form>
         )}
 
-        {/* Quick Guest Play */}
+        {/* Quick Guest lay */}
         <div className="pt-2 border-t border-slate-800 text-center">
           <button
             type="button"

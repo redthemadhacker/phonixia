@@ -1,6 +1,6 @@
 {
   "name": "Phonixia - Phonics Educational Adventure Game",
-  "description": "An immersive educational phonics adventure game for preschool through middle school explorers, bridging reading gaps across five magical lands with interactive gameplay, character creation, multi-explorer accounts, and arcade minigames.",
+  "description": "Join Kam and Celine in the quest to save Phonixia! Travel across 5 magical realms to defeat the Shadow King, rescue the Golden Phoenix, and earn your place among the Eternal Flamekeepers.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

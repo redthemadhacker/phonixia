@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame, getCompanionGuide } from '../context/GameContext';
 import { LandId } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
+import { ActivePlayableStage } from './ActivePlayableStage';
 import { sounds, VOICE_PERSONAS } from '../utils/audio';
 import { 
   ArrowLeft, Star, Volume2, CheckCircle2, RotateCcw, 
-  Footprints, Play, Lock, ArrowUp, ArrowDown, ArrowLeft as ArrowLeftIcon, 
-  ArrowRight, Mic, X
+  Footprints, Play, ArrowLeft as ArrowLeftIcon, 
+  ArrowRight, Mic, X, ChevronsUp, Sparkles, Trophy, Heart, Flame, Shield
 } from 'lucide-react';
 
 import shallowsBg from '../../sound.jpeg';
@@ -36,6 +37,8 @@ interface GameQuestion {
   choices: string[];
   correct: string;
   explanation: string;
+  missionTitle?: string;
+  actionPrompt?: string;
 }
 
 const LAND_STATIONS: Record<LandId, StationNode[]> = {
@@ -84,17 +87,141 @@ const LAND_CONFIG: Record<LandId, { name: string; bg: string; color: string }> =
   'lexicon-empire': { name: 'Lexicon Empire', bg: empireBg, color: '#f59e0b' },
 };
 
+interface LandTheme {
+  questName: string;
+  questAction: string;
+  questLore: string;
+  mechanic: 'swim' | 'smash' | 'vine' | 'cloud' | 'boss';
+  icon: string;
+  skyGradient: string;
+  groundGradient: string;
+  groundBorder: string;
+  decor: string[];
+  blockBg: string;
+  blockBorder: string;
+  blockShadow: string;
+  jumpBtn: string;
+  jumpLabel: string;
+  jumpIconEmoji: string;
+  accentBadge: string;
+  hudBg: string;
+}
+
+const LAND_THEMES: Record<LandId, LandTheme> = {
+  'sound-shallows': {
+    questName: 'Underwater Pearl Dive',
+    questAction: 'Swim & Dive upward to pop the Coral Sound Pearl!',
+    questLore: 'The Shadow King submerged the reef! Swim through luminous waters and pop Sound Pearls to clear the murk!',
+    mechanic: 'swim',
+    icon: '🌊',
+    skyGradient: 'from-cyan-950 via-teal-950 to-blue-950',
+    groundGradient: 'from-blue-950 via-teal-950 to-teal-900',
+    groundBorder: 'border-cyan-400',
+    decor: ['🪸', '🫧', '⭐', '🐠', '🫧'],
+    blockBg: 'bg-gradient-to-b from-cyan-300 via-teal-400 to-sky-500 text-slate-950',
+    blockBorder: 'border-cyan-200',
+    blockShadow: 'shadow-[0_0_20px_rgba(6,182,212,0.6)]',
+    jumpBtn: 'bg-gradient-to-r from-cyan-500 via-teal-400 to-sky-500 text-slate-950 shadow-[0_0_20px_rgba(6,182,212,0.7)] hover:from-cyan-400',
+    jumpLabel: 'SWIM UP',
+    jumpIconEmoji: '🫧',
+    accentBadge: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/50',
+    hudBg: 'border-cyan-500/50'
+  },
+  'builders-guild': {
+    questName: 'Castle Rampart Builder',
+    questAction: 'Leap up & smash the Question Brick to forge fortress keystones!',
+    questLore: 'The Citadel ramparts are crumbling! Smash the heavy Question Bricks to forge ancient keystones and rebuild the gates!',
+    mechanic: 'smash',
+    icon: '🔨',
+    skyGradient: 'from-amber-950 via-stone-900 to-stone-950',
+    groundGradient: 'from-stone-950 via-amber-950 to-stone-900',
+    groundBorder: 'border-amber-600',
+    decor: ['⚙️', '🧱', '🔨', '🪙', '🧱'],
+    blockBg: 'bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 text-slate-950',
+    blockBorder: 'border-amber-200',
+    blockShadow: 'shadow-[0_4px_0_rgba(180,83,9,1)] shadow-[0_0_15px_rgba(245,158,11,0.5)]',
+    jumpBtn: 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.7)] hover:from-amber-400',
+    jumpLabel: 'SMASH BRICK',
+    jumpIconEmoji: '🧱',
+    accentBadge: 'bg-amber-500/20 text-amber-300 border-amber-400/50',
+    hudBg: 'border-amber-500/50'
+  },
+  'tricky-trails': {
+    questName: 'Jungle Canopy Vine Runner',
+    questAction: 'Leap across the bramble pit to snatch the Golden Vine Fruit!',
+    questLore: 'Dark shadow brambles overrun the jungle! Swing across thorny chasms and grab glowing Golden Rune Pods!',
+    mechanic: 'vine',
+    icon: '🌿',
+    skyGradient: 'from-emerald-950 via-slate-950 to-emerald-950',
+    groundGradient: 'from-stone-950 via-emerald-950 to-emerald-900',
+    groundBorder: 'border-emerald-500',
+    decor: ['🍃', '🪵', '🍄', '🌿', '🍃'],
+    blockBg: 'bg-gradient-to-b from-emerald-300 via-emerald-400 to-teal-500 text-slate-950',
+    blockBorder: 'border-emerald-200',
+    blockShadow: 'shadow-[0_0_20px_rgba(16,185,129,0.6)]',
+    jumpBtn: 'bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.7)] hover:from-emerald-400',
+    jumpLabel: 'VINE LEAP',
+    jumpIconEmoji: '🍃',
+    accentBadge: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50',
+    hudBg: 'border-emerald-500/50'
+  },
+  'whispering-peaks': {
+    questName: 'Glacier Slide & Cloud Bounce',
+    questAction: 'Spring high off the aurora clouds to shatter the Frost Crystal!',
+    questLore: 'A dark blizzard froze the sacred peaks! Bounce high off aurora spring-clouds to shatter frozen vowel glaciers!',
+    mechanic: 'cloud',
+    icon: '❄️',
+    skyGradient: 'from-indigo-950 via-slate-900 to-cyan-950',
+    groundGradient: 'from-slate-950 via-indigo-950 to-cyan-950',
+    groundBorder: 'border-cyan-300',
+    decor: ['❄️', '☁️', '🧊', '🏔️', '❄️'],
+    blockBg: 'bg-gradient-to-b from-sky-200 via-indigo-300 to-purple-400 text-slate-950',
+    blockBorder: 'border-cyan-100',
+    blockShadow: 'shadow-[0_0_20px_rgba(99,102,241,0.6)]',
+    jumpBtn: 'bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(99,102,241,0.7)] hover:from-sky-300',
+    jumpLabel: 'CLOUD BOUNCE',
+    jumpIconEmoji: '☁️',
+    accentBadge: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50',
+    hudBg: 'border-indigo-500/50'
+  },
+  'lexicon-empire': {
+    questName: 'Shadow King Magma Showdown',
+    questAction: 'Dodge the Shadow King\'s magma fireballs & strike the Royal Obelisk!',
+    questLore: 'The Final Boss Battle! Storm the Obsidian Fortress of the Shadow King, shatter his dark energy shield, and rescue the Golden Phoenix!',
+    mechanic: 'boss',
+    icon: '🔥',
+    skyGradient: 'from-purple-950 via-slate-950 to-rose-950',
+    groundGradient: 'from-slate-950 via-purple-950 to-rose-950',
+    groundBorder: 'border-rose-500',
+    decor: ['🔥', '⚡', '👑', '🗿', '🔥'],
+    blockBg: 'bg-gradient-to-b from-amber-300 via-rose-400 to-purple-600 text-slate-950',
+    blockBorder: 'border-amber-300',
+    blockShadow: 'shadow-[0_0_25px_rgba(244,63,94,0.7)]',
+    jumpBtn: 'bg-gradient-to-r from-rose-500 via-amber-400 to-purple-600 text-slate-950 shadow-[0_0_25px_rgba(244,63,94,0.8)] hover:from-rose-400',
+    jumpLabel: 'HERO STRIKE',
+    jumpIconEmoji: '⚡',
+    accentBadge: 'bg-rose-500/20 text-rose-300 border-rose-400/50',
+    hudBg: 'border-rose-500/50'
+  }
+};
+
+// Rich procedural question bank ensures NO TWO GAMES ARE THE SAME
 const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuestion => {
+  const seed = (overallGameIndex * 37 + Math.floor(Date.now() / 60000)) % 1000;
+
   if (landId === 'sound-shallows') {
     const letters = ['B', 'M', 'S', 'T', 'P', 'F', 'R', 'D', 'C', 'N', 'L', 'G', 'H', 'J', 'W', 'Z'];
-    const letter = letters[(overallGameIndex - 1) % letters.length];
+    const letter = letters[(overallGameIndex + seed) % letters.length];
     
     if (overallGameIndex <= 10) {
+      const distractors = letters.filter(l => l !== letter).sort(() => Math.random() - 0.5).slice(0, 3);
       return {
-        instruction: 'Listen carefully! Which letter makes the sound?',
+        missionTitle: `Mission 1-${overallGameIndex}: Pearl Reef Trench`,
+        actionPrompt: `Swim up to pop the /${letter.toLowerCase()}/ Sound Pearl!`,
+        instruction: 'Listen carefully! Which letter makes this initial sound?',
         targetSound: `/${letter.toLowerCase()}/`,
         soundCue: `Which letter makes the sound, /${letter.toLowerCase()}/?`,
-        choices: [letter, 'A', 'O', 'T'].sort(() => Math.random() - 0.5),
+        choices: [letter, ...distractors].sort(() => Math.random() - 0.5),
         correct: letter,
         explanation: `Letter ${letter} makes the sound /${letter.toLowerCase()}/!`
       };
@@ -104,10 +231,18 @@ const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuesti
         { word: 'BAT', rh: 'HAT', dist: ['SUN', 'CUP', 'LOG'] },
         { word: 'PIG', rh: 'WIG', dist: ['PEN', 'BED', 'RUN'] },
         { word: 'SUN', rh: 'RUN', dist: ['HOP', 'SIT', 'MAN'] },
+        { word: 'HOP', rh: 'TOP', dist: ['BUG', 'MAP', 'BED'] },
+        { word: 'BUG', rh: 'MUG', dist: ['FIN', 'POT', 'HEN'] },
+        { word: 'CAT', rh: 'MAT', dist: ['FOX', 'LIP', 'BUS'] },
+        { word: 'DOG', rh: 'LOG', dist: ['RAT', 'PIN', 'WEB'] },
+        { word: 'NET', rh: 'WET', dist: ['CUP', 'MOP', 'FAN'] },
+        { word: 'LIP', rh: 'TIP', dist: ['BAG', 'RUG', 'MUD'] },
       ];
-      const r = rhymes[(overallGameIndex - 11) % rhymes.length];
+      const r = rhymes[(overallGameIndex + seed) % rhymes.length];
       return {
-        instruction: `Find the word that rhymes with ${r.word}:`,
+        missionTitle: `Mission 2-${overallGameIndex - 10}: Clamshell Rhyme Cove`,
+        actionPrompt: `Pop the rhyming pearl for ${r.word}!`,
+        instruction: `Find the pearl that rhymes with ${r.word}:`,
         targetSound: r.word,
         soundCue: `Which word rhymes with ${r.word}?`,
         choices: [r.rh, ...r.dist].sort(() => Math.random() - 0.5),
@@ -119,9 +254,16 @@ const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuesti
         { blend: '/b/ /a/ /t/', word: 'BAT', dist: ['BET', 'BIT', 'BOT'] },
         { blend: '/s/ /u/ /n/', word: 'SUN', dist: ['SIN', 'SON', 'SAD'] },
         { blend: '/m/ /a/ /p/', word: 'MAP', dist: ['MOP', 'MUP', 'MAT'] },
+        { blend: '/p/ /i/ /g/', word: 'PIG', dist: ['PUG', 'PEG', 'PIN'] },
+        { blend: '/h/ /e/ /n/', word: 'HEN', dist: ['HAT', 'HOT', 'HUT'] },
+        { blend: '/f/ /o/ /x/', word: 'FOX', dist: ['FIX', 'FAX', 'BOX'] },
+        { blend: '/c/ /u/ /p/', word: 'CUP', dist: ['CAP', 'COP', 'CUT'] },
+        { blend: '/r/ /e/ /d/', word: 'RED', dist: ['ROD', 'RAD', 'RID'] },
       ];
-      const b = blends[(overallGameIndex - 21) % blends.length];
+      const b = blends[(overallGameIndex + seed) % blends.length];
       return {
+        missionTitle: `Mission 3-${overallGameIndex - 20}: Sunken Sound Lagoon`,
+        actionPrompt: `Blend the phonemes and pop the target pearl!`,
         instruction: 'Blend these sounds together to form the word:',
         targetSound: b.blend,
         soundCue: `Blend these sounds: ${b.blend}. What word is it?`,
@@ -138,10 +280,17 @@ const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuesti
         { word: 'CAT', prompt: '/c/ /a/ /t/', dist: ['COT', 'CUT', 'CAR'] },
         { word: 'DOG', prompt: '/d/ /o/ /g/', dist: ['DIG', 'DUG', 'DOT'] },
         { word: 'BED', prompt: '/b/ /e/ /d/', dist: ['BAD', 'BUD', 'BAT'] },
+        { word: 'PIG', prompt: '/p/ /i/ /g/', dist: ['PEG', 'PUG', 'PIN'] },
+        { word: 'VAN', prompt: '/v/ /a/ /n/', dist: ['VON', 'VET', 'CAN'] },
+        { word: 'FOX', prompt: '/f/ /o/ /x/', dist: ['FAX', 'FIX', 'BOX'] },
+        { word: 'NET', prompt: '/n/ /e/ /t/', dist: ['NOT', 'NUT', 'PET'] },
+        { word: 'ZIP', prompt: '/z/ /i/ /p/', dist: ['ZAP', 'LIP', 'TIP'] },
       ];
-      const c = cvc[(overallGameIndex - 1) % cvc.length];
+      const c = cvc[(overallGameIndex + seed) % cvc.length];
       return {
-        instruction: 'What word do these sounds build?',
+        missionTitle: `Mission 1-${overallGameIndex}: Quarry Forge Anvil`,
+        actionPrompt: `Headbutt the Question Brick to forge the word!`,
+        instruction: 'What word do these keystones build?',
         targetSound: c.prompt,
         soundCue: `What word does ${c.prompt} build?`,
         choices: [c.word, ...c.dist].sort(() => Math.random() - 0.5),
@@ -153,9 +302,15 @@ const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuesti
         { word: 'SHIP', target: 'SH', cue: '__IP (sails on ocean)', dist: ['CH', 'TH', 'WH'] },
         { word: 'CHIN', target: 'CH', cue: '__IN (on your face)', dist: ['SH', 'TH', 'PH'] },
         { word: 'THAT', target: 'TH', cue: '__AT (pointing over there)', dist: ['WH', 'CH', 'SH'] },
+        { word: 'WHALE', target: 'WH', cue: '__ALE (giant sea swimmer)', dist: ['SH', 'CH', 'TH'] },
+        { word: 'FISH', target: 'SH', cue: 'FI__ (swims in pond)', dist: ['CH', 'TH', 'WH'] },
+        { word: 'MUCH', target: 'CH', cue: 'MU__ (a lot of something)', dist: ['SH', 'TH', 'PH'] },
+        { word: 'MOTH', target: 'TH', cue: 'MO__ (night winged insect)', dist: ['SH', 'CH', 'WH'] },
       ];
-      const d = digraphs[(overallGameIndex - 21) % digraphs.length];
+      const d = digraphs[(overallGameIndex + seed) % digraphs.length];
       return {
+        missionTitle: `Mission 2-${overallGameIndex - 20}: Steam Gear Works`,
+        actionPrompt: `Smash the masonry block to complete the digraph!`,
         instruction: 'Pick the correct digraph for the word:',
         targetSound: d.cue,
         soundCue: `Which digraph completes ${d.cue}?`,
@@ -168,13 +323,19 @@ const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuesti
 
   if (landId === 'tricky-trails') {
     if (overallGameIndex <= 20) {
-      const sights = ['THE', 'AND', 'SAID', 'YOU', 'LOOK', 'COME', 'HAVE', 'THEY'];
-      const s = sights[(overallGameIndex - 1) % sights.length];
+      const sights = [
+        'THE', 'AND', 'SAID', 'YOU', 'LOOK', 'COME', 'HAVE', 'THEY', 
+        'WERE', 'WHERE', 'WHAT', 'THERE', 'COULD', 'WOULD', 'SOME'
+      ];
+      const s = sights[(overallGameIndex + seed) % sights.length];
+      const dist = sights.filter(w => w !== s).sort(() => Math.random() - 0.5).slice(0, 3);
       return {
+        missionTitle: `Mission 1-${overallGameIndex}: Bramble Pit Trail`,
+        actionPrompt: `Leap the vine pit to grab the Rune Pod!`,
         instruction: 'Read the tricky sight word:',
         targetSound: s,
         soundCue: `Can you spot the sight word: ${s}?`,
-        choices: [s, s + 'E', 'NOT', 'SEE'].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4).sort(() => Math.random() - 0.5),
+        choices: [s, ...dist].sort(() => Math.random() - 0.5),
         correct: s,
         explanation: `Great reading! "${s}" is an essential sight word.`
       };
@@ -184,9 +345,14 @@ const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuesti
         { base: 'PIN', magic: 'PINE', dist: ['PAN', 'PUN', 'PALE'] },
         { base: 'HOP', magic: 'HOPE', dist: ['HIP', 'HEAP', 'HYPE'] },
         { base: 'TUB', magic: 'TUBE', dist: ['TAB', 'TOE', 'TAIL'] },
+        { base: 'KIT', magic: 'KITE', dist: ['KAT', 'KNOT', 'KEPT'] },
+        { base: 'ROB', magic: 'ROBE', dist: ['RUB', 'RIB', 'ROOF'] },
+        { base: 'NOT', magic: 'NOTE', dist: ['NUT', 'NET', 'NEAT'] },
       ];
-      const m = magicE[(overallGameIndex - 21) % magicE.length];
+      const m = magicE[(overallGameIndex + seed) % magicE.length];
       return {
+        missionTitle: `Mission 2-${overallGameIndex - 20}: Magic Silent E Grove`,
+        actionPrompt: `Snatch the magical Silent E fruit!`,
         instruction: `Magic Silent E: Add 'e' to ${m.base}. What does it become?`,
         targetSound: `${m.base} + E`,
         soundCue: `Add silent E to ${m.base}. What does it make?`,
@@ -203,9 +369,15 @@ const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuesti
       { word: 'RAIN', target: 'AI', cue: 'R - AI - N', dist: ['AY', 'EA', 'EY'] },
       { word: 'MEAT', target: 'EA', cue: 'M - EA - T', dist: ['EE', 'EI', 'EY'] },
       { word: 'STAR', target: 'AR', cue: 'Bossy R: ST - AR', dist: ['OR', 'ER', 'IR'] },
+      { word: 'CORN', target: 'OR', cue: 'Bossy R: C - OR - N', dist: ['AR', 'UR', 'ER'] },
+      { word: 'BIRD', target: 'IR', cue: 'Bossy R: B - IR - D', dist: ['AR', 'OR', 'UR'] },
+      { word: 'TREE', target: 'EE', cue: 'Vowel Team: TR - EE', dist: ['EA', 'IE', 'EY'] },
+      { word: 'GOAT', target: 'OA', cue: 'Vowel Team: G - OA - T', dist: ['OW', 'OU', 'OO'] },
     ];
-    const vt = vowelTeams[(overallGameIndex - 1) % vowelTeams.length];
+    const vt = vowelTeams[(overallGameIndex + seed) % vowelTeams.length];
     return {
+      missionTitle: `Mission ${overallGameIndex}: Frost Cloud Peak`,
+      actionPrompt: `Bounce high off the clouds to shatter the Frost Crystal!`,
       instruction: `Identify the vowel sound pattern in the word:`,
       targetSound: vt.word,
       soundCue: `Which letters make the vowel sound in ${vt.word}?`,
@@ -215,26 +387,35 @@ const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuesti
     };
   }
 
+  // Lexicon Empire: Final Boss Showdown vs The Shadow King!
   const roots = [
     { root: 'CHRON', meaning: 'Time', example: 'Chronological', dist: ['Earth', 'Life', 'Sound'] },
     { root: 'BIO', meaning: 'Life', example: 'Biology', dist: ['Water', 'Time', 'Light'] },
     { root: 'GEO', meaning: 'Earth', example: 'Geology', dist: ['Sky', 'Life', 'Heat'] },
     { root: 'TELE', meaning: 'Far/Distant', example: 'Telescope', dist: ['Near', 'Small', 'Fast'] },
+    { root: 'GRAPH', meaning: 'Write/Draw', example: 'Autograph', dist: ['Speak', 'Hear', 'Count'] },
+    { root: 'PHON', meaning: 'Sound', example: 'Symphony', dist: ['Color', 'Shape', 'Taste'] },
+    { root: 'SPEC', meaning: 'Look/See', example: 'Inspect', dist: ['Touch', 'Smell', 'Move'] },
+    { root: 'PORT', meaning: 'Carry', example: 'Transport', dist: ['Break', 'Throw', 'Build'] },
   ];
-  const r = roots[(overallGameIndex - 1) % roots.length];
+  const r = roots[(overallGameIndex + seed) % roots.length];
   return {
-    instruction: `Root Analysis: What is the meaning of "${r.root}"?`,
+    missionTitle: `Boss Showdown ${overallGameIndex}: Magma Citadel of the Shadow King`,
+    actionPrompt: `Heroic Strike! Hit the Royal Obelisk to shatter the Shadow King's cage!`,
+    instruction: `Shadow King's Barrier: What is the linguistic power of "${r.root}"?`,
     targetSound: `${r.root} (${r.example})`,
     soundCue: `The root is ${r.root}, as in ${r.example}. What does it mean?`,
     choices: [r.meaning, ...r.dist].sort(() => Math.random() - 0.5),
     correct: r.meaning,
-    explanation: `The root "${r.root}" translates to "${r.meaning}"!`
+    explanation: `The root "${r.root}" translates to "${r.meaning}"! You damaged the Shadow King!`
   };
 };
 
 export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWorld }) => {
-  const { activeExplorer, updateExplorerScore, awardCurrency } = useGame();
+  const { activeExplorer, updateExplorerScore, awardCurrency, restartLandProgress } = useGame();
+  const companionGuide = getCompanionGuide(activeExplorer);
   const config = LAND_CONFIG[landId] || LAND_CONFIG['sound-shallows'];
+  const theme = LAND_THEMES[landId] || LAND_THEMES['sound-shallows'];
   const stations = LAND_STATIONS[landId] || LAND_STATIONS['sound-shallows'];
 
   const landProgress = activeExplorer.landScores?.[landId] || { completedGamesCount: 0, stars: 0, unlocked: true };
@@ -260,7 +441,116 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
   const [roundCompleted, setRoundCompleted] = useState(false);
   const [earnedStars, setEarnedStars] = useState(3);
 
+  // Mario 3 Lives System
+  const [realmLives, setRealmLives] = useState<number>(3);
+  const [isGameOver, setIsGameOver] = useState<boolean>(false);
+  const [screenDamageFlash, setScreenDamageFlash] = useState<boolean>(false);
+  const [isCharacterDying, setIsCharacterDying] = useState<boolean>(false);
+
+  // Shadow King Boss Barrier (for Land 5)
+  const [bossBarrierHp, setBossBarrierHp] = useState<number>(100);
+
   const [showVoiceModal, setShowVoiceModal] = useState(false);
+
+  // Jump physics on land map
+  const [jumpOffset, setJumpOffset] = useState<number>(0);
+  const [isJumping, setIsJumping] = useState<boolean>(false);
+
+  // Refs for callbacks to prevent stale closures in event listeners
+  const triggerMapJumpRef = useRef<() => void>(() => {});
+  const handleSelectChoiceRef = useRef<(choice: string) => void>(() => {});
+
+  const handleSelectChoice = useCallback((choice: string) => {
+    if (!currentQuestion || isAnswered) return;
+    sounds.stopSpeech();
+    setSelectedAnswer(choice);
+    setIsAnswered(true);
+
+    const correct = choice.trim().toLowerCase() === currentQuestion.correct.trim().toLowerCase();
+    setIsCorrect(correct);
+
+    if (correct) {
+      sounds.playSuccess();
+      sounds.speak(`Awesome! ${currentQuestion.explanation}`);
+      if (theme.mechanic === 'boss') {
+        setBossBarrierHp((prev) => Math.max(0, prev - 25));
+      }
+    } else {
+      sounds.speak('Not quite! Listen closely to the sound and try again!');
+      setEarnedStars((prev) => Math.max(1, prev - 1));
+
+      // Screen damage flash
+      setScreenDamageFlash(true);
+      setTimeout(() => setScreenDamageFlash(false), 400);
+
+      // Mario Lives System: 1 wrong answer = 1 heart lost!
+      setRealmLives((prev) => {
+        const next = prev - 1;
+        if (next <= 0) {
+          // Character death animation!
+          setIsCharacterDying(true);
+          sounds.playGameOver();
+          setTimeout(() => {
+            setIsGameOver(true);
+            setIsCharacterDying(false);
+          }, 700);
+        } else {
+          sounds.playDamage();
+        }
+        return Math.max(0, next);
+      });
+    }
+  }, [currentQuestion, isAnswered, theme.mechanic]);
+
+  handleSelectChoiceRef.current = handleSelectChoice;
+
+  const handleGameOverRestart = () => {
+    restartLandProgress(landId);
+    setRealmLives(3);
+    setIsGameOver(false);
+    setIsCharacterDying(false);
+    setActiveGameIndex(null);
+    setCurrentQuestion(null);
+    setSelectedStation(null);
+    setSelectedAnswer(null);
+    setIsAnswered(false);
+    setIsCorrect(false);
+    setRoundCompleted(false);
+    setEarnedStars(3);
+    setBossBarrierHp(100);
+    setPlayerPos({ x: stations[0].x, y: stations[0].y + 5 });
+    playerPosRef.current = { x: stations[0].x, y: stations[0].y + 5 };
+    sounds.playFanfare();
+    sounds.speak(`Restarting ${config.name} from Level 1! Jump into action!`);
+  };
+
+  const triggerMapJump = useCallback(() => {
+    if (isJumping) return;
+    setIsJumping(true);
+    sounds.playJump();
+
+    const startTime = performance.now();
+    const jumpDuration = 450;
+    const maxDisplacement = 40;
+
+    const animateJump = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / jumpDuration, 1);
+      const height = Math.sin(progress * Math.PI) * maxDisplacement;
+      setJumpOffset(height);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateJump);
+      } else {
+        setJumpOffset(0);
+        setIsJumping(false);
+      }
+    };
+
+    requestAnimationFrame(animateJump);
+  }, [isJumping]);
+
+  triggerMapJumpRef.current = triggerMapJump;
 
   const dirKeysRef = useRef({ up: false, down: false, left: false, right: false, shift: false });
   const [activeDpad, setActiveDpad] = useState({ up: false, down: false, left: false, right: false });
@@ -270,7 +560,7 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
   const enterCooldown = useRef<number>(0);
   const lastEnteredStation = useRef<number | null>(null);
 
-  // Immediately stop speech when unmounting or leaving this screen
+  // Stop speech when unmounting
   useEffect(() => {
     return () => {
       sounds.stopSpeech();
@@ -328,30 +618,39 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     }
   }, [stations, triggerStationOpen, selectedStation, activeGameIndex]);
 
+  // Global Keyboard event handling (Uses Refs to avoid stale closures!)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeGameIndex !== null) return;
       const k = e.key ? e.key.toLowerCase() : '';
       const code = e.code || '';
       let matched = false;
 
+      // Space bar, Tab, W, ArrowUp jump action
+      if (k === ' ' || k === 'tab' || k === 'w' || k === 'arrowup' || code === 'Space' || code === 'Tab' || code === 'KeyW' || code === 'ArrowUp') {
+        e.preventDefault();
+        matched = true;
+        triggerMapJumpRef.current();
+      }
+
       if (k === 'arrowup' || k === 'up' || k === 'w' || code === 'ArrowUp' || code === 'KeyW') {
         dirKeysRef.current.up = true;
-        setActiveDpad(prev => ({ ...prev, up: true }));
+        setActiveDpad((prev) => ({ ...prev, up: true }));
         matched = true;
       }
       if (k === 'arrowdown' || k === 'down' || k === 's' || code === 'ArrowDown' || code === 'KeyS') {
         dirKeysRef.current.down = true;
-        setActiveDpad(prev => ({ ...prev, down: true }));
+        setActiveDpad((prev) => ({ ...prev, down: true }));
         matched = true;
       }
       if (k === 'arrowleft' || k === 'left' || k === 'a' || code === 'ArrowLeft' || code === 'KeyA') {
         dirKeysRef.current.left = true;
-        setActiveDpad(prev => ({ ...prev, left: true }));
+        setActiveDpad((prev) => ({ ...prev, left: true }));
         matched = true;
       }
       if (k === 'arrowright' || k === 'right' || k === 'd' || code === 'ArrowRight' || code === 'KeyD') {
         dirKeysRef.current.right = true;
-        setActiveDpad(prev => ({ ...prev, right: true }));
+        setActiveDpad((prev) => ({ ...prev, right: true }));
         matched = true;
       }
       if (k === 'shift' || code === 'ShiftLeft' || code === 'ShiftRight') {
@@ -359,39 +658,36 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
         matched = true;
       }
 
-      if ((k === 'e' || k === ' ' || k === 'enter' || code === 'KeyE' || code === 'Space') && nearbyStation && !selectedStation && activeGameIndex === null) {
+      if ((k === 'e' || k === 'enter' || code === 'KeyE' || code === 'Enter') && nearbyStation && !selectedStation) {
         matched = true;
         triggerStationOpen(nearbyStation);
       }
 
       if (matched) {
         targetPosRef.current = null;
-        if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'space'].includes(k)) {
-          e.preventDefault();
-        }
-        if (!lastKeyTimeRef.current) lastKeyTimeRef.current = performance.now();
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      if (activeGameIndex !== null) return;
       const k = e.key ? e.key.toLowerCase() : '';
       const code = e.code || '';
 
       if (k === 'arrowup' || k === 'up' || k === 'w' || code === 'ArrowUp' || code === 'KeyW') {
         dirKeysRef.current.up = false;
-        setActiveDpad(prev => ({ ...prev, up: false }));
+        setActiveDpad((prev) => ({ ...prev, up: false }));
       }
       if (k === 'arrowdown' || k === 'down' || k === 's' || code === 'ArrowDown' || code === 'KeyS') {
         dirKeysRef.current.down = false;
-        setActiveDpad(prev => ({ ...prev, down: false }));
+        setActiveDpad((prev) => ({ ...prev, down: false }));
       }
       if (k === 'arrowleft' || k === 'left' || k === 'a' || code === 'ArrowLeft' || code === 'KeyA') {
         dirKeysRef.current.left = false;
-        setActiveDpad(prev => ({ ...prev, left: false }));
+        setActiveDpad((prev) => ({ ...prev, left: false }));
       }
       if (k === 'arrowright' || k === 'right' || k === 'd' || code === 'ArrowRight' || code === 'KeyD') {
         dirKeysRef.current.right = false;
-        setActiveDpad(prev => ({ ...prev, right: false }));
+        setActiveDpad((prev) => ({ ...prev, right: false }));
       }
       if (k === 'shift' || code === 'ShiftLeft' || code === 'ShiftRight') {
         dirKeysRef.current.shift = false;
@@ -409,6 +705,7 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     };
   }, [nearbyStation, selectedStation, activeGameIndex, triggerStationOpen]);
 
+  // World map walk cycle loop
   useEffect(() => {
     let prevTime = performance.now();
 
@@ -425,15 +722,13 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
       if (dirs.left) dx -= 1;
       if (dirs.right) dx += 1;
 
-      const isHeld = lastKeyTimeRef.current > 0 && (currentTime - lastKeyTimeRef.current > 280);
-      const running = isHeld || dirs.shift;
+      const running = dirs.shift;
       setIsRunning(running);
+      const baseSpeed = running ? 26 : 14;
 
-      const baseSpeed = running ? 36 : 20;
-
+      let moving = false;
       let newX = playerPosRef.current.x;
       let newY = playerPosRef.current.y;
-      let moving = false;
 
       if (dx !== 0 || dy !== 0) {
         targetPosRef.current = null;
@@ -506,13 +801,13 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
   const handleDpadPress = (dir: 'up' | 'down' | 'left' | 'right') => {
     containerRef.current?.focus();
     dirKeysRef.current[dir] = true;
-    setActiveDpad(prev => ({ ...prev, [dir]: true }));
+    setActiveDpad((prev) => ({ ...prev, [dir]: true }));
     if (!lastKeyTimeRef.current) lastKeyTimeRef.current = performance.now();
   };
 
   const handleDpadRelease = (dir: 'up' | 'down' | 'left' | 'right') => {
     dirKeysRef.current[dir] = false;
-    setActiveDpad(prev => ({ ...prev, [dir]: false }));
+    setActiveDpad((prev) => ({ ...prev, [dir]: false }));
     const anyActive = dirKeysRef.current.up || dirKeysRef.current.down || dirKeysRef.current.left || dirKeysRef.current.right;
     if (!anyActive) lastKeyTimeRef.current = 0;
   };
@@ -534,25 +829,6 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     }, 250);
   };
 
-  const handleSelectChoice = (choice: string) => {
-    if (!currentQuestion || isAnswered) return;
-    sounds.stopSpeech();
-    setSelectedAnswer(choice);
-    setIsAnswered(true);
-
-    const correct = choice.trim().toLowerCase() === currentQuestion.correct.trim().toLowerCase();
-    setIsCorrect(correct);
-
-    if (correct) {
-      sounds.playSuccess();
-      sounds.speak(`Awesome! ${currentQuestion.explanation}`);
-    } else {
-      sounds.playError();
-      sounds.speak(`Not quite! The answer was ${currentQuestion.correct}.`);
-      setEarnedStars((prev) => Math.max(1, prev - 1));
-    }
-  };
-
   const finishGameRound = () => {
     if (!activeGameIndex) return;
     sounds.stopSpeech();
@@ -569,10 +845,19 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
       ref={containerRef}
       tabIndex={0}
       onClick={() => containerRef.current?.focus()}
-      className="relative w-full h-full flex flex-col justify-between select-none outline-none overflow-hidden"
+      className={`relative w-full h-full flex flex-col justify-between select-none outline-none overflow-hidden ${
+        screenDamageFlash ? 'ring-8 ring-rose-600 ring-inset bg-rose-950/40 animate-pulse' : ''
+      }`}
     >
       {/* Top HUD */}
-      <div className="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-4 z-40 flex items-center justify-between pointer-events-none">
+      <div 
+        style={{
+          top: 'calc(env(safe-area-inset-top, 0px) + 8px)',
+          left: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+          right: 'calc(env(safe-area-inset-right, 0px) + 8px)'
+        }}
+        className="absolute z-40 flex items-center justify-between pointer-events-none"
+      >
         <button
           onClick={() => {
             sounds.stopSpeech();
@@ -586,8 +871,9 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
         </button>
 
         <div className="pointer-events-auto text-center bg-slate-950/85 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl border border-amber-500/50 shadow-xl">
-          <h2 className="text-xs sm:text-sm font-black text-amber-300 font-display uppercase tracking-wide">
-            {config.name}
+          <h2 className="text-xs sm:text-sm font-black text-amber-300 font-display uppercase tracking-wide flex items-center gap-1.5 justify-center">
+            <span>{theme.icon}</span>
+            <span>{config.name}</span>
           </h2>
           <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono font-bold">
             {landProgress.completedGamesCount} / 50 Completed
@@ -595,6 +881,18 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
         </div>
 
         <div className="pointer-events-auto flex items-center gap-2">
+          {/* Mario 3 Lives Display: ❤️ ❤️ ❤️ */}
+          <div 
+            title="Mario 3 Lives: 3 mistakes and you restart this land!"
+            className="flex items-center gap-1 px-2.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl bg-slate-950/90 backdrop-blur-md border border-rose-500/80 shadow-[0_0_15px_rgba(244,63,94,0.3)]"
+          >
+            {Array.from({ length: 3 }).map((_, i) => (
+              <span key={i} className="text-xs sm:text-sm transition-transform duration-200">
+                {i < realmLives ? '❤️' : '🖤'}
+              </span>
+            ))}
+          </div>
+
           <button
             onClick={() => {
               sounds.stopSpeech();
@@ -651,119 +949,149 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{st.icon}</span>
                   <div className="text-left">
-                    <div className="text-xs font-black text-amber-300 leading-tight">
+                    <span className="text-xs font-black text-amber-300 tracking-wide block uppercase">
                       {st.name}
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-medium">
+                    </span>
+                    <span className="text-[10px] text-slate-300 font-bold block">
                       {st.skillTitle}
-                    </div>
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-1.5 px-2.5 py-0.5 rounded-full bg-slate-900 border border-amber-500/40 text-[9px] font-bold text-amber-300 flex items-center gap-1">
-                  {!unlocked ? (
-                    <>
-                      <Lock className="w-2.5 h-2.5 text-slate-400" />
-                      <span>Locked</span>
-                    </>
-                  ) : isMastered ? (
-                    <>
-                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400 stroke-[3]" />
-                      <span className="text-emerald-300">Mastered</span>
-                    </>
-                  ) : (
-                    <span>Ready</span>
-                  )}
+                {/* Stars / Clear Status badge */}
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.2 rounded-full ${
+                    isMastered
+                      ? 'bg-amber-400 text-slate-950 font-black'
+                      : unlocked
+                      ? 'bg-slate-800 text-amber-300 border border-amber-500/40'
+                      : 'bg-slate-900 text-slate-500'
+                  }`}>
+                    {completedInStation} / 10
+                  </span>
+                  {isMastered && <span className="text-xs">⭐</span>}
                 </div>
               </div>
             </div>
           );
         })}
 
-        {/* Player Avatar */}
+        {/* Traveling Companion Guide (Kam or Celine) on Map */}
         <div
-          className="absolute z-30 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }}
+          style={{
+            left: `${playerPos.x - (facing === 'left' ? -3.5 : 3.5)}%`,
+            top: `${playerPos.y - jumpOffset * 0.2}%`,
+            transform: `translate(-50%, -50%) ${facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+          }}
+          className="absolute z-19 pointer-events-none transition-transform duration-75 flex flex-col items-center"
         >
-          {targetPosRef.current && (
-            <div className="absolute -inset-4 rounded-full border-2 border-amber-400 animate-ping opacity-40 pointer-events-none" />
-          )}
-
-          <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-950/95 border border-amber-400/90 px-2 py-0.5 rounded-full shadow-xl whitespace-nowrap flex items-center gap-1">
-            <span className="text-[10px] font-extrabold text-amber-300">{activeExplorer.name}</span>
-            {isRunning && <span className="text-[8px] text-amber-400 font-black uppercase tracking-wider">Run</span>}
+          <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-amber-400/60 px-1.5 py-0.2 rounded-full shadow whitespace-nowrap">
+            <span className="text-[9px] font-bold text-amber-200">{companionGuide.name}</span>
           </div>
-
-          <AvatarRenderer
-            customization={activeExplorer.customization}
-            size={52}
-            isWalking={isMoving}
-            isRunning={isRunning}
-            facing={facing}
-            walkCycle={walkCycle}
-            showPet={true}
-          />
+          <AvatarRenderer customization={companionGuide.customization} size={38} showPet={false} />
         </div>
 
-        {/* On-Screen D-Pad */}
+        {/* Active Player Avatar on Map */}
         <div
-          onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 z-40 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-xl sm:rounded-2xl border border-amber-600/50 shadow-2xl flex flex-col items-center gap-1 select-none pointer-events-auto"
+          style={{
+            left: `${playerPos.x}%`,
+            top: `${playerPos.y - jumpOffset * 0.2}%`,
+            transform: `translate(-50%, -50%) ${facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+          }}
+          className="absolute z-20 pointer-events-none transition-transform duration-75 flex flex-col items-center"
         >
+          <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-amber-400/60 px-2 py-0.2 rounded-full shadow whitespace-nowrap">
+            <span className="text-[9px] font-black text-amber-300">{activeExplorer.name}</span>
+          </div>
+          <AvatarRenderer customization={activeExplorer.customization} size={46} showPet={true} />
+        </div>
+
+        {/* Map On-Screen Controls */}
+        <div 
+          style={{
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 64px)',
+            right: 'calc(env(safe-area-inset-right, 0px) + 12px)'
+          }}
+          className="absolute z-30 flex items-center gap-2 select-none touch-none"
+        >
+          {/* Virtual Dpad */}
+          <div className="bg-slate-950/90 p-1.5 rounded-2xl border border-amber-500/40 shadow-2xl flex flex-col items-center gap-1">
+            <button
+              onMouseDown={() => handleDpadPress('up')}
+              onMouseUp={() => handleDpadRelease('up')}
+              onTouchStart={(e) => { e.preventDefault(); handleDpadPress('up'); }}
+              onTouchEnd={(e) => { e.preventDefault(); handleDpadRelease('up'); }}
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                activeDpad.up ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
+              }`}
+            >
+              <ArrowLeftIcon className="w-4 h-4 rotate-90 stroke-[2.5]" />
+            </button>
+
+            <div className="flex items-center gap-1">
+              <button
+                onMouseDown={() => handleDpadPress('left')}
+                onMouseUp={() => handleDpadRelease('left')}
+                onTouchStart={(e) => { e.preventDefault(); handleDpadPress('left'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleDpadRelease('left'); }}
+                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                  activeDpad.left ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
+                }`}
+              >
+                <ArrowLeftIcon className="w-4 h-4 stroke-[2.5]" />
+              </button>
+
+              <button
+                onMouseDown={() => handleDpadPress('down')}
+                onMouseUp={() => handleDpadRelease('down')}
+                onTouchStart={(e) => { e.preventDefault(); handleDpadPress('down'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleDpadRelease('down'); }}
+                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                  activeDpad.down ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
+                }`}
+              >
+                <ArrowLeftIcon className="w-4 h-4 -rotate-90 stroke-[2.5]" />
+              </button>
+
+              <button
+                onMouseDown={() => handleDpadPress('right')}
+                onMouseUp={() => handleDpadRelease('right')}
+                onTouchStart={(e) => { e.preventDefault(); handleDpadPress('right'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleDpadRelease('right'); }}
+                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                  activeDpad.right ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
+                }`}
+              >
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            </div>
+          </div>
+
+          {/* Arcade Map Jump Button */}
           <button
-            onMouseDown={() => handleDpadPress('up')}
-            onMouseUp={() => handleDpadRelease('up')}
-            onTouchStart={() => handleDpadPress('up')}
-            onTouchEnd={() => handleDpadRelease('up')}
-            className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
-              activeDpad.up ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
+            onClick={triggerMapJump}
+            onTouchStart={(e) => { e.preventDefault(); triggerMapJump(); }}
+            className={`h-16 sm:h-20 w-12 sm:w-14 rounded-xl sm:rounded-2xl border-2 flex flex-col items-center justify-center gap-1 font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all cursor-pointer ${
+              isJumping
+                ? 'bg-amber-300 text-slate-950 border-white scale-95 shadow-[0_0_15px_rgba(245,158,11,0.8)]'
+                : 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.5)] active:scale-95'
             }`}
           >
-            <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+            <ChevronsUp className="w-4 h-4 stroke-[3]" />
+            <span>JUMP</span>
           </button>
-
-          <div className="flex items-center gap-1">
-            <button
-              onMouseDown={() => handleDpadPress('left')}
-              onMouseUp={() => handleDpadRelease('left')}
-              onTouchStart={() => handleDpadPress('left')}
-              onTouchEnd={() => handleDpadRelease('left')}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
-                activeDpad.left ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
-              }`}
-            >
-              <ArrowLeftIcon className="w-4 h-4 stroke-[2.5]" />
-            </button>
-
-            <button
-              onMouseDown={() => handleDpadPress('down')}
-              onMouseUp={() => handleDpadRelease('down')}
-              onTouchStart={() => handleDpadPress('down')}
-              onTouchEnd={() => handleDpadRelease('down')}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
-                activeDpad.down ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
-              }`}
-            >
-              <ArrowDown className="w-4 h-4 stroke-[2.5]" />
-            </button>
-
-            <button
-              onMouseDown={() => handleDpadPress('right')}
-              onMouseUp={() => handleDpadRelease('right')}
-              onTouchStart={() => handleDpadPress('right')}
-              onTouchEnd={() => handleDpadRelease('right')}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
-                activeDpad.right ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-slate-900 text-amber-300 border-amber-500/40'
-              }`}
-            >
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-            </button>
-          </div>
         </div>
       </div>
 
       {/* Bottom Proximity Station Bar */}
-      <div className="p-2 sm:p-2.5 bg-slate-950/95 border-t border-amber-900/60 flex items-center justify-between gap-2 overflow-x-auto">
+      <div 
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+          paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+          paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)'
+        }}
+        className="p-2 sm:p-2.5 bg-slate-950/95 border-t border-amber-900/60 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none"
+      >
         <div className="flex items-center gap-2">
           {nearbyStation ? (
             <div className="flex items-center gap-2 bg-slate-900/90 px-2.5 py-1 rounded-xl border border-amber-500/40">
@@ -863,133 +1191,67 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
         </div>
       )}
 
-      {/* 2. ACTIVE PLAYABLE PHONICS GAME STAGE */}
+      {/* 2. ACTIVE PLAYABLE PHONICS GAME STAGE: REALM-SPECIFIC VIDEO GAME */}
       {activeGameIndex !== null && currentQuestion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
-          <div className="relative w-full max-w-lg bg-slate-900 border-2 border-amber-400 rounded-3xl p-5 sm:p-7 text-center space-y-4 shadow-[0_0_50px_rgba(245,158,11,0.5)] animate-scale-up">
-            
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span className="text-xs font-mono font-bold text-amber-400 uppercase">
-                {config.name} · Phonics Challenge
-              </span>
-              <div className="flex gap-1 text-amber-400">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3.5 h-3.5 ${
-                      i < earnedStars ? 'fill-amber-400 text-amber-400' : 'text-slate-600'
-                    }`}
-                  />
-                ))}
-              </div>
+        <ActivePlayableStage
+          landId={landId}
+          activeExplorer={activeExplorer}
+          companionGuide={companionGuide}
+          currentQuestion={currentQuestion}
+          activeGameIndex={activeGameIndex}
+          isAnswered={isAnswered}
+          isCorrect={isCorrect}
+          selectedAnswer={selectedAnswer}
+          realmLives={realmLives}
+          earnedStars={earnedStars}
+          bossBarrierHp={bossBarrierHp}
+          roundCompleted={roundCompleted}
+          onSelectChoice={handleSelectChoice}
+          onFinishRound={finishGameRound}
+          onTryAgain={() => startPlayableGame(activeGameIndex)}
+          onNextLevel={() => startPlayableGame(activeGameIndex + 1)}
+          onClose={() => {
+            sounds.stopSpeech();
+            setActiveGameIndex(null);
+          }}
+        />
+      )}
+
+      {/* 3. MARIO GAME OVER MODAL: SAVIOR DEFEATED AFTER 3 MISTAKES */}
+      {isGameOver && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/95 backdrop-blur-md animate-fade-in select-none">
+          <div className="relative w-full max-w-md bg-gradient-to-b from-slate-900 via-rose-950/70 to-slate-950 border-4 border-rose-500 rounded-3xl p-6 sm:p-8 text-center space-y-5 shadow-[0_0_60px_rgba(244,63,94,0.6)] animate-scale-up">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-400 text-rose-300 font-mono font-black text-xs uppercase tracking-widest animate-pulse">
+              <span>💀 0 LIVES REMAINING 💀</span>
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs sm:text-sm text-slate-300 font-medium">
-                {currentQuestion.instruction}
+              <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-red-300 to-amber-300 font-display uppercase tracking-wide drop-shadow">
+                SAVIOR DEFEATED!
+              </h2>
+              <p className="text-xs sm:text-sm font-bold text-rose-200">
+                The Shadow King reclaimed {config.name}!
               </p>
-
-              <div className="inline-flex items-center gap-3 bg-amber-500/20 border-2 border-amber-400 px-5 py-2.5 rounded-2xl shadow-inner">
-                <span className="text-2xl sm:text-3xl font-black text-amber-300 font-display tracking-widest">
-                  {currentQuestion.targetSound}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => sounds.speak(currentQuestion.soundCue)}
-                  className="p-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow cursor-pointer transition-transform hover:scale-110 active:scale-95"
-                  title="Speak Cue"
-                >
-                  <Volume2 className="w-5 h-5 stroke-[2.5]" />
-                </button>
-              </div>
+              <p className="text-[11px] sm:text-xs text-slate-300 max-w-sm mx-auto leading-relaxed pt-1">
+                You made 3 mistakes and ran out of hearts! Just like in Mario, you must return to the beginning of this realm to try again.
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              {currentQuestion.choices.map((choice) => {
-                const isSelected = selectedAnswer === choice;
-                let btnStyle = 'bg-slate-950 hover:bg-slate-800 border-slate-700 text-slate-200';
-
-                if (isAnswered) {
-                  if (choice.trim().toLowerCase() === currentQuestion.correct.trim().toLowerCase()) {
-                    btnStyle = 'bg-emerald-600 border-emerald-400 text-white font-black scale-102 shadow-lg';
-                  } else if (isSelected) {
-                    btnStyle = 'bg-rose-900 border-rose-500 text-rose-200 opacity-80';
-                  } else {
-                    btnStyle = 'bg-slate-950 border-slate-800 text-slate-600 opacity-50';
-                  }
-                }
-
-                return (
-                  <button
-                    key={choice}
-                    onClick={() => handleSelectChoice(choice)}
-                    disabled={isAnswered}
-                    className={`py-3.5 sm:py-4 px-3 rounded-2xl border-2 text-base sm:text-lg font-black font-display tracking-wide shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 ${btnStyle}`}
-                  >
-                    <span>{choice}</span>
-                  </button>
-                );
-              })}
+            {/* Empty Hearts Display */}
+            <div className="flex items-center justify-center gap-3 py-2">
+              <span className="text-3xl animate-bounce">💔</span>
+              <span className="text-3xl animate-bounce" style={{ animationDelay: '150ms' }}>💔</span>
+              <span className="text-3xl animate-bounce" style={{ animationDelay: '300ms' }}>💔</span>
             </div>
 
-            {isAnswered && (
-              <div className="space-y-3 pt-2 animate-fade-in text-center">
-                <p className={`text-xs font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {currentQuestion.explanation}
-                </p>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      sounds.stopSpeech();
-                      startPlayableGame(activeGameIndex);
-                    }}
-                    className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Try Again</span>
-                  </button>
-
-                  <button
-                    onClick={finishGameRound}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl flex items-center justify-center gap-1.5 cursor-pointer transition-transform hover:scale-105 active:scale-95"
-                  >
-                    <span>Finish Round</span>
-                    <CheckCircle2 className="w-4 h-4 stroke-[3]" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {roundCompleted && (
-              <div className="pt-2 animate-fade-in space-y-2 border-t border-slate-800">
-                <div className="text-amber-400 font-black text-sm">
-                  🎉 Challenge Passed! Next Challenge Unlocked!
-                </div>
-                <div className="flex justify-center gap-2">
-                  <button
-                    onClick={() => {
-                      sounds.stopSpeech();
-                      setActiveGameIndex(null);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold cursor-pointer"
-                  >
-                    Return to Map
-                  </button>
-                  {activeGameIndex < 50 && (
-                    <button
-                      onClick={() => {
-                        sounds.stopSpeech();
-                        startPlayableGame(activeGameIndex + 1);
-                      }}
-                      className="px-5 py-2 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer"
-                    >
-                      Next Challenge →
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Restart Button */}
+            <button
+              onClick={handleGameOverRestart}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.6)] cursor-pointer flex items-center justify-center gap-2 transition-transform hover:scale-105 active:scale-95 border-2 border-amber-200"
+            >
+              <RotateCcw className="w-4 h-4 stroke-[3]" />
+              <span>Restart {config.name} (Level 1)</span>
+            </button>
           </div>
         </div>
       )}
@@ -1053,7 +1315,7 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
               }}
               className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer"
             >
-              Test Voice & Close
+              Test Voice &amp; Close
             </button>
           </div>
         </div>

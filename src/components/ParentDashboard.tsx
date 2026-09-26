@@ -22,12 +22,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   const [isAddingKid, setIsAddingKid] = useState(false);
   const [newKidName, setNewKidName] = useState('');
   const [newKidAge, setNewKidAge] = useState<ExplorerProfile['ageTier']>('preschool');
+  const [newKidGender, setNewKidGender] = useState<'boy' | 'girl'>('boy');
   const [isHallOfFameExpanded, setIsHallOfFameExpanded] = useState(false);
 
   // Deduplicated roster: an explorer is only included once by their unique profile ID
   const hallOfFameExplorers = account.explorers.filter((exp) => {
-    const totalCompleted = Object.values(exp.landScores).reduce(
-      (sum, land) => sum + (land.completedGamesCount || 0),
+    const scores = Object.values(exp.landScores) as { completedGamesCount?: number }[];
+    const totalCompleted = scores.reduce<number>(
+      (sum: number, land) => sum + (land?.completedGamesCount || 0),
       0
     );
     return (
@@ -41,7 +43,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   const handleCreateKid = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newKidName.trim()) return;
-    createExplorer(newKidName.trim(), newKidAge);
+    createExplorer(newKidName.trim(), newKidAge, newKidGender);
     sounds.playFanfare();
     sounds.speak(`Explorer ${newKidName.trim()} created! Welcome to Phonixia!`);
     setNewKidName('');
@@ -68,11 +70,19 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     activeExplorer.isHallOfFameInducted ||
     (activeExplorer.timesStorylineCompleted && activeExplorer.timesStorylineCompleted > 0) ||
     activeExplorer.totalStars >= 750 ||
-    Object.values(activeExplorer.landScores).every((l) => l.completedGamesCount >= 50);
+    (Object.values(activeExplorer.landScores) as { completedGamesCount?: number }[]).every((l) => (l?.completedGamesCount ?? 0) >= 50);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md">
-      <div className="relative w-full max-w-4xl bg-slate-900 border-2 border-amber-500/50 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div 
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+        paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)'
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md"
+    >
+      <div className="relative w-full max-w-4xl bg-slate-900 border-2 border-amber-500/50 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
         {/* Header */}
         <div className="px-6 py-4 bg-slate-950/95 border-b border-amber-900/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -124,14 +134,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-base sm:text-lg font-black text-amber-300 font-display tracking-wide uppercase">
-                      Phonixia Hall of Fame
+                      Eternal Flamekeepers
                     </span>
                     <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-black border border-amber-400/40">
-                      {hallOfFameExplorers.length} Champions Inducted
+                      {hallOfFameExplorers.length} Flamekeepers Enshrined
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5">
-                    Permanent Classroom Honor Roll. Explorers earn a permanent spot upon finishing the story!
+                    Permanent Honor Roll. Explorers earn their place among the Eternal Flamekeepers upon defeating the Shadow King, rescuing the Golden Phoenix, and saving Phonixia!
                   </p>
                 </div>
               </div>
@@ -183,7 +193,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                                 )}
                               </div>
                               <div className="text-[11px] text-slate-400">
-                                Permanent Hall of Fame Inductee · Master of Phonixia
+                                Permanent Eternal Flamekeeper · Savior of the Golden Phoenix
                               </div>
                             </div>
                           </div>
@@ -222,7 +232,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   </span>
                   {activeExplorer.isHallOfFameInducted && (
                     <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase">
-                      🏆 Hall of Famer
+                      🏆 Eternal Flamekeeper
                     </span>
                   )}
                 </div>
@@ -241,7 +251,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               {isEligibleToReset && (
                 <button
                   onClick={() => {
-                    if (window.confirm(`Restart ${activeExplorer.name}'s story from Level 1? Your spot in the Hall of Fame is permanent and will NEVER be removed.`)) {
+                    if (window.confirm(`Restart ${activeExplorer.name}'s story from Level 1? Your spot among the Eternal Flamekeepers is permanent and will NEVER be removed.`)) {
                       resetExplorerProgress(activeExplorer.id);
                       sounds.playFanfare();
                       sounds.speak(`Story restarted for ${activeExplorer.name}! Welcome back to Sound Shallows!`);
@@ -313,8 +323,39 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       <option value="kindergarten">Builders Guild (Word Building & Blending)</option>
                       <option value="early-elementary">Tricky Trails (Silent E & Phonics Paths)</option>
                       <option value="late-elementary">Whispering Peaks (Vowel Teams & Syllables)</option>
-                      <option value="middle-school">Lexicon Empire (Greek/Latin Roots & Rules)</option>
+                      <option value="middle-high">Lexicon Empire (Greek/Latin Roots & Rules)</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Explorer Gender & Companion Guide */}
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400 block">Explorer Gender &amp; Companion</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setNewKidGender('boy')}
+                      className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
+                        newKidGender === 'boy'
+                          ? 'bg-blue-950/70 border-amber-400 shadow-md ring-1 ring-amber-400'
+                          : 'bg-slate-900 border-slate-800 opacity-60'
+                      }`}
+                    >
+                      <div className="text-xs font-black text-amber-200">👦 Boy Explorer</div>
+                      <div className="text-[10px] text-blue-300">Kam journeys with you!</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewKidGender('girl')}
+                      className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
+                        newKidGender === 'girl'
+                          ? 'bg-pink-950/70 border-amber-400 shadow-md ring-1 ring-amber-400'
+                          : 'bg-slate-900 border-slate-800 opacity-60'
+                      }`}
+                    >
+                      <div className="text-xs font-black text-amber-200">👧 Girl Explorer</div>
+                      <div className="text-[10px] text-pink-300">Celine journeys with you!</div>
+                    </button>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-1">

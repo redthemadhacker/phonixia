@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { sounds } from '../utils/audio';
-import { LogIn, UserPlus, Lock, User, Sparkles, X, ShieldCheck, KeyRound } from 'lucide-react';
+import { validatePassword } from '../utils/security';
+import { 
+  LogIn, UserPlus, Lock, User, Sparkles, X, ShieldCheck, KeyRound, 
+  Check, Wifi 
+} from 'lucide-react';
 
 interface AuthModalProps {
   initialMode?: 'login' | 'signup';
@@ -24,7 +28,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [familyName, setFamilyName] = useState('');
   const [role, setRole] = useState<'parent' | 'teacher'>('parent');
   const [firstKidName, setFirstKidName] = useState('');
+  const [firstKidGender, setFirstKidGender] = useState<'boy' | 'girl'>('boy');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const pwCheckResult = validatePassword(password);
 
   // Pre-fill remembered username from this device if available
   useEffect(() => {
@@ -68,6 +75,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
+    if (!pwCheckResult.isValid) {
+      setErrorMsg(pwCheckResult.errorMessage || 'Please fulfill all password security parameters.');
+      sounds.playError();
+      return;
+    }
+
     if (rememberUsername) {
       localStorage.setItem('phonixia_saved_username', username.trim());
     }
@@ -78,6 +91,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       familyName: familyName.trim(),
       role,
       starterExplorerName: firstKidName.trim() || 'Explorer',
+      gender: firstKidGender
     });
 
     sounds.playFanfare();
@@ -86,8 +100,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-      <div className="relative w-full max-w-md bg-slate-900 border-2 border-amber-500/60 rounded-3xl shadow-2xl overflow-hidden animate-scale-up">
+    <div 
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+        paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 12px)',
+        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 12px)'
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md overflow-y-auto"
+    >
+      <div className="relative w-full max-w-md bg-slate-900 border-2 border-amber-500/60 rounded-3xl shadow-2xl overflow-y-auto max-h-[calc(100dvh-24px)] animate-scale-up my-auto">
         {/* Top Header */}
         <div className="px-6 py-4 bg-slate-950 border-b border-amber-900/50 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -260,6 +282,79 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
+              {/* Standard Password Security Parameters Checklist */}
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-amber-500/30 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-amber-400" />
+                    <span>Security Parameters</span>
+                  </span>
+                  <span className={`text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-full ${
+                    pwCheckResult.isValid ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/50' : 'bg-slate-800 text-slate-400'
+                  }`}>
+                    {pwCheckResult.score}/5 Met
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[10px]">
+                  {pwCheckResult.checks.map((check) => (
+                    <div
+                      key={check.id}
+                      className={`flex items-center gap-1 ${
+                        check.passed ? 'text-emerald-400 font-bold' : 'text-slate-400'
+                      }`}
+                    >
+                      {check.passed ? (
+                        <Check className="w-3 h-3 text-emerald-400 stroke-[3] shrink-0" />
+                      ) : (
+                        <div className="w-2 h-2 rounded-full border border-slate-600 shrink-0" />
+                      )}
+                      <span className="leading-tight">{check.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Character Gender & Companion Selection */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-300 block mb-1">
+                  Explorer Gender &amp; Companion
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFirstKidGender('boy');
+                      sounds.playStep();
+                    }}
+                    className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
+                      firstKidGender === 'boy'
+                        ? 'bg-blue-950/60 border-amber-400 shadow-md ring-1 ring-amber-400'
+                        : 'bg-slate-950 border-slate-800 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="text-xs font-black text-amber-200">👦 Boy Explorer</div>
+                    <div className="text-[10px] text-blue-300 font-medium">Kam travels with you!</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFirstKidGender('girl');
+                      sounds.playStep();
+                    }}
+                    className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
+                      firstKidGender === 'girl'
+                        ? 'bg-pink-950/60 border-amber-400 shadow-md ring-1 ring-amber-400'
+                        : 'bg-slate-950 border-slate-800 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="text-xs font-black text-amber-200">👧 Girl Explorer</div>
+                    <div className="text-[10px] text-pink-300 font-medium">Celine travels with you!</div>
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-slate-300 block mb-1">Account Role</label>
@@ -285,21 +380,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={rememberUsername}
-                    onChange={(e) => setRememberUsername(e.target.checked)}
-                    className="w-4 h-4 rounded bg-slate-950 border-slate-700 text-amber-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
-                  />
-                  <span className="text-xs text-slate-300 font-medium">
-                    Remember username on this device
-                  </span>
-                </label>
-                <div className="flex items-center gap-1 text-[11px] text-amber-400/80 font-medium">
-                  <KeyRound className="w-3.5 h-3.5" />
-                  <span>Device Keychain</span>
+              {/* Parents Wi-Fi & Network Cybersecurity Shield */}
+              <div className="p-2 rounded-xl bg-slate-950 border border-emerald-500/30 flex items-start gap-2 text-[10px] text-slate-300">
+                <Wifi className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <b className="text-emerald-400 font-bold block">Protected Home Wi-Fi &amp; Cloud Cartridge</b>
+                  <span>Backend network isolation prevents local Wi-Fi probing. Accounts are accessible across any phone or computer.</span>
                 </div>
               </div>
 
@@ -309,7 +395,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg cursor-pointer flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Sparkles className="w-4 h-4 stroke-[2.5]" />
-                  <span>Create Account & Save to Device</span>
+                  <span>Create Cloud Account &amp; Begin</span>
                 </button>
               </div>
             </form>

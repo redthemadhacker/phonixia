@@ -5,7 +5,7 @@ import { sounds } from '../utils/audio';
 import { PHONIXIA_LANDS } from '../data/curriculumData';
 import { 
   X, Users, Palette, BarChart3, Settings, Star, Crown, Award, 
-  UserPlus, RefreshCw, LogOut, Download, Upload, CheckCircle2, 
+  UserPlus, RefreshCw, LogOut, CheckCircle2, 
   Sparkles, Flame, Scroll, Edit3, Check, Shirt
 } from 'lucide-react';
 
@@ -23,8 +23,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     updateExplorerName,
     updateAvatarCustomization,
     resetExplorerProgress,
-    exportSaveData,
-    importSaveData,
     logout
   } = useGame();
 
@@ -114,27 +112,17 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     sounds.speak(`Profile updated for ${draftName.trim() || activeExplorer.name}!`);
   };
 
-  const handleExport = () => {
-    const data = exportSaveData();
-    navigator.clipboard.writeText(data);
-    setSyncStatus('Save data copied! Paste it on your other device.');
-    setTimeout(() => setSyncStatus(null), 4000);
-  };
-
-  const handleImport = () => {
-    const paste = prompt('Paste your Phonixia save data JSON:');
-    if (paste && importSaveData(paste)) {
-      sounds.playFanfare();
-      setSyncStatus('Progress imported successfully!');
-      setTimeout(() => setSyncStatus(null), 4000);
-    } else if (paste) {
-      alert('Invalid save data format.');
-    }
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in select-none">
-      <div className="relative w-full max-w-4xl h-[90vh] max-h-[820px] bg-slate-900 border-4 border-amber-600/70 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-scale-up">
+    <div 
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+        paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)'
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md animate-fade-in select-none"
+    >
+      <div className="relative w-full max-w-4xl h-[92vh] max-h-[820px] bg-slate-900 border-4 border-amber-600/70 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-scale-up">
         {/* Top Header */}
         <div className="px-5 py-3.5 bg-slate-950/90 border-b-2 border-amber-900/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -205,7 +193,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             }`}
           >
             <Crown className="w-3.5 h-3.5 fill-current" />
-            <span className="hidden sm:inline">Hall of Fame</span>
+            <span className="hidden sm:inline">Legends</span>
           </button>
 
           <button
@@ -570,15 +558,15 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             </div>
           )}
 
-          {/* TAB 3: CURRICULUM PROGRESS */}
+          {/* TAB 3: REALM QUEST PROGRESS */}
           {activeTab === 'progress' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                 <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  {activeExplorer.name}'s Reading Journey
+                  {activeExplorer.name}'s Realm Quest Map
                 </span>
                 <span className="text-xs font-mono font-bold text-slate-300">
-                  Total Stars: <b className="text-amber-400">{activeExplorer.totalStars}</b>
+                  Power Stars: <b className="text-amber-400">{activeExplorer.totalStars}</b>
                 </span>
               </div>
 
@@ -594,7 +582,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                           <div className="text-xs font-black text-slate-100 font-display uppercase tracking-wide">
                             {land.name}
                           </div>
-                          <div className="text-[10px] text-slate-400">{land.targetAudience}</div>
+                          <div className="text-[10px] text-slate-400">{land.gradeLevel}</div>
                         </div>
 
                         <div className="flex items-center gap-3 text-xs font-mono font-bold">
@@ -628,7 +616,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/80 text-amber-300 font-mono text-[11px] font-black uppercase tracking-widest">
                     <Crown className="w-3.5 h-3.5 fill-current" />
-                    <span>Honored Grand Scholar</span>
+                    <span>Eternal Flamekeeper · Savior of the Golden Phoenix</span>
                   </div>
 
                   <div className="relative mx-auto w-24 h-24 rounded-full bg-slate-950 border-4 border-amber-400 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.5)]">
@@ -641,7 +629,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                     </h3>
                     <p className="text-xs text-amber-200 font-bold">{activeExplorer.customization.title}</p>
                     <p className="text-[11px] text-slate-300 max-w-md mx-auto pt-2 leading-relaxed">
-                      Official inductee of the Phonixia Citadel. Mastered 250 curriculum games spanning Preschool through High School phonetic disciplines.
+                      Legendary savior of the Golden Phoenix! Conquered all 5 boss realms, vanquished the Shadow King, and liberated Phonixia to earn your place among the Eternal Flamekeepers!
                     </p>
                   </div>
 
@@ -651,11 +639,11 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <span className="text-xs font-black text-amber-400">{activeExplorer.totalStars}</span>
                     </div>
                     <div className="p-2 rounded-xl bg-slate-900 border border-amber-500/30">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Games</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Stages Won</span>
                       <span className="text-xs font-black text-teal-300">250 / 250</span>
                     </div>
                     <div className="p-2 rounded-xl bg-slate-900 border border-amber-500/30">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Story Runs</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Story Clears</span>
                       <span className="text-xs font-black text-rose-400">{Math.max(1, activeExplorer.timesStorylineCompleted || 1)}x</span>
                     </div>
                   </div>
@@ -666,21 +654,21 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-1.5 mx-auto cursor-pointer transition-transform hover:scale-105"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
-                      <span>Replay Induction Ceremony</span>
+                      <span>Replay Victory Ceremony</span>
                     </button>
                   )}
                 </div>
               ) : (
                 <div className="p-6 rounded-3xl bg-slate-950 border-2 border-slate-800 text-center space-y-3">
                   <div className="w-14 h-14 rounded-full bg-slate-900 border border-slate-700 mx-auto flex items-center justify-center text-2xl text-slate-500">
-                    📜
+                    👑
                   </div>
                   <div>
                     <h3 className="text-sm font-black text-slate-200 uppercase tracking-wide">
-                      {activeExplorer.name}'s Induction in Progress
+                      {activeExplorer.name}'s Rescue Quest in Progress
                     </h3>
                     <p className="text-xs text-slate-400 max-w-sm mx-auto pt-1">
-                      Complete all 50 challenges across all five lands (250 total) to earn your crown and induction into the Citadel Hall of Fame!
+                      Conquer all 50 challenge stages across all five realms (250 total) to defeat the Shadow King, rescue the Golden Phoenix, and earn your place among the Eternal Flamekeepers!
                     </p>
                   </div>
                 </div>
@@ -690,7 +678,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
               <div className="space-y-2 pt-2">
                 <div className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Scroll className="w-3.5 h-3.5" />
-                  <span>Citadel Hall of Fame Inductees</span>
+                  <span>Eternal Flamekeepers Inductees</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -735,32 +723,27 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 </div>
               )}
 
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                <div>
-                  <div className="text-xs font-black text-slate-100 uppercase tracking-wide">
-                    Cross-Device Data Sync
+              <div className="p-4 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-base">
+                    ☁️
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    Sync your completed Hall of Fame progress between your computer and phone.
-                  </p>
+                  <div>
+                    <div className="text-xs font-black text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+                      <span>Automatic Cloud Game Save</span>
+                      <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono border border-emerald-400/40">
+                        ACTIVE &amp; ENCRYPTED
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+                      Just like inserting a game cartridge with saved data! All your stars, unlocked lands, and Eternal Flamekeeper honors automatically sync in the backend. Log in with your unique user &amp; password on your phone or computer to access your game anywhere.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleExport}
-                    className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Copy Save Data</span>
-                  </button>
-
-                  <button
-                    onClick={handleImport}
-                    className="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-teal-400 border border-teal-500/40 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Import Save Data</span>
-                  </button>
+                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+                  <span>Synced Account: <b className="text-amber-400">@{account.username}</b></span>
+                  <span className="text-emerald-400 font-bold">● Cloud Connected</span>
                 </div>
               </div>
 
@@ -770,7 +753,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                     Reset Active Story Progress
                   </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Resets completed lands back to Sound Shallows (keeps Hall of Fame titles).
+                    Resets completed lands back to Sound Shallows (keeps Eternal Flamekeepers status).
                   </p>
                 </div>
                 <button

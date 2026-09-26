@@ -29,7 +29,14 @@ export const Navigation: React.FC<NavigationProps> = ({
   const [explorerDropdownOpen, setExplorerDropdownOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-3.5 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
+    <header 
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)',
+        paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 1.25rem)',
+        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 1.25rem)'
+      }}
+      className="sticky top-0 z-50 flex items-center justify-between pb-3.5 bg-slate-950/90 backdrop-blur-md border-b border-slate-800"
+    >
       {/* Zone 1: Brand Wordmark (Single text element) */}
       <div className="flex items-center gap-4">
         <button

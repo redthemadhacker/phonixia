@@ -12,9 +12,7 @@ import { LandId, MinigameId } from './types/character';
 const GameShell: React.FC = () => {
   const { showHallOfFameCelebration, dismissHallOfFameCelebration } = useGame();
   
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('phonixia_active_session') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   const [currentView, setCurrentView] = useState<'world' | 'land' | 'isles' | 'arcade'>('world');
   const [selectedLand, setSelectedLand] = useState<LandId>('sound-shallows');
@@ -26,7 +24,7 @@ const GameShell: React.FC = () => {
   }
 
   return (
-    <div className="w-full h-[100dvh] w-screen h-screen bg-slate-950 flex flex-col justify-between overflow-hidden select-none relative">
+    <div className="w-full h-full min-h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col justify-between overflow-hidden select-none fixed inset-0">
       {/* 1. Main Interactive World Map */}
       {currentView === 'world' && (
         <WorldCanvas

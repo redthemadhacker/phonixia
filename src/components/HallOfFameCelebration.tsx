@@ -14,7 +14,7 @@ export const HallOfFameCelebration: React.FC<HallOfFameCelebrationProps> = ({ on
   useEffect(() => {
     sounds.playFanfare();
     sounds.speak(
-      `Hear ye, hear ye! All five realms conquered! All hail ${activeExplorer.name}, inducted into the Phonixia Hall of Fame!`,
+      `VICTORY! All five realms conquered! The Shadow King is defeated and the Golden Phoenix is saved! All hail ${activeExplorer.name}, legendary Eternal Flamekeeper of Phonixia!`,
       0.95,
       1.15
     );
@@ -29,7 +29,7 @@ export const HallOfFameCelebration: React.FC<HallOfFameCelebrationProps> = ({ on
         {/* Top Floating Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/80 text-amber-300 font-mono font-black text-xs uppercase tracking-widest shadow-md">
           <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
-          <span>Hall of Fame Inductee</span>
+          <span>Eternal Flamekeeper Inductee</span>
           <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
         </div>
 
@@ -45,10 +45,10 @@ export const HallOfFameCelebration: React.FC<HallOfFameCelebrationProps> = ({ on
             {activeExplorer.name}
           </h1>
           <p className="text-xs sm:text-sm font-bold text-amber-200">
-            Grand Scholar of the Phoenix Citadel
+            Legendary Hero &amp; Savior of the Golden Phoenix
           </p>
           <p className="text-[11px] sm:text-xs text-slate-300 max-w-md mx-auto leading-relaxed pt-1">
-            By mastering all 250 challenges across Sound Shallows, Builders Guild, Tricky Trails, Whispering Peaks, and Lexicon Empire, your name is permanently inscribed in the Annals of Phonixia!
+            By conquering all 5 realm fortresses and defeating the Shadow King, you rescued the legendary Golden Phoenix! You have earned your eternal place among the Eternal Flamekeepers!
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export const HallOfFameCelebration: React.FC<HallOfFameCelebrationProps> = ({ on
             className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-2xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95"
           >
             <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-            <span>Enter the World as a Hall of Fame Scholar</span>
+            <span>Enter the World as an Eternal Flamekeeper</span>
           </button>
         </div>
       </div>

@@ -49,6 +49,8 @@ export interface ExplorerProfile {
   timesStorylineCompleted: number;
   landScores: Record<LandId, LandProgress>;
   customization: AvatarCustomization;
+  gender?: 'boy' | 'girl';
+  companionGuide?: 'kam' | 'celine';
 }
 
 export interface Account {

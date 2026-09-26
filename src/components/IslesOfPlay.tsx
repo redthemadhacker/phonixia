@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame, getCompanionGuide } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
 import { 
   ArrowLeft, Play, Sparkles, Gamepad2, Footprints, 
   CheckCircle2, ArrowUp, ArrowDown, ArrowLeft as ArrowLeftIcon, 
-  ArrowRight, RotateCcw, Volume2, Flame, Award, X
+  ArrowRight, RotateCcw, Volume2, Flame, Award, X, ChevronsUp
 } from 'lucide-react';
 import islesBg from '../../isles.jpeg';
 
@@ -153,6 +153,36 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [showCelebrationAnim, setShowCelebrationAnim] = useState(false);
 
+  // Jump physics on island map
+  const [jumpOffset, setJumpOffset] = useState<number>(0);
+  const [isJumping, setIsJumping] = useState<boolean>(false);
+
+  const triggerIsleJump = useCallback(() => {
+    if (isJumping) return;
+    setIsJumping(true);
+    sounds.playJump();
+
+    const startTime = performance.now();
+    const jumpDuration = 450;
+    const maxDisplacement = 40;
+
+    const animateJump = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / jumpDuration, 1);
+      const height = Math.sin(progress * Math.PI) * maxDisplacement;
+      setJumpOffset(height);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateJump);
+      } else {
+        setJumpOffset(0);
+        setIsJumping(false);
+      }
+    };
+
+    requestAnimationFrame(animateJump);
+  }, [isJumping]);
+
   const dirKeysRef = useRef({ up: false, down: false, left: false, right: false, shift: false });
   const [activeDpad, setActiveDpad] = useState({ up: false, down: false, left: false, right: false });
 
@@ -244,7 +274,14 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
         matched = true;
       }
 
-      if ((k === 'e' || k === ' ' || k === 'enter' || code === 'KeyE' || code === 'Space') && nearbyGame && !activeGame) {
+      // Space bar (arrow keys) and Tab (WASD) jump action
+      if (k === ' ' || k === 'tab' || code === 'Space' || code === 'Tab') {
+        e.preventDefault();
+        matched = true;
+        triggerIsleJump();
+      }
+
+      if ((k === 'e' || k === 'enter' || code === 'KeyE') && nearbyGame && !activeGame) {
         matched = true;
         launchMinigame(nearbyGame);
       }
@@ -443,7 +480,14 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
       className="relative w-full h-full flex flex-col justify-between select-none outline-none overflow-hidden"
     >
       {/* Top HUD */}
-      <div className="absolute top-2 inset-x-2 sm:top-3 sm:inset-x-4 z-40 flex items-center justify-between pointer-events-none">
+      <div 
+        style={{
+          top: 'calc(env(safe-area-inset-top, 0px) + 8px)',
+          left: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+          right: 'calc(env(safe-area-inset-right, 0px) + 8px)'
+        }}
+        className="absolute z-40 flex items-center justify-between pointer-events-none"
+      >
         <button
           onClick={() => {
             sounds.stopSpeech();
@@ -507,18 +551,49 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
           </div>
         ))}
 
+        {/* Companion Guide (Kam or Celine) */}
+        {(() => {
+          const companionGuide = getCompanionGuide(activeExplorer);
+          return (
+            <div
+              className="absolute z-25 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-100"
+              style={{
+                left: `${playerPos.x - (facing === 'left' ? -3.5 : 3.5)}%`,
+                top: `${playerPos.y + 0.8}%`,
+                transform: `translate(-50%, calc(-50% - ${jumpOffset * 0.9}px))`
+              }}
+            >
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-teal-400/60 px-1.5 py-0.2 rounded-full shadow whitespace-nowrap">
+                <span className="text-[9px] font-bold text-amber-200">{companionGuide.name}</span>
+              </div>
+              <AvatarRenderer
+                customization={companionGuide.customization}
+                size={40}
+                isWalking={isMoving}
+                isRunning={isRunning}
+                facing={facing}
+                walkCycle={isJumping ? 1.5 : walkCycle}
+                showPet={false}
+              />
+            </div>
+          );
+        })()}
+
         {/* Player Avatar */}
         <div
-          className="absolute z-30 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }}
+          className="absolute z-30 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-75"
+          style={{ 
+            left: `${playerPos.x}%`, 
+            top: `${playerPos.y}%`,
+            transform: `translate(-50%, calc(-50% - ${jumpOffset}px))`
+          }}
         >
           {targetPosRef.current && (
             <div className="absolute -inset-4 rounded-full border-2 border-teal-400 animate-ping opacity-40 pointer-events-none" />
           )}
 
-          <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-950/95 border border-teal-400/90 px-2 py-0.5 rounded-full shadow-xl whitespace-nowrap flex items-center gap-1">
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-950/95 border border-teal-400/90 px-2 py-0.5 rounded-full shadow-xl whitespace-nowrap flex items-center gap-1">
             <span className="text-[10px] font-extrabold text-teal-300">{activeExplorer.name}</span>
-            {isRunning && <span className="text-[8px] text-teal-400 font-black uppercase tracking-wider">Run</span>}
           </div>
 
           <AvatarRenderer
@@ -527,70 +602,97 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
             isWalking={isMoving}
             isRunning={isRunning}
             facing={facing}
-            walkCycle={walkCycle}
+            walkCycle={isJumping ? 1.5 : walkCycle}
             showPet={true}
           />
         </div>
 
-        {/* Controls */}
+        {/* Controls with Arcade Jump Button */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 z-40 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-xl sm:rounded-2xl border border-teal-600/50 shadow-2xl flex flex-col items-center gap-1 select-none pointer-events-auto"
+          style={{
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 10px)',
+            left: 'calc(env(safe-area-inset-left, 0px) + 8px)'
+          }}
+          className="absolute z-40 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-xl sm:rounded-2xl border border-teal-600/50 shadow-2xl flex items-center gap-2 select-none pointer-events-auto touch-none"
         >
+          <div className="flex flex-col items-center gap-1">
+            <button
+              onMouseDown={() => handleDpadPress('up')}
+              onMouseUp={() => handleDpadRelease('up')}
+              onTouchStart={(e) => { e.preventDefault(); handleDpadPress('up'); }}
+              onTouchEnd={(e) => { e.preventDefault(); handleDpadRelease('up'); }}
+              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                activeDpad.up ? 'bg-teal-400 text-slate-950 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
+              }`}
+            >
+              <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+            </button>
+
+            <div className="flex items-center gap-1">
+              <button
+                onMouseDown={() => handleDpadPress('left')}
+                onMouseUp={() => handleDpadRelease('left')}
+                onTouchStart={(e) => { e.preventDefault(); handleDpadPress('left'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleDpadRelease('left'); }}
+                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                  activeDpad.left ? 'bg-teal-400 text-slate-950 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
+                }`}
+              >
+                <ArrowLeftIcon className="w-4 h-4 stroke-[2.5]" />
+              </button>
+
+              <button
+                onMouseDown={() => handleDpadPress('down')}
+                onMouseUp={() => handleDpadRelease('down')}
+                onTouchStart={(e) => { e.preventDefault(); handleDpadPress('down'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleDpadRelease('down'); }}
+                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                  activeDpad.down ? 'bg-teal-400 text-slate-950 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
+                }`}
+              >
+                <ArrowDown className="w-4 h-4 stroke-[2.5]" />
+              </button>
+
+              <button
+                onMouseDown={() => handleDpadPress('right')}
+                onMouseUp={() => handleDpadRelease('right')}
+                onTouchStart={(e) => { e.preventDefault(); handleDpadPress('right'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleDpadRelease('right'); }}
+                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
+                  activeDpad.right ? 'bg-teal-400 text-slate-950 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
+                }`}
+              >
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            </div>
+          </div>
+
+          {/* Arcade Jump Button */}
           <button
-            onMouseDown={() => handleDpadPress('up')}
-            onMouseUp={() => handleDpadRelease('up')}
-            onTouchStart={() => handleDpadPress('up')}
-            onTouchEnd={() => handleDpadRelease('up')}
-            className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
-              activeDpad.up ? 'bg-teal-400 text-slate-950 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
+            onMouseDown={triggerIsleJump}
+            onTouchStart={(e) => { e.preventDefault(); triggerIsleJump(); }}
+            className={`w-11 h-11 sm:w-13 sm:h-13 rounded-2xl flex flex-col items-center justify-center font-black text-[10px] tracking-wider transition-all cursor-pointer shadow-lg border-2 ${
+              isJumping
+                ? 'bg-gradient-to-t from-teal-400 to-amber-300 text-slate-950 border-white scale-95 shadow-[0_0_20px_rgba(20,184,166,0.8)]'
+                : 'bg-gradient-to-t from-teal-600 via-teal-500 to-teal-400 hover:from-teal-500 hover:to-teal-300 text-slate-950 border-teal-200 shadow-[0_4px_0_rgba(15,118,110,1)] active:scale-95'
             }`}
           >
-            <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+            <ChevronsUp className="w-5 h-5 stroke-[3]" />
+            <span>JUMP</span>
           </button>
-
-          <div className="flex items-center gap-1">
-            <button
-              onMouseDown={() => handleDpadPress('left')}
-              onMouseUp={() => handleDpadRelease('left')}
-              onTouchStart={() => handleDpadPress('left')}
-              onTouchEnd={() => handleDpadRelease('left')}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
-                activeDpad.left ? 'bg-teal-400 text-slate-950 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
-              }`}
-            >
-              <ArrowLeftIcon className="w-4 h-4 stroke-[2.5]" />
-            </button>
-
-            <button
-              onMouseDown={() => handleDpadPress('down')}
-              onMouseUp={() => handleDpadRelease('down')}
-              onTouchStart={() => handleDpadPress('down')}
-              onTouchEnd={() => handleDpadRelease('down')}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
-                activeDpad.down ? 'bg-teal-400 text-slate-950 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
-              }`}
-            >
-              <ArrowDown className="w-4 h-4 stroke-[2.5]" />
-            </button>
-
-            <button
-              onMouseDown={() => handleDpadPress('right')}
-              onMouseUp={() => handleDpadRelease('right')}
-              onTouchStart={() => handleDpadPress('right')}
-              onTouchEnd={() => handleDpadRelease('right')}
-              className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center border transition-all ${
-                activeDpad.right ? 'bg-teal-400 text-slate-950 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
-              }`}
-            >
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-            </button>
-          </div>
         </div>
       </div>
 
       {/* Bottom Proximity Bar */}
-      <div className="p-2 sm:p-2.5 bg-slate-950/95 border-t border-teal-900/60 flex items-center justify-between gap-2 overflow-x-auto">
+      <div 
+        style={{
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+          paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+          paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)'
+        }}
+        className="p-2 sm:p-2.5 bg-slate-950/95 border-t border-teal-900/60 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none"
+      >
         <div className="flex items-center gap-2">
           {nearbyGame ? (
             <div className="flex items-center gap-2 bg-slate-900/90 px-2.5 py-1 rounded-xl border border-teal-500/40">

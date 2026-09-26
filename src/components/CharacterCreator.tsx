@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
-import { CharacterCustomization } from '../types/character';
+import { AvatarCustomization } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
 import { Sparkles, Check, RotateCcw } from 'lucide-react';
 import { sounds } from '../utils/audio';
@@ -12,7 +12,7 @@ interface CharacterCreatorProps {
 const SKIN_TONES = ['#fcd34d', '#fde047', '#fed7aa', '#fbcfe8', '#d97706', '#92400e', '#78350f', '#451a03'];
 const HAIR_COLORS = ['#1e293b', '#78350f', '#b45309', '#f59e0b', '#dc2626', '#4338ca', '#059669', '#ffffff'];
 
-const HAIR_STYLES: { id: CharacterCustomization['hairStyle']; label: string }[] = [
+const HAIR_STYLES: { id: AvatarCustomization['hairStyle']; label: string }[] = [
   { id: 'spiky', label: 'Spiky' },
   { id: 'curly', label: 'Curly' },
   { id: 'wavy', label: 'Wavy' },
@@ -22,7 +22,7 @@ const HAIR_STYLES: { id: CharacterCustomization['hairStyle']; label: string }[] 
   { id: 'explorer-bun', label: 'Top Bun' }
 ];
 
-const OUTFITS: { id: CharacterCustomization['outfit']; label: string; desc: string }[] = [
+const OUTFITS: { id: string; label: string; desc: string }[] = [
   { id: 'ranger-vest', label: 'Ranger Vest', desc: 'Sturdy green & gold explorer straps' },
   { id: 'phoenix-cloak', label: 'Phoenix Cloak', desc: 'Blazing flame silk woven in Phoenix Keep' },
   { id: 'scholar-robe', label: 'Scholar Robe', desc: 'Imperial blue robe with golden sash' },
@@ -30,7 +30,7 @@ const OUTFITS: { id: CharacterCustomization['outfit']; label: string; desc: stri
   { id: 'cyber-tunic', label: 'Cyber Tunic', desc: 'Neon cyan tech threads for modern explorers' }
 ];
 
-const HEADGEARS: { id: CharacterCustomization['headgear']; label: string }[] = [
+const HEADGEARS: { id: string; label: string }[] = [
   { id: 'explorer-hat', label: 'Explorer Fedora' },
   { id: 'phoenix-crown', label: 'Phoenix Crown' },
   { id: 'pilot-goggles', label: 'Pilot Goggles' },
@@ -39,7 +39,7 @@ const HEADGEARS: { id: CharacterCustomization['headgear']; label: string }[] = [
   { id: 'none', label: 'No Headgear' }
 ];
 
-const COMPANIONS: { id: CharacterCustomization['companionPet']; label: string; icon: string; lore: string }[] = [
+const COMPANIONS: { id: string; label: string; icon: string; lore: string }[] = [
   { id: 'phoenix-chick', label: 'Phoenix Chick', icon: '🔥', lore: 'Sparks flame warmth when reading tricky sounds' },
   { id: 'clever-fox', label: 'Clever Fox', icon: '🦊', lore: 'Sniffs out hidden sight words on Tricky Trails' },
   { id: 'golden-eagle', label: 'Golden Eagle', icon: '🦅', lore: 'Glides high across Whispering Peaks vowel glaciers' },
@@ -48,12 +48,12 @@ const COMPANIONS: { id: CharacterCustomization['companionPet']; label: string; i
 ];
 
 export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) => {
-  const { activeExplorer, updateExplorerCustomization } = useGame();
-  const [custom, setCustom] = useState<CharacterCustomization>({ ...activeExplorer.customization });
+  const { activeExplorer, updateAvatarCustomization } = useGame();
+  const [custom, setCustom] = useState<AvatarCustomization>({ ...activeExplorer.customization });
   const [activeTab, setActiveTab] = useState<'style' | 'outfit' | 'pet'>('style');
 
   const handleSave = () => {
-    updateExplorerCustomization(custom);
+    updateAvatarCustomization(custom);
     sounds.playFanfare();
     onClose();
   };

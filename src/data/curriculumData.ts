@@ -49,16 +49,16 @@ export const PHONIXIA_LANDS: LandCurriculum[] = [
         skillFocus: 'Single Consonant Sounds & Short A',
         description: 'Discover the pure beginning sounds of letters A, M, S, T, P.',
         games: [
-          makeGame('ss-1-1', 1, 'SOUND_MATCH', 'Sound of /m/', 'Which shell makes the sound /mmm/?', 'm', 'm', 'M is for moon and monkey.', ['m', 's', 't', 'p'], 'm', '/m/ like mountain!', 1),
-          makeGame('ss-1-2', 2, 'SOUND_MATCH', 'Beginning Sound: Sun', 'What sound starts the word "sun"?', 's', 'sun', 'Listen closely to the first hissing sound.', ['s', 'm', 'a', 'b'], 's', 'S makes the /s/ sound like snake.', 1),
-          makeGame('ss-1-3', 3, 'SOUND_MATCH', 'Short A Sound', 'Find the letter that says /æ/ as in apple!', 'a', 'apple', 'Short A sounds like ahhh.', ['a', 'o', 'e', 'u'], 'a', 'A says /æ/ like alligator!', 1),
-          makeGame('ss-1-4', 4, 'WORD_BUILDER', 'Build "AT"', 'Put the pearl letters together to make "at".', 'at', 'at', 'Start with a, then add t.', ['a', 't', 'm', 'p'], ['a', 't'], 'a + t makes at!', 1),
-          makeGame('ss-1-5', 5, 'SOUND_MATCH', 'Sound of /t/', 'Which pearl makes the ticking /t/ sound?', 't', 't', 'T makes a tapping sound.', ['t', 'd', 'p', 'k'], 't', 'T is for turtle and tiger!', 1),
-          makeGame('ss-1-6', 6, 'SOUND_MATCH', 'Beginning Sound: Pan', 'What sound starts the word "pan"?', 'p', 'pan', 'Pop your lips for /p/.', ['p', 'b', 'd', 't'], 'p', 'P pops with /p/ sound!', 1),
-          makeGame('ss-1-7', 7, 'RHYME_RUSH', 'Rhyme with Cat', 'Which word rhymes with "cat"?', 'bat', 'cat', 'Rhyming words share the same ending sound.', ['bat', 'dog', 'cup', 'sun'], 'bat', 'Cat and bat both end in -at!', 1),
-          makeGame('ss-1-8', 8, 'WORD_BUILDER', 'Build "MAP"', 'Arrange the letter pearls to spell "map".', 'map', 'map', '/m/ - /a/ - /p/.', ['m', 'a', 'p', 's'], ['m', 'a', 'p'], 'm + a + p = map!', 2),
-          makeGame('ss-1-9', 9, 'SOUND_MATCH', 'Vowel Hunt', 'Find the vowel in the word "pat".', 'a', 'pat', 'A, E, I, O, U are vowels.', ['a', 'p', 't', 's'], 'a', 'A is the middle vowel in pat.', 2),
-          makeGame('ss-1-10', 10, 'WORD_BUILDER', 'Master Word: SAM', 'Spell the explorer companion name: "Sam"!', 'sam', 'sam', 'Blend /s/ /a/ /m/.', ['s', 'a', 'm', 't'], ['s', 'a', 'm'], 'Super job! Sam is ready to explore!', 2)
+          makeGame('ss-1-1', 1, 'SOUND_MATCH', 'Sound of MMM', 'Which shell makes the MMM sound?', 'm', 'mmm', 'M is for moon and monkey.', ['m', 's', 't', 'p'], 'm', 'MMM like mountain!', 1),
+          makeGame('ss-1-2', 2, 'SOUND_MATCH', 'Beginning Sound: Sun', 'Which letter makes the SSS sound at the start of "sun"?', 's', 'sun', 'Listen closely to the first hissing sound.', ['s', 'm', 'a', 'b'], 's', 'S makes the SSS sound like snake.', 1),
+          makeGame('ss-1-3', 3, 'SOUND_MATCH', 'Sound of AHH', 'Which shell makes the AHH sound like in apple?', 'a', 'apple', 'Short A sounds like ahhh.', ['a', 'o', 'e', 'u'], 'a', 'A says AHH like alligator!', 1),
+          makeGame('ss-1-4', 4, 'WORD_BUILDER', 'Build AHH / TUH', 'Which word do these pearls build: AHH / TUH?', 'at', 'at', 'Start with AHH, then add TUH.', ['a', 't', 'm', 'p'], ['a', 't'], 'a + t makes at!', 1),
+          makeGame('ss-1-5', 5, 'SOUND_MATCH', 'Sound of TUH', 'Which pearl makes the ticking TUH sound?', 't', 'tuh', 'T makes a tapping TUH sound.', ['t', 'd', 'p', 'k'], 't', 'T is for turtle and tiger!', 1),
+          makeGame('ss-1-6', 6, 'SOUND_MATCH', 'Sound of PUH', 'Which letter makes the popping PUH sound at the start of "pan"?', 'p', 'pan', 'Pop your lips for PUH.', ['p', 'b', 'd', 't'], 'p', 'P pops with the PUH sound!', 1),
+          makeGame('ss-1-7', 7, 'SOUND_MATCH', 'Sound of BUH', 'Which letter makes the BUH sound?', 'b', 'buh', 'Press lips together for BUH.', ['b', 'd', 'p', 't'], 'b', 'B makes the BUH sound like bear!', 1),
+          makeGame('ss-1-8', 8, 'WORD_BUILDER', 'Build MMM / AHH / PUH', 'Which word do these pearls build: MMM / AHH / PUH?', 'map', 'map', 'MMM - AHH - PUH.', ['m', 'a', 'p', 's'], ['m', 'a', 'p'], 'm + a + p = map!', 2),
+          makeGame('ss-1-9', 9, 'SOUND_MATCH', 'Middle Sound in "PAT"', 'Which pearl makes the AHH sound in "pat"?', 'a', 'pat', 'A, E, I, O, U are vowels.', ['a', 'p', 't', 's'], 'a', 'A is the middle vowel AHH in pat.', 2),
+          makeGame('ss-1-10', 10, 'WORD_BUILDER', 'Build SSS / AHH / MMM', 'Which word do these pearls build: SSS / AHH / MMM?', 'sam', 'sam', 'Blend SSS / AHH / MMM.', ['s', 'a', 'm', 't'], ['s', 'a', 'm'], 'Super job! Sam is ready to explore!', 2)
         ]
       },
       {
@@ -68,16 +68,16 @@ export const PHONIXIA_LANDS: LandCurriculum[] = [
         skillFocus: 'Short Vowels & Simple Rimes (-an, -at, -op, -ig)',
         description: 'Explore tidal pools where letters group into word ending families.',
         games: [
-          makeGame('ss-2-1', 1, 'WORD_BUILDER', 'Make "FAN"', 'Spell "fan" using word pearls.', 'fan', 'fan', '/f/ + /an/', ['f', 'a', 'n', 't'], ['f', 'a', 'n'], 'F-A-N spells fan!', 2),
+          makeGame('ss-2-1', 1, 'WORD_BUILDER', 'Build FFF / AHH / NNN', 'Which word do these pearls build: FFF / AHH / NNN?', 'fan', 'fan', 'FFF + AHH + NNN', ['f', 'a', 'n', 't'], ['f', 'a', 'n'], 'F-A-N spells fan!', 2),
           makeGame('ss-2-2', 2, 'RHYME_RUSH', 'Rhyme with Pop', 'What rhymes with "pop"?', 'hop', 'pop', 'Listen for the -op sound.', ['hop', 'car', 'hat', 'run'], 'hop', 'Pop and hop both end in -op!', 2),
-          makeGame('ss-2-3', 3, 'SOUND_MATCH', 'Short O Sound', 'Which word has the short /o/ sound like octopus?', 'pot', 'pot', 'Listen for the open "ah" sound.', ['pot', 'pet', 'pit', 'pat'], 'pot', 'Pot has short o!', 2),
-          makeGame('ss-2-4', 4, 'WORD_BUILDER', 'Spell "PIG"', 'Assemble the pearls to spell "pig".', 'pig', 'pig', '/p/ /i/ /g/', ['p', 'i', 'g', 'd'], ['p', 'i', 'g'], 'P-I-G spells pig!', 2),
+          makeGame('ss-2-3', 3, 'SOUND_MATCH', 'Sound of AHH / OH', 'Which word has the short OH / AHH sound like octopus?', 'pot', 'pot', 'Listen for the open "ah" sound.', ['pot', 'pet', 'pit', 'pat'], 'pot', 'Pot has short o!', 2),
+          makeGame('ss-2-4', 4, 'WORD_BUILDER', 'Build PUH / IH / GUH', 'Which word do these pearls build: PUH / IH / GUH?', 'pig', 'pig', 'PUH / IH / GUH', ['p', 'i', 'g', 'd'], ['p', 'i', 'g'], 'P-I-G spells pig!', 2),
           makeGame('ss-2-5', 5, 'RHYME_RUSH', 'Rhyme with Wig', 'Which sea creature word rhymes with "wig"?', 'big', 'wig', '-ig word family.', ['big', 'bad', 'box', 'bed'], 'big', 'Big and wig are in the -ig family!', 2),
-          makeGame('ss-2-6', 6, 'SOUND_MATCH', 'Ending Sound', 'What is the last sound in "cup"?', 'p', 'cup', 'Focus on the final sound you hear.', ['p', 'k', 't', 'm'], 'p', 'Cup ends with the /p/ sound.', 2),
-          makeGame('ss-2-7', 7, 'WORD_BUILDER', 'Build "SUN"', 'Spell the warm word "sun".', 'sun', 'sun', 'Short U says /u/.', ['s', 'u', 'n', 'o'], ['s', 'u', 'n'], 'S-U-N makes sun!', 2),
+          makeGame('ss-2-6', 6, 'SOUND_MATCH', 'Ending Sound in "CUP"', 'Which letter makes the final PUH sound in "cup"?', 'p', 'cup', 'Focus on the final sound you hear.', ['p', 'k', 't', 'm'], 'p', 'Cup ends with the PUH sound.', 2),
+          makeGame('ss-2-7', 7, 'WORD_BUILDER', 'Build SSS / UH / NNN', 'Which word do these pearls build: SSS / UH / NNN?', 'sun', 'sun', 'SSS - UH - NNN', ['s', 'u', 'n', 'o'], ['s', 'u', 'n'], 'S-U-N makes sun!', 2),
           makeGame('ss-2-8', 8, 'RHYME_RUSH', 'Rhyme with Sun', 'Which pearl word rhymes with "sun"?', 'run', 'sun', '-un word family.', ['run', 'sand', 'sky', 'sea'], 'run', 'Sun and run rhyme together!', 2),
-          makeGame('ss-2-9', 9, 'SOUND_MATCH', 'Short E Sound', 'Find the word with short /e/ as in elephant.', 'bed', 'bed', 'Short E says /eh/.', ['bed', 'bad', 'bud', 'bod'], 'bed', 'Bed has the short e sound!', 2),
-          makeGame('ss-2-10', 10, 'WORD_BUILDER', 'Shallows Champion: TOP', 'Spell "top" to reach the reef crest!', 'top', 'top', '/t/ /o/ /p/', ['t', 'o', 'p', 'b'], ['t', 'o', 'p'], 'Fantastic! You mastered Coral Endings!', 2)
+          makeGame('ss-2-9', 9, 'SOUND_MATCH', 'Sound of EH', 'Which letter makes the short EH sound like in elephant?', 'e', 'bed', 'Short E says EH.', ['bed', 'bad', 'bud', 'bod'], 'bed', 'Bed has the short EH sound!', 2),
+          makeGame('ss-2-10', 10, 'WORD_BUILDER', 'Build TUH / OH / PUH', 'Which word do these pearls build: TUH / OH / PUH?', 'top', 'top', 'TUH / OH / PUH', ['t', 'o', 'p', 'b'], ['t', 'o', 'p'], 'Fantastic! You mastered Coral Endings!', 2)
         ]
       },
       {
@@ -156,16 +156,16 @@ export const PHONIXIA_LANDS: LandCurriculum[] = [
         skillFocus: 'Consonant-Vowel-Consonant Building Blocks',
         description: 'Chisel basic CVC words to lay sturdy foundations.',
         games: [
-          makeGame('bg-1-1', 1, 'WORD_BUILDER', 'Build "CAT"', 'Stack blocks to spell "cat".', 'cat', 'cat', 'C + A + T', ['c', 'a', 't', 'b'], ['c', 'a', 't'], 'C-A-T makes cat!', 2),
-          makeGame('bg-1-2', 2, 'WORD_BUILDER', 'Build "DOG"', 'Stack stone blocks to spell "dog".', 'dog', 'dog', 'D + O + G', ['d', 'o', 'g', 'b'], ['d', 'o', 'g'], 'D-O-G makes dog!', 2),
-          makeGame('bg-1-3', 3, 'SOUND_MATCH', 'Medial Vowel in "HEN"', 'What vowel holds "hen" together?', 'e', 'hen', 'Short E sound.', ['e', 'a', 'o', 'u'], 'e', 'E gives hen its /eh/ sound!', 2),
-          makeGame('bg-1-4', 4, 'WORD_BUILDER', 'Build "SUN"', 'Craft the stone "sun".', 'sun', 'sun', 'S + U + N', ['s', 'u', 'n', 'm'], ['s', 'u', 'n'], 'S-U-N makes sun!', 2),
+          makeGame('bg-1-1', 1, 'WORD_BUILDER', 'Build KUH / AHH / TUH', 'Which word do these keystones build: KUH / AHH / TUH?', 'cat', 'cat', 'KUH + AHH + TUH', ['c', 'a', 't', 'b'], ['c', 'a', 't'], 'C-A-T makes cat!', 2),
+          makeGame('bg-1-2', 2, 'WORD_BUILDER', 'Build DUH / AH / GUH', 'Which word do these keystones build: DUH / AH / GUH?', 'dog', 'dog', 'DUH + AH + GUH', ['d', 'o', 'g', 'b'], ['d', 'o', 'g'], 'D-O-G makes dog!', 2),
+          makeGame('bg-1-3', 3, 'WORD_BUILDER', 'Build BUH / EH / DAH', 'Which word do these keystones build: BUH / EH / DAH?', 'bed', 'bed', 'BUH + EH + DAH', ['b', 'e', 'd', 'p'], ['b', 'e', 'd'], 'B-E-D makes bed!', 2),
+          makeGame('bg-1-4', 4, 'WORD_BUILDER', 'Build SSS / UH / NNN', 'Which word do these keystones build: SSS / UH / NNN?', 'sun', 'sun', 'SSS + UH + NNN', ['s', 'u', 'n', 'm'], ['s', 'u', 'n'], 'S-U-N makes sun!', 2),
           makeGame('bg-1-5', 5, 'RHYME_RUSH', 'Rhyme with Hat', 'Which block rhymes with "hat"?', 'mat', 'hat', '-at family block.', ['mat', 'mop', 'mud', 'man'], 'mat', 'Hat and mat both end in -at!', 2),
-          makeGame('bg-1-6', 6, 'WORD_BUILDER', 'Build "FOX"', 'Carve "fox" into stone.', 'fox', 'fox', 'F + O + X', ['f', 'o', 'x', 's'], ['f', 'o', 'x'], 'F-O-X makes fox!', 2),
-          makeGame('bg-1-7', 7, 'SOUND_MATCH', 'Letter X Sound', 'What two sounds does the letter X make at the end of "box"?', '/ks/', 'box', 'X sounds like /k/ and /s/ together.', ['/ks/', '/sh/', '/ch/', '/th/'], '/ks/', 'X sounds like /ks/!', 2),
-          makeGame('bg-1-8', 8, 'WORD_BUILDER', 'Build "ZIP"', 'Fasten the stone hatch: spell "zip".', 'zip', 'zip', 'Z + I + P', ['z', 'i', 'p', 'b'], ['z', 'i', 'p'], 'Z-I-P spells zip!', 2),
+          makeGame('bg-1-6', 6, 'WORD_BUILDER', 'Build FFF / OH / KSS', 'Which word do these keystones build: FFF / OH / KSS?', 'fox', 'fox', 'FFF + OH + KSS', ['f', 'o', 'x', 's'], ['f', 'o', 'x'], 'F-O-X makes fox!', 2),
+          makeGame('bg-1-7', 7, 'SOUND_MATCH', 'Sound of Letter X', 'What two sounds does the letter X make at the end of "box"?', '/ks/', 'box', 'X sounds like KUH and SSS together.', ['/ks/', '/sh/', '/ch/', '/th/'], '/ks/', 'X sounds like KSS!', 2),
+          makeGame('bg-1-8', 8, 'WORD_BUILDER', 'Build ZZZ / IH / PUH', 'Which word do these keystones build: ZZZ / IH / PUH?', 'zip', 'zip', 'ZZZ + IH + PUH', ['z', 'i', 'p', 'b'], ['z', 'i', 'p'], 'Z-I-P spells zip!', 2),
           makeGame('bg-1-9', 9, 'RHYME_RUSH', 'Rhyme with Pin', 'Which word rhymes with "pin"?', 'win', 'pin', '-in family block.', ['win', 'wet', 'web', 'wax'], 'win', 'Pin and win share the -in sound!', 2),
-          makeGame('bg-1-10', 10, 'WORD_BUILDER', 'Guild Keystone: CUP', 'Carve the victory "cup" block.', 'cup', 'cup', 'C + U + P', ['c', 'u', 'p', 't'], ['c', 'u', 'p'], 'Terrific! The CVC Stone Yard is complete!', 2)
+          makeGame('bg-1-10', 10, 'WORD_BUILDER', 'Build KUH / UH / PUH', 'Which word do these keystones build: KUH / UH / PUH?', 'cup', 'cup', 'KUH + UH + PUH', ['c', 'u', 'p', 't'], ['c', 'u', 'p'], 'Terrific! The CVC Stone Yard is complete!', 2)
         ]
       },
       {

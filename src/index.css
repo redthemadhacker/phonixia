@@ -16,21 +16,95 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+
+  /* Safe Area Inset variables for iOS Notch, Dynamic Island, and Android gesture bar */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
 }
 
-/* Force edge-to-edge game stage without mobile browser bouncing */
-html, body, #root {
+/* Force edge-to-edge game stage without mobile browser bouncing or address-bar jump */
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+}
+
+body {
   width: 100%;
   height: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
   overflow: hidden;
   position: fixed;
   inset: 0;
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
   touch-action: manipulation;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+}
+
+/* Safe-area utility classes */
+.pt-safe {
+  padding-top: max(var(--sat), 8px);
+}
+
+.pb-safe {
+  padding-bottom: max(var(--sab), 8px);
+}
+
+.pl-safe {
+  padding-left: max(var(--sal), 8px);
+}
+
+.pr-safe {
+  padding-right: max(var(--sar), 8px);
+}
+
+/* Modern, touch-ergonomic sleek scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.45);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.75);
+}
+
+/* Hide scrollbars for clean horizontal pill rails */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Custom Animations */
@@ -44,10 +118,58 @@ html, body, #root {
   to { transform: scale(1); opacity: 1; }
 }
 
+@keyframes underwaterFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(2deg); }
+}
+
+@keyframes bubbleRise {
+  0% { transform: translateY(10px) scale(0.8); opacity: 0.2; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-40px) scale(1.1); opacity: 0; }
+}
+
+@keyframes railScroll {
+  0% { transform: translateY(-30px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes wheelSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes gliderSway {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50% { transform: translateY(-5px) rotate(3deg); }
+}
+
+@keyframes laserZap {
+  0% { opacity: 0.7; filter: drop-shadow(0 0 8px #f59e0b); }
+  50% { opacity: 1; filter: drop-shadow(0 0 20px #fbbf24); }
+  100% { opacity: 0.7; filter: drop-shadow(0 0 8px #f59e0b); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-scale-up {
   animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float {
+  animation: underwaterFloat 2.6s ease-in-out infinite;
+}
+
+.animate-glider {
+  animation: gliderSway 2.2s ease-in-out infinite;
+}
+
+.animate-wheel {
+  animation: wheelSpin 0.35s linear infinite;
+}
+
+.animate-laser {
+  animation: laserZap 0.15s ease-in-out infinite;
 }

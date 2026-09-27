@@ -8,7 +8,7 @@ import { sounds } from '../utils/audio';
 import { 
   Users, UserPlus, Star, Trophy, BarChart3, Printer, LogOut, 
   ArrowLeft, Palette, ChevronDown, ChevronUp, RotateCcw, Award, 
-  AlertCircle, CheckCircle2, Lightbulb
+  AlertCircle, CheckCircle2, Lightbulb, Trash2, AlertTriangle
 } from 'lucide-react';
 
 interface ParentDashboardProps {
@@ -22,13 +22,27 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   onOpenCharacterCreator,
   onOpenAuthModal
 }) => {
-  const { account, activeExplorer, switchExplorer, createExplorer, resetExplorerProgress, logout } = useGame();
+  const { 
+    account, 
+    activeExplorer, 
+    switchExplorer, 
+    createExplorer, 
+    deleteExplorer, 
+    deleteAccount, 
+    resetExplorerProgress, 
+    logout 
+  } = useGame();
 
   const [isAddingKid, setIsAddingKid] = useState(false);
   const [newKidName, setNewKidName] = useState('');
   const [newKidAge, setNewKidAge] = useState<ExplorerProfile['ageTier']>('preschool');
   const [newKidGender, setNewKidGender] = useState<'boy' | 'girl'>('boy');
   const [isHallOfFameExpanded, setIsHallOfFameExpanded] = useState(false);
+
+  // Delete Account Confirmation State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [currentPin, setCurrentPin] = useState<string>(() => {
     return (account as any).parentPin || localStorage.getItem('phonixia_parent_pin') || '1234';
@@ -79,6 +93,53 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     sounds.speak(`Explorer ${newKidName.trim()} created! Welcome to Phonixia!`);
     setNewKidName('');
     setIsAddingKid(false);
+  };
+
+  const handleDeleteKid = (e: React.MouseEvent, explorerId: string, explorerName: string) => {
+    e.stopPropagation();
+
+    if (account.explorers.length <= 1) {
+      alert('You must keep at least one active explorer profile on the account.');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to permanently delete explorer ${explorerName}? All stars, coins, and reading logs for this profile will be erased.`)) {
+      if (deleteExplorer) {
+        deleteExplorer(explorerId);
+      } else {
+        const updatedList = account.explorers.filter((exp) => exp.id !== explorerId);
+        account.explorers = updatedList;
+        localStorage.setItem('phonixia_account_v2', JSON.stringify(account));
+        localStorage.removeItem(`phonixia_struggles_${explorerId}`);
+        if (activeExplorer.id === explorerId && updatedList.length > 0) {
+          switchExplorer(updatedList[0].id);
+        }
+      }
+      sounds.playDamage();
+      sounds.speak(`Explorer ${explorerName} deleted.`);
+    }
+  };
+
+  const handleConfirmAccountDeletion = () => {
+    if (deleteConfirmationText.trim().toLowerCase() !== 'delete') {
+      setDeleteError('Please type DELETE to confirm account removal.');
+      return;
+    }
+
+    if (deleteAccount) {
+      deleteAccount();
+    } else {
+      localStorage.removeItem('phonixia_account_v2');
+      localStorage.removeItem('phonixia_active_id_v2');
+      localStorage.removeItem('phonixia_active_user');
+      localStorage.removeItem('phonixia_parent_pin');
+      sessionStorage.removeItem('phonixia_active_session');
+      if (account.username) {
+        localStorage.removeItem(`phonixia_pw_${account.username.toLowerCase()}`);
+      }
+      sounds.playDamage();
+      window.location.reload();
+    }
   };
 
   const handlePrintReport = () => {
@@ -464,12 +525,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             </form>
           </div>
 
-          {/* Switch Kid / Explorer Section */}
+          {/* Switch Kid / Explorer Section with Unlimited Creation & Delete Single Child */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-amber-400" />
-                <span>Switch Explorer ({account.explorers.length} Registered)</span>
+                <span>Child Profiles ({account.explorers.length} Registered)</span>
               </h3>
               {!isAddingKid && (
                 <button
@@ -572,42 +633,51 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                         sounds.speak(`Switched to ${exp.name}! Let's play!`);
                       }
                     }}
-                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 ${
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                       isActive
                         ? 'bg-amber-500/20 border-amber-400 shadow-md ring-2 ring-amber-400/30'
                         : 'bg-slate-950 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
                     }`}
                   >
-                    <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-700 shrink-0">
-                      <AvatarRenderer customization={exp.customization} size={42} showPet={false} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-extrabold text-slate-100 truncate">{exp.name}</span>
-                        {isActive ? (
-                          <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded-full">
-                            Playing Now
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-amber-400 font-bold underline">
-                            Switch
-                          </span>
-                        )}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-700 shrink-0">
+                        <AvatarRenderer customization={exp.customization} size={42} showPet={false} />
                       </div>
-                      <div className="text-[11px] text-amber-400 font-mono tabular-nums">
-                        ★ {exp.totalStars} stars · Lv.{exp.level}
-                      </div>
-                      <div className="text-[10px] text-slate-400 truncate">
-                        {exp.customization.title}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-extrabold text-slate-100 truncate">{exp.name}</span>
+                          {isActive && (
+                            <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded-full ml-1 shrink-0">
+                              Playing
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-amber-400 font-mono tabular-nums">
+                          ★ {exp.totalStars} stars · Lv.{exp.level}
+                        </div>
+                        <div className="text-[10px] text-slate-400 truncate">
+                          {exp.customization.title}
+                        </div>
                       </div>
                     </div>
+
+                    {account.explorers.length > 1 && (
+                      <button
+                        type="button"
+                        title={`Delete ${exp.name}`}
+                        onClick={(e) => handleDeleteKid(e, exp.id, exp.name)}
+                        className="p-1.5 rounded-lg bg-slate-900 hover:bg-rose-950 text-slate-500 hover:text-rose-400 border border-slate-800 hover:border-rose-500/50 cursor-pointer transition-colors shrink-0"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Real-Time Realm Scores & Standards (Protected in Hub Only) */}
+          {/* Real-Time Realm Scores & Standards */}
           <div className="space-y-4 pt-4 border-t border-slate-800">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -687,13 +757,27 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-950/95 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/80 hover:text-rose-300 text-slate-400 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Log Out Account</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Log Out</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setDeleteError(null);
+                setDeleteConfirmationText('');
+                setShowDeleteModal(true);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+              <span>Delete Account</span>
+            </button>
+          </div>
 
           <button
             onClick={handleReturnToGame}
@@ -704,6 +788,73 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* CONFIRM DELETE ACCOUNT MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-3 bg-black/85 backdrop-blur-md animate-fade-in select-none">
+          <div className="relative w-full max-w-md bg-slate-900 border-3 border-rose-500 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                  <AlertTriangle className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-rose-300 uppercase tracking-wide">
+                    Permanent Account Deletion
+                  </h3>
+                  <p className="text-[11px] text-slate-400">Irreversible Action</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-slate-400 hover:text-white text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Are you sure you want to permanently erase account <b>@{account.username}</b>? All explorers, total stars, and reading history will be purged completely.
+            </p>
+
+            {deleteError && (
+              <div className="p-2.5 rounded-xl bg-rose-950 border border-rose-400 text-rose-200 text-xs font-bold text-center">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-slate-300 block">
+                Type <span className="text-rose-400 font-mono font-black">DELETE</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmationText}
+                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                placeholder="DELETE"
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-rose-500/50 text-white font-mono text-center tracking-widest text-sm focus:outline-none focus:border-rose-400"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAccountDeletion}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider cursor-pointer shadow active:scale-95"
+              >
+                Permanently Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -49,6 +49,8 @@ interface GameContextType {
   activeExplorer: ExplorerProfile;
   switchExplorer: (id: string) => void;
   createExplorer: (name: string, ageTier: ExplorerProfile['ageTier'], gender?: 'boy' | 'girl') => void;
+  deleteExplorer: (id: string) => void;
+  deleteAccount: () => void;
   updateExplorerName: (id: string, newName: string) => void;
   updateExplorerGender: (id: string, gender: 'boy' | 'girl') => void;
   updateExplorerScore: (landId: LandId, gamesCompletedDelta: number, starsDelta: number) => void;
@@ -389,7 +391,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
     }));
 
-    // LocalStorage fallback for parent dashboard resilience
     try {
       const storageKey = `phonixia_struggles_${activeExplorerId}`;
       const existing = localStorage.getItem(storageKey);
@@ -418,8 +419,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       .catch(() => {});
 
-    const savedPassword = localStorage.getItem(`phonixia_pw_${cleanUser}`) || 'Phonics123!';
-    const ok = p === savedPassword || p === 'phonics123' || p === 'Phonics123!';
+    const savedPassword = localStorage.getItem(`phonixia_pw_${cleanUser}`);
+    const ok = Boolean(savedPassword && p === savedPassword);
     if (ok) {
       localStorage.setItem('phonixia_active_user', cleanUser);
     }
@@ -483,12 +484,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }).catch(() => {});
   };
 
+  // UNLIMITED EXPLORER CREATION - No length limit check or cap
   const createExplorer = (name: string, ageTier: ExplorerProfile['ageTier'], gender?: 'boy' | 'girl') => {
+    const cleanName = name.trim();
+    if (!cleanName) return;
+
     const explorerGender = gender || 'boy';
     const guide = explorerGender === 'girl' ? 'celine' : 'kam';
+    const newId = `exp-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+
     const newExplorer: ExplorerProfile = {
-      id: `exp-${Date.now()}`,
-      name,
+      id: newId,
+      name: cleanName,
       gender: explorerGender,
       companionGuide: guide,
       ageTier,
@@ -512,12 +519,66 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    setAccount((prev) => ({
-      ...prev,
-      explorers: [...(prev.explorers || []), newExplorer]
-    }));
-    setActiveExplorerId(newExplorer.id);
+    setAccount((prev) => {
+      const updatedExplorers = [...(prev.explorers || []), newExplorer];
+      const updatedAccount = { ...prev, explorers: updatedExplorers };
+      try {
+        localStorage.setItem('phonixia_account_v2', JSON.stringify(updatedAccount));
+        localStorage.setItem('phonixia_active_id_v2', newId);
+      } catch {}
+      return updatedAccount;
+    });
+
+    setActiveExplorerId(newId);
   };
+
+  // DELETE SINGLE CHILD EXPLORER PROFILE
+  const deleteExplorer = useCallback((id: string) => {
+    setAccount((prev) => {
+      const remainingExplorers = (prev.explorers || []).filter((exp) => exp.id !== id);
+      if (remainingExplorers.length === 0) return prev; // Guard: Keep at least 1 explorer
+
+      const nextActiveId = remainingExplorers[0].id;
+      setActiveExplorerId(nextActiveId);
+
+      const updatedAccount = { ...prev, explorers: remainingExplorers };
+      try {
+        localStorage.setItem('phonixia_account_v2', JSON.stringify(updatedAccount));
+        localStorage.setItem('phonixia_active_id_v2', nextActiveId);
+        localStorage.removeItem(`phonixia_struggles_${id}`);
+      } catch {}
+
+      return updatedAccount;
+    });
+  }, []);
+
+  // PERMANENT ACCOUNT DELETION & DATA PURGE
+  const deleteAccount = useCallback(() => {
+    try {
+      localStorage.removeItem('phonixia_account_v2');
+      localStorage.removeItem('phonixia_active_id_v2');
+      localStorage.removeItem('phonixia_active_user');
+      localStorage.removeItem('phonixia_parent_pin');
+      sessionStorage.removeItem('phonixia_active_session');
+
+      if (account?.username) {
+        localStorage.removeItem(`phonixia_pw_${account.username.toLowerCase()}`);
+        fetch('/api/account/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: account.username })
+        }).catch(() => {});
+      }
+
+      if (account?.explorers) {
+        account.explorers.forEach((exp) => {
+          localStorage.removeItem(`phonixia_struggles_${exp.id}`);
+        });
+      }
+    } catch {}
+
+    window.location.reload();
+  }, [account]);
 
   const updateExplorerScore = (landId: LandId, gamesCompletedDelta: number, starsDelta: number) => {
     setAccount((prev) => {
@@ -736,6 +797,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activeExplorer,
         switchExplorer,
         createExplorer,
+        deleteExplorer,
+        deleteAccount,
         updateExplorerName,
         updateExplorerGender,
         updateExplorerScore,

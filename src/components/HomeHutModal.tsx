@@ -21,6 +21,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     activeExplorer,
     switchExplorer,
     createExplorer,
+    deleteExplorer,
     updateExplorerName,
     updateExplorerGender,
     updateAvatarCustomization,
@@ -130,6 +131,33 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     setIsCreating(false);
     sounds.playFanfare();
     sounds.speak(`Welcome to Phonixia, ${newExplorerName}! Traveling with ${newExplorerGender === 'boy' ? 'Kam' : 'Celine'}!`);
+  };
+
+  const handleDeleteChildExplorer = (e: React.MouseEvent, explorerId: string, explorerName: string) => {
+    e.stopPropagation();
+
+    if (account.explorers.length <= 1) {
+      alert("You must keep at least one active explorer profile on the account.");
+      return;
+    }
+
+    if (confirm(`Are you sure you want to permanently delete explorer ${explorerName}? All stars and progress for this child will be erased.`)) {
+      if (deleteExplorer) {
+        deleteExplorer(explorerId);
+      } else {
+        // Fallback context deletion
+        const updatedList = account.explorers.filter(exp => exp.id !== explorerId);
+        account.explorers = updatedList;
+        localStorage.setItem('phonixia_account_v2', JSON.stringify(account));
+        localStorage.removeItem(`phonixia_struggles_${explorerId}`);
+        if (activeExplorer.id === explorerId && updatedList.length > 0) {
+          switchExplorer(updatedList[0].id);
+        }
+      }
+      sounds.playDamage();
+      setSyncStatus(`Explorer ${explorerName} was deleted.`);
+      setTimeout(() => setSyncStatus(null), 3500);
+    }
   };
 
   const handleSaveAll = () => {
@@ -282,7 +310,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-          {/* TAB 1: EXPLORERS */}
+          {/* TAB 1: EXPLORERS (NO LIMIT ON COUNT + DELETE CHILD EXPLORER) */}
           {activeTab === 'explorers' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
@@ -300,11 +328,17 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 )}
               </div>
 
+              {syncStatus && (
+                <div className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-bold text-center animate-fade-in">
+                  {syncStatus}
+                </div>
+              )}
+
               {isCreating && (
                 <form onSubmit={handleCreateSubmit} className="p-4 rounded-2xl bg-slate-950 border-2 border-amber-500/50 space-y-3.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-200">New Explorer Profile</span>
-                    <button type="button" onClick={() => setIsCreating(false)} className="text-slate-400 hover:text-white text-xs">
+                    <button type="button" onClick={() => setIsCreating(false)} className="text-slate-400 hover:text-white text-xs cursor-pointer">
                       Cancel
                     </button>
                   </div>
@@ -316,11 +350,12 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. Liam"
+                        placeholder="e.g. Liam, Maya, Jordan"
                         value={newExplorerName}
                         onChange={(e) => setNewExplorerName(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400 font-bold"
                         required
+                        autoFocus
                       />
                     </div>
 
@@ -331,9 +366,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <select
                         value={newExplorerTier}
                         onChange={(e) => setNewExplorerTier(e.target.value as any)}
-                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400 cursor-pointer"
                       >
-                        <option value="preschool">Preschool (Ages 3-4)</option>
+                        <option value="preschool">Preschool (Ages 3-4 · Gentle Mode)</option>
                         <option value="kindergarten">Kindergarten (Ages 5-6)</option>
                         <option value="early-elementary">Early Elementary (Ages 6-8)</option>
                         <option value="late-elementary">Late Elementary (Ages 8-11)</option>
@@ -377,7 +412,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer transition-transform hover:scale-102"
                   >
                     Create &amp; Switch Explorer
                   </button>
@@ -430,14 +465,28 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-end text-xs font-mono font-bold">
-                        <span className="flex items-center gap-1 text-amber-400">
-                          <Star className="w-3.5 h-3.5 fill-amber-400" />
-                          <span>{exp.totalStars}</span>
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {Object.values(exp.landScores || {}).reduce((s, l: any) => s + (l.completedGamesCount || 0), 0)}/250 Games
-                        </span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-end text-xs font-mono font-bold">
+                          <span className="flex items-center gap-1 text-amber-400">
+                            <Star className="w-3.5 h-3.5 fill-amber-400" />
+                            <span>{exp.totalStars}</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {Object.values(exp.landScores || {}).reduce((s, l: any) => s + (l.completedGamesCount || 0), 0)}/250 Games
+                          </span>
+                        </div>
+
+                        {/* Delete Single Child Profile Button */}
+                        {account.explorers.length > 1 && (
+                          <button
+                            type="button"
+                            title={`Delete ${exp.name}`}
+                            onClick={(e) => handleDeleteChildExplorer(e, exp.id, exp.name)}
+                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-rose-950 text-slate-500 hover:text-rose-400 border border-slate-800 hover:border-rose-500/50 cursor-pointer transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

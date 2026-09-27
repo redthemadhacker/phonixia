@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
 import { PHONIXIA_LANDS } from '../data/curriculumData';
 import { ALL_50_MINIGAMES } from '../data/minigamesCurriculum';
@@ -8,7 +8,7 @@ import { sounds } from '../utils/audio';
 import { 
   Users, UserPlus, Star, Trophy, BarChart3, Printer, LogOut, 
   ArrowLeft, Palette, ChevronDown, ChevronUp, RotateCcw, Award, 
-  AlertCircle, Sparkles, CheckCircle2, Play
+  AlertCircle, CheckCircle2, Lightbulb
 } from 'lucide-react';
 
 interface ParentDashboardProps {
@@ -35,6 +35,12 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   });
   const [newPinInput, setNewPinInput] = useState('');
   const [pinSaveMessage, setPinSaveMessage] = useState<string | null>(null);
+
+  const isTeacher = account.role === 'teacher';
+  const displayAccountTitle = isTeacher ? 'Classroom' : 'Family';
+  const displayAccountName = isTeacher
+    ? (account.familyName.toLowerCase().includes('class') ? account.familyName : `${account.familyName}'s Class`)
+    : account.familyName;
 
   const handleSaveCustomPin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +97,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     if (onOpenAuthModal) onOpenAuthModal();
   };
 
-  // Helper to extract recorded skill struggles from localStorage or state
+  // Extract recorded skill struggles
   const rawStruggles: Record<string, number> = (activeExplorer as any).strugglingSkills || (() => {
     try {
       const stored = localStorage.getItem(`phonixia_struggles_${activeExplorer.id}`);
@@ -104,6 +110,24 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   const struggleList = Object.entries(rawStruggles)
     .filter(([_, count]) => count >= 2)
     .sort((a, b) => b[1] - a[1]);
+
+  // Detected Phonics Pattern Analysis
+  const detectedPatterns = useMemo(() => {
+    const patterns: string[] = [];
+    const keys = Object.keys(rawStruggles).map(k => k.toUpperCase());
+
+    const hasShortVowel = keys.some(k => k.includes('/Æ/') || k.includes('/Ɛ/') || k.includes('/Ɪ/') || k.includes('/ɒ/') || k.includes('/ʌ/') || ['CAT', 'BED', 'PIG', 'DOG', 'SUN', 'TUB', 'CUP'].includes(k));
+    const hasMagicE = keys.some(k => k.includes('MAGIC') || k.includes('_E') || ['CAPE', 'PINE', 'ROBE', 'TUBE', 'KITE', 'HOPE'].includes(k));
+    const hasDigraphs = keys.some(k => k.includes('SH') || k.includes('CH') || k.includes('TH') || k.includes('WH') || k.includes('CK'));
+    const hasBossyR = keys.some(k => k.includes('AR') || k.includes('OR') || k.includes('ER') || k.includes('IR') || k.includes('UR'));
+
+    if (hasShortVowel) patterns.push('Short Vowel CVC Decoding (A, E, I, O, U)');
+    if (hasMagicE) patterns.push('Magic Silent E Vowel Alternation (CVC to CVC-E)');
+    if (hasDigraphs) patterns.push('Consonant Digraph Discrimination (SH, CH, TH, CK)');
+    if (hasBossyR) patterns.push('R-Controlled Vowel Modulation ("Bossy R")');
+
+    return patterns;
+  }, [rawStruggles]);
 
   const isEligibleToReset =
     activeExplorer.isHallOfFameInducted ||
@@ -131,10 +155,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             </span>
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-100 font-display flex items-center gap-2">
-                <span>Home Hut · Parent &amp; Educator Hub</span>
+                <span>Home Hut · {isTeacher ? 'Educator Dashboard' : 'Parent & Family Hub'}</span>
               </h2>
               <p className="text-xs text-slate-400">
-                Current Account: <b className="text-amber-400">{account.familyName}</b> (@{account.username})
+                Current {displayAccountTitle}: <b className="text-amber-400">{displayAccountName}</b> (@{account.username})
               </p>
             </div>
           </div>
@@ -145,7 +169,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Print Report</span>
+              <span className="hidden sm:inline">Print Student Report</span>
             </button>
             <button
               onClick={handleReturnToGame}
@@ -159,7 +183,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
         {/* Content Body */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
           
-          {/* SKILL MASTERY & STRUGGLE DIAGNOSTICS CARD */}
+          {/* SKILL MASTERY & PATTERN DETECTION DIAGNOSTICS CARD */}
           <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-950/50 via-slate-950 to-indigo-950/50 border-2 border-indigo-400/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -171,7 +195,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     Areas Needing Practice ({activeExplorer.name})
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Targeted insights on recurring missed questions and recommended practice games
+                    Automated error pattern analysis and recommended practice minigames
                   </p>
                 </div>
               </div>
@@ -179,6 +203,25 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 {struggleList.length} Active Target{struggleList.length === 1 ? '' : 's'}
               </span>
             </div>
+
+            {/* Pattern Detection Summary */}
+            {detectedPatterns.length > 0 && (
+              <div className="p-3 rounded-xl bg-indigo-950/60 border border-indigo-500/40 flex items-start gap-2.5">
+                <Lightbulb className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <div className="text-xs font-bold text-amber-200">
+                    Detected Phonics Patterns Requiring Reinforcement:
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {detectedPatterns.map((pat, idx) => (
+                      <span key={idx} className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-900 border border-indigo-400/50 text-indigo-200 font-bold">
+                        • {pat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {struggleList.length === 0 ? (
               <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-center space-y-1">
@@ -264,7 +307,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               </div>
 
               <div className="flex items-center gap-1.5 text-amber-300 text-xs font-black bg-slate-950 px-3 py-1.5 rounded-xl border border-amber-500/40 shadow-sm">
-                <span>{isHallOfFameExpanded ? 'Close Honor Roll' : 'View Classroom Champions'}</span>
+                <span>{isHallOfFameExpanded ? 'Close Honor Roll' : (isTeacher ? 'View Classroom Champions' : 'View Honor Roll')}</span>
                 {isHallOfFameExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </div>
             </div>
@@ -384,7 +427,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 </div>
                 <div>
                   <div className="text-sm font-black text-amber-300 uppercase tracking-wide flex items-center gap-2">
-                    <span>Parent &amp; Teacher Quick PIN</span>
+                    <span>{isTeacher ? 'Teacher Quick PIN' : 'Parent Quick PIN'}</span>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5">
                     Configure a 4-digit PIN for instant access to student stats without full account passwords.
@@ -564,13 +607,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             </div>
           </div>
 
-          {/* Real-Time Realm Scores */}
+          {/* Real-Time Realm Scores & Standards (Protected in Hub Only) */}
           <div className="space-y-4 pt-4 border-t border-slate-800">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-sm font-bold text-slate-100 font-display flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 text-amber-400" />
-                  <span>Synced Land Scores for Explorer {activeExplorer.name}</span>
+                  <span>Curriculum Progress for {activeExplorer.name}</span>
                 </h3>
               </div>
 
@@ -604,6 +647,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                         <div>
                           <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
                             <span>{land.name}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            {land.levels[0]?.skillFocus} through {land.levels[4]?.skillFocus}
                           </div>
                         </div>
                       </div>

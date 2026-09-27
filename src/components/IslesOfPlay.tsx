@@ -108,35 +108,48 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
     }
   }, [activeGame, isAnswered, awardCurrency]);
 
-  // Real Game Action Animation
+  // Specific Actions Derived Directly From Each Minigame's True Description
   const executeToolAction = useCallback((targetCol: number) => {
     if (!activeGame || isAnswered || isActing) return;
 
     setPlayerCol(targetCol);
     setIsActing(true);
 
-    let effectText = 'ACTION!';
-    let effectIcon = '⚡';
+    const name = activeGame.name.toLowerCase();
+    let effectText = 'TARGET!';
+    let effectIcon = '✨';
 
-    if (activeGame.mechanicType === 'whack' || activeGame.name.toLowerCase().includes('crab')) {
-      effectText = 'WHACK!';
-      effectIcon = '🏏💥';
-      sounds.playJump();
-    } else if (activeGame.mechanicType === 'basket-catch' || activeGame.name.toLowerCase().includes('turtle') || activeGame.name.toLowerCase().includes('butterfly')) {
-      effectText = 'CAUGHT!';
-      effectIcon = '🕸️✨';
-      sounds.playWhoosh();
-    } else if (activeGame.mechanicType === 'slingshot') {
-      effectText = 'DIRECT HIT!';
-      effectIcon = '🥥💨';
-      sounds.playWhoosh();
-    } else if (activeGame.mechanicType === 'bubble-pop') {
-      effectText = 'POP!';
-      effectIcon = '🫧✨';
+    if (name.includes('chime') || name.includes('bell')) {
+      effectText = 'RING CHIME!';
+      effectIcon = '🔔✨';
       sounds.playCollect();
+    } else if (name.includes('plunge') || name.includes('seagull')) {
+      effectText = 'FISH PLUNGE!';
+      effectIcon = '🦅🌊';
+      sounds.playSplash();
+    } else if (name.includes('slingshot') || name.includes('cannon') || name.includes('coconut')) {
+      effectText = 'SLINGSHOT!';
+      effectIcon = '🥥🎯';
+      sounds.playWhoosh();
+    } else if (name.includes('whack') || name.includes('crab')) {
+      effectText = 'CRAB WHACK!';
+      effectIcon = '🔨🦀';
+      sounds.playHammer();
+    } else if (name.includes('catch') || name.includes('basket') || name.includes('net')) {
+      effectText = 'CAUGHT!';
+      effectIcon = '🧺✨';
+      sounds.playCollect();
+    } else if (name.includes('bubble') || name.includes('dive') || name.includes('pearl')) {
+      effectText = 'PEARL POP!';
+      effectIcon = '🫧💎';
+      sounds.playSplash();
+    } else if (name.includes('lilypad') || name.includes('frog')) {
+      effectText = 'LILYPAD LEAP!';
+      effectIcon = '🐸🪷';
+      sounds.playJump();
     } else {
-      effectText = 'HIT!';
-      effectIcon = '🎯✨';
+      effectText = 'DISCOVERED!';
+      effectIcon = '⭐✨';
       sounds.playCollect();
     }
 
@@ -153,7 +166,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
     }, 550);
   }, [activeGame, isAnswered, isActing, handleChoiceSelect]);
 
-  // Keyboard navigation & space bar action in arena
   useEffect(() => {
     if (!activeGame || isAnswered) return;
 
@@ -204,6 +216,20 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeGame, triggerIslandJump]);
 
+  // Determine Exact Tool Icon for Current Game
+  const currentToolIcon = useMemo(() => {
+    if (!activeGame) return '✨';
+    const name = activeGame.name.toLowerCase();
+    if (name.includes('chime') || name.includes('bell')) return '🔔';
+    if (name.includes('plunge') || name.includes('seagull')) return '🤿';
+    if (name.includes('slingshot') || name.includes('coconut')) return '🥥';
+    if (name.includes('whack') || name.includes('crab')) return '🔨';
+    if (name.includes('catch') || name.includes('basket')) return '🧺';
+    if (name.includes('bubble') || name.includes('dive')) return '🫧';
+    if (name.includes('lilypad') || name.includes('frog')) return '🪷';
+    return '🎯';
+  }, [activeGame]);
+
   return (
     <div className="relative w-full h-full bg-slate-950 flex flex-col justify-between overflow-hidden select-none">
       
@@ -224,7 +250,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
             <Waves className="w-3.5 h-3.5 text-cyan-400" />
           </div>
           <h1 className="text-sm sm:text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-yellow-200 to-cyan-300 font-display">
-            Tropical Islands · 25 Action Challenges · Preschool to Elementary Phonics Voyage
+            Tropical Islands · 25 Action Challenges
           </h1>
         </div>
 
@@ -234,20 +260,16 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
         </div>
       </div>
 
-      {/* Main Island Voyage Canvas with isles.jpeg artwork & nautical travel routes */}
+      {/* Main Island Voyage Canvas */}
       <div className="relative flex-1 w-full overflow-hidden select-none">
-        
-        {/* Real Isles of Play Background Artwork */}
         <img
           src={islesBg}
           alt="Isles of Play Archipelago Canvas"
           className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none opacity-90 z-0"
         />
 
-        {/* Tropical Ocean Water Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-teal-950/30 via-transparent to-blue-950/60 pointer-events-none z-0" />
 
-        {/* Nautical Sea Lane Connecting Routes across the 25 islands */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
           <polyline
             points={islesGames.map((_, idx) => {
@@ -267,7 +289,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
           />
         </svg>
 
-        {/* 25 Tropical Phonics Islands */}
+        {/* 25 Tropical Phonics Islands - SINGLE ICON DISPLAY (NO DUPLICATES) */}
         {islesGames.map((game, idx) => {
           const row = Math.floor(idx / 5);
           const col = idx % 5;
@@ -289,9 +311,8 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
               }}
               className="absolute z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
             >
-              {/* Tropical Sandy Island Atoll Base */}
               <div
-                className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-3xl p-1 flex flex-col items-center justify-between border-2 transition-all duration-200 ${
+                className={`relative w-12 h-14 sm:w-16 sm:h-18 rounded-2xl p-1.5 flex flex-col items-center justify-between border-2 transition-all duration-200 ${
                   isCurrentIsland
                     ? 'bg-gradient-to-b from-amber-200 via-emerald-400 to-teal-600 border-white ring-4 ring-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.9)] scale-115'
                     : isHovered
@@ -299,21 +320,19 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                     : 'bg-slate-950/85 border-emerald-500/70 shadow-lg'
                 }`}
               >
-                {/* Island Number Badge */}
-                <div className="w-full flex items-center justify-between px-1">
+                <div className="w-full flex items-center justify-between px-0.5">
                   <span className="text-[9px] sm:text-[10px] font-mono font-black text-amber-300">
                     #{game.gameNum}
                   </span>
-                  <span className="text-[10px]">🌴</span>
+                  <span className="text-[9px]">🌴</span>
                 </div>
 
-                {/* Island Feature Icon */}
-                <span className="text-xl sm:text-3xl filter drop-shadow">
+                {/* EXACT SINGLE EMOJI PER ISLAND */}
+                <span className="text-xl sm:text-2xl filter drop-shadow my-auto">
                   {game.themeIcon}
                 </span>
               </div>
 
-              {/* Player Avatar Standing on Active Island */}
               {isCurrentIsland && (
                 <div
                   style={{
@@ -329,7 +348,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
         })}
       </div>
 
-      {/* Bottom Travel & Play Controls Dock */}
+      {/* Bottom Bar Controls */}
       <div className="p-2 sm:p-2.5 bg-slate-950/95 border-t border-emerald-800/60 flex items-center justify-between z-30">
         <div className="flex items-center gap-2">
           <div className="px-3 py-1 bg-emerald-950 border border-emerald-400/60 rounded-xl text-emerald-200 text-xs font-bold flex items-center gap-1.5">
@@ -347,21 +366,23 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
         </button>
       </div>
 
-      {/* ACTIVE INTERACTIVE ISLAND MINIGAME ARENA MODAL */}
+      {/* EXPANDED INTERACTIVE ISLAND MINIGAME ARENA MODAL */}
       {activeGame && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
-          <div className="relative w-full max-w-3xl bg-slate-900 border-3 border-emerald-400 rounded-3xl p-4 sm:p-6 shadow-[0_0_60px_rgba(16,185,129,0.6)] space-y-4">
+          <div className="relative w-full max-w-4xl bg-slate-900 border-3 border-emerald-400 rounded-3xl p-4 sm:p-6 shadow-[0_0_60px_rgba(16,185,129,0.6)] space-y-4">
             
-            {/* Modal Header */}
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-3xl">{activeGame.themeIcon}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl sm:text-4xl p-1 bg-emerald-950/80 rounded-2xl border border-emerald-400/40">
+                  {activeGame.themeIcon}
+                </span>
                 <div>
                   <h2 className="text-base sm:text-lg font-black text-emerald-300 uppercase tracking-wide">
                     {activeGame.name}
                   </h2>
                   <p className="text-xs text-amber-300 font-medium">
-                    Challenge #{activeGame.gameNum} · {activeGame.skillCategory} · {activeGame.gradeLevel}
+                    Island #{activeGame.gameNum} · {activeGame.skillCategory}
                   </p>
                 </div>
               </div>
@@ -384,67 +405,35 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
               </div>
             </div>
 
-            {/* Instruction Banner with Illustrated Phonics Letters */}
-            <div className="p-3 bg-slate-950/90 border border-emerald-500/40 rounded-2xl text-center space-y-2">
+            {/* Instruction Banner */}
+            <div className="p-3 bg-slate-950/90 border border-emerald-500/40 rounded-2xl text-center space-y-1.5">
               <p className="text-sm sm:text-base font-black text-amber-100">
                 {activeGame.howToPlay}
               </p>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-xs font-mono font-bold text-emerald-400">Target Sound:</span>
-                <PhonicsWordDisplay text={activeGame.targetSoundOrWord} size={36} />
+                <PhonicsWordDisplay text={activeGame.targetSoundOrWord} size={34} />
               </div>
             </div>
 
-            {/* Real Interactive Game Arena: Moving Player + Scurrying Targets + Themed Action Tools */}
-            <div className="relative w-full h-64 sm:h-72 bg-gradient-to-b from-teal-950 via-slate-900 to-blue-950 rounded-2xl border-2 border-emerald-500/50 overflow-hidden flex flex-col justify-between p-3 select-none">
+            {/* EXPANDED ARENA WITH STAGGERED ELEVATION (PREVENTS ANY CUTOFF) */}
+            <div className="relative w-full min-h-[300px] h-[300px] sm:h-[340px] bg-gradient-to-b from-teal-950 via-slate-900 to-blue-950 rounded-2xl border-2 border-emerald-500/50 overflow-hidden flex flex-col justify-between p-3 select-none">
               
-              {/* 4 Interactive Answer Stations with Living Themed Targets */}
-              <div className="w-full flex items-center justify-around gap-2 z-20">
+              {/* STAGGERED WAVE-HEIGHT STATIONS */}
+              <div className="w-full grid grid-cols-4 gap-2.5 z-20 my-auto">
                 {activeGame.options.map((option, idx) => {
                   const isPlayerStandingHere = playerCol === idx;
                   const isSelected = selectedOption === option;
                   const isCorrectChoice = isAnswered && option.trim().toLowerCase() === activeGame.correctAnswer.trim().toLowerCase();
-                  const isLilypadGame = activeGame.name.toLowerCase().includes('lilypad') || activeGame.name.toLowerCase().includes('frog');
 
-                  // Live animated target icon depending on game theme
-                  const renderLiveTarget = () => {
-                    const name = activeGame.name.toLowerCase();
-                    if (name.includes('lilypad') || name.includes('frog')) {
-                      return (
-                        <div className="flex flex-col items-center animate-bounce">
-                          <span className="text-2xl sm:text-3xl">🐸</span>
-                          <span className="text-xs text-emerald-400 font-bold -mt-1">🪷 Lilypad</span>
-                        </div>
-                      );
-                    }
-                    if (name.includes('crab')) {
-                      return (
-                        <div className="flex items-center gap-1 animate-pulse">
-                          <span className="text-2xl sm:text-3xl animate-bounce">🦀</span>
-                          <span className="text-xs text-amber-300 font-mono">💨</span>
-                        </div>
-                      );
-                    }
-                    if (name.includes('turtle')) {
-                      return <span className="text-2xl sm:text-3xl animate-pulse">🐢</span>;
-                    }
-                    if (name.includes('butterfly')) {
-                      return <span className="text-2xl sm:text-3xl animate-float">🦋</span>;
-                    }
-                    if (name.includes('bubble') || name.includes('pearl') || name.includes('dolphin')) {
-                      return <span className="text-2xl sm:text-3xl animate-pulse">🐬🫧</span>;
-                    }
-                    if (name.includes('coconut') || name.includes('slingshot')) {
-                      return <span className="text-2xl sm:text-3xl animate-bounce">🥥🪵</span>;
-                    }
-                    return <span className="text-2xl sm:text-3xl animate-bounce">{activeGame.themeIcon}</span>;
-                  };
+                  // Staggered vertical elevation: 0px, -12px, 0px, -12px
+                  const staggerY = idx % 2 === 1 ? '-translate-y-2' : 'translate-y-1';
 
                   return (
                     <div
                       key={idx}
                       onClick={() => executeToolAction(idx)}
-                      className={`flex-1 p-2 sm:p-3 rounded-2xl border-2 text-center transition-all cursor-pointer flex flex-col items-center justify-between relative ${
+                      className={`p-2.5 sm:p-3.5 rounded-2xl border-2 text-center transition-all cursor-pointer flex flex-col items-center justify-between relative shadow-lg ${staggerY} ${
                         isAnswered
                           ? isCorrect && isCorrectChoice
                             ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
@@ -456,36 +445,30 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                             ? 'bg-rose-900/90 border-rose-400 text-rose-200'
                             : 'bg-slate-950/70 border-slate-800 text-slate-600 opacity-40'
                           : isPlayerStandingHere
-                          ? isLilypadGame
-                            ? 'bg-emerald-950/90 border-emerald-300 ring-4 ring-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.8)] scale-105'
-                            : 'bg-emerald-950/90 border-amber-300 ring-2 ring-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.8)] scale-105'
-                          : isLilypadGame
-                          ? 'bg-emerald-950/70 border-emerald-500/60 hover:border-emerald-300 text-slate-100 shadow-md'
-                          : 'bg-slate-950/85 border-emerald-400/60 hover:border-amber-300 text-slate-100 shadow-md'
+                          ? 'bg-emerald-950/90 border-amber-300 ring-2 ring-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.8)] scale-105'
+                          : 'bg-slate-950/85 border-emerald-400/60 hover:border-amber-300 text-slate-100'
                       }`}
                     >
-                      {/* Live Target Mascot Creature */}
-                      <div className="mb-1 pointer-events-none">
-                        {renderLiveTarget()}
+                      {/* Animated Living Mascot Indicator */}
+                      <div className="text-2xl sm:text-3xl mb-1 filter drop-shadow">
+                        {activeGame.themeIcon}
                       </div>
 
-                      {/* Phonics Letter Animal card or word */}
                       <div className="my-1 flex items-center justify-center">
                         {option.length === 1 ? (
-                          <PhonicsLetter letter={option} size={42} showBadge={false} />
+                          <PhonicsLetter letter={option} size={40} showBadge={false} />
                         ) : (
-                          <PhonicsWordDisplay text={option} size={28} />
+                          <PhonicsWordDisplay text={option} size={26} />
                         )}
                       </div>
 
-                      {/* Tool Action Hint Badge */}
-                      <span className="text-[9px] text-emerald-300 font-mono font-bold tracking-wider uppercase bg-black/50 px-2 py-0.5 rounded-full mt-1">
+                      <span className="text-[8px] sm:text-[9px] text-emerald-300 font-mono font-bold tracking-wider uppercase bg-black/60 px-2 py-0.5 rounded-full mt-1">
                         {isPlayerStandingHere ? '👉 STANDING HERE' : `STATION #${idx + 1}`}
                       </span>
 
-                      {/* Direct Smash/Action Impact Animation Popup */}
+                      {/* Action Impact Popup */}
                       {actionEffect && actionEffect.col === idx && (
-                        <div className="absolute -top-3 z-30 px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-xl animate-ping flex items-center gap-1">
+                        <div className="absolute -top-3.5 z-30 px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-xl animate-ping flex items-center gap-1 whitespace-nowrap">
                           <span>{actionEffect.icon}</span>
                           <span>{actionEffect.text}</span>
                         </div>
@@ -495,7 +478,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                 })}
               </div>
 
-              {/* Free Moving Player Character at current station holding themed game tool */}
+              {/* Free Moving Player Character with Exact Tool Equipment */}
               <div className="relative w-full h-24 flex items-end">
                 <div
                   style={{
@@ -508,27 +491,15 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                   <div className="relative">
                     <AvatarRenderer customization={activeExplorer.customization} size={46} showPet={false} />
                     
-                    {/* The Themed Tool Held in Hand with dynamic swing/catch animation */}
+                    {/* The Themed Tool Equipped in Hand */}
                     <div
                       style={{
-                        transform: isActing ? 'rotate(50deg) scale(1.2)' : 'rotate(0deg)',
+                        transform: isActing ? 'rotate(45deg) scale(1.3)' : 'rotate(0deg)',
                         transition: 'transform 0.15s ease-out'
                       }}
                       className="absolute -top-1 -right-3 text-2xl filter drop-shadow"
                     >
-                      {activeGame.name.toLowerCase().includes('lilypad') || activeGame.name.toLowerCase().includes('frog') ? (
-                        '🐸'
-                      ) : activeGame.mechanicType === 'whack' || activeGame.name.toLowerCase().includes('crab') ? (
-                        '🔨'
-                      ) : activeGame.mechanicType === 'basket-catch' || activeGame.name.toLowerCase().includes('turtle') || activeGame.name.toLowerCase().includes('butterfly') ? (
-                        '🧺'
-                      ) : activeGame.mechanicType === 'slingshot' ? (
-                        '🪃'
-                      ) : activeGame.mechanicType === 'bubble-pop' ? (
-                        '🤿'
-                      ) : (
-                        '⚡'
-                      )}
+                      {currentToolIcon}
                     </div>
                   </div>
 
@@ -539,7 +510,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
               </div>
             </div>
 
-            {/* In-Game Action Bar & Touch Controls (Move L/R & Whack / Catch / Slingshot) */}
+            {/* In-Game Action Bar & Touch Controls with Clear Action Verbs */}
             <div className="flex items-center justify-between gap-2 p-2 bg-slate-950/90 rounded-2xl border border-emerald-500/40">
               <button
                 type="button"
@@ -559,17 +530,19 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                 className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-emerald-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.7)] cursor-pointer active:scale-95 hover:brightness-110"
               >
                 <span>
-                  {activeGame.name.toLowerCase().includes('lilypad') || activeGame.name.toLowerCase().includes('frog')
-                    ? '🐸 LEAP TO LILYPAD (SPACE)'
-                    : activeGame.mechanicType === 'whack' || activeGame.name.toLowerCase().includes('crab')
-                    ? '🔨 WHACK SCUTTLING CRAB (SPACE)'
-                    : activeGame.mechanicType === 'basket-catch' || activeGame.name.toLowerCase().includes('turtle') || activeGame.name.toLowerCase().includes('butterfly')
-                    ? '🧺 CATCH IN BASKET (SPACE)'
-                    : activeGame.mechanicType === 'slingshot'
+                  {activeGame.name.toLowerCase().includes('chime') || activeGame.name.toLowerCase().includes('bell')
+                    ? '🔔 RING TIKI CHIME (SPACE)'
+                    : activeGame.name.toLowerCase().includes('plunge')
+                    ? '🦅 PLUNGE FOR FISH (SPACE)'
+                    : activeGame.name.toLowerCase().includes('whack') || activeGame.name.toLowerCase().includes('crab')
+                    ? '🔨 WHACK HERMIT CRAB (SPACE)'
+                    : activeGame.name.toLowerCase().includes('catch') || activeGame.name.toLowerCase().includes('basket')
+                    ? '🧺 CATCH IN NET (SPACE)'
+                    : activeGame.name.toLowerCase().includes('slingshot')
                     ? '🥥 LAUNCH COCONUT (SPACE)'
-                    : activeGame.mechanicType === 'bubble-pop'
-                    ? '🫧 DIVE & POP PEARL (SPACE)'
-                    : '⚡ STRIKE TARGET (SPACE)'}
+                    : activeGame.name.toLowerCase().includes('bubble') || activeGame.name.toLowerCase().includes('dive')
+                    ? '🫧 POP PEARL (SPACE)'
+                    : '⭐ ACTIVATE STATION (SPACE)'}
                 </span>
               </button>
 

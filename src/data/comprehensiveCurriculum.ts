@@ -25,13 +25,8 @@ export interface StageChallenge {
 
 // -------------------------------------------------------------
 // LAND 1: SOUND SHALLOWS (Preschool & Kindergarten Starter)
-// Progression:
-// Stages 1-15: Alphabet pure letter sounds (A to Z)
-// Stages 16-25: 2-Letter Words (VC blends: at, in, on, up, it, am, an, etc.)
-// Stages 26-50: 3-Letter CVC Blends & Rhymes (cat, bed, sun, dog, fox, pig, etc.)
 // -------------------------------------------------------------
 const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
-  // --- 1 to 15: Alphabet letter recognition & pure phonetic sounds ---
   1: [
     {
       stageNumber: 1,
@@ -260,8 +255,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
       explanation: 'Letter T makes the crisp tapping /t/ sound like in top and tiger!'
     }
   ],
-
-  // --- 16 to 25: 2-Letter Words (VC Blends) ---
   16: [
     {
       stageNumber: 16,
@@ -392,8 +385,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
       explanation: 'O + X makes the word OX!'
     }
   ],
-
-  // --- 26 to 50: 3-Letter CVC Blends & Rhyming (Kindergarten Readiness) ---
   26: [
     {
       stageNumber: 26,
@@ -734,17 +725,8 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
 
 // -------------------------------------------------------------
 // LAND 2: BUILDERS GUILD (1st - 2nd Grade)
-// Mechanic: Exactly 8 letter choices to choose from in correct sequence!
-// Letters stack vertically to spell the target word!
-// Progression:
-// Stages 1-10: CVC Foundations (BED, CAT, DOG, SUN, CUP, FOX, MAP, NET, PIG, TUB)
-// Stages 11-20: Digraphs SH, CH, TH, WH, CK (SHIP, CHIN, FISH, CHOP, SHOP, THAT, WITH, WHIP, DUCK, LOCK)
-// Stages 21-30: Consonant Blends L & R (CLAP, FROG, DRUM, FLAG, SLIP, CRAB, DROP, TRIP, GRAB, PLUM)
-// Stages 31-40: Ending Blends (CAMP, JUMP, NEST, MILK, SINK, TENT, WIND, DESK, BELT, HAND)
-// Stages 41-50: Double Consonants & Compounds (BELL, HILL, WALL, BUZZ, KISS, TRUCK, CLOCK, BRICK, BLOCK, PLANT)
 // -------------------------------------------------------------
 const BUILDERS_WORDS_BANK: { word: string; category: string; soundCue: string; distractors: string[] }[] = [
-  // 1-10 CVC
   { word: 'BED', category: 'CVC Foundation', soundCue: 'b - eh - d', distractors: ['M', 'T', 'S', 'P', 'A'] },
   { word: 'CAT', category: 'CVC Foundation', soundCue: 'k - ah - t', distractors: ['B', 'O', 'M', 'P', 'S'] },
   { word: 'DOG', category: 'CVC Foundation', soundCue: 'd - ah - g', distractors: ['P', 'I', 'N', 'T', 'B'] },
@@ -756,7 +738,6 @@ const BUILDERS_WORDS_BANK: { word: string; category: string; soundCue: string; d
   { word: 'PIG', category: 'CVC Foundation', soundCue: 'p - ih - g', distractors: ['B', 'T', 'M', 'N', 'O'] },
   { word: 'TUB', category: 'CVC Foundation', soundCue: 't - uh - b', distractors: ['S', 'M', 'P', 'N', 'E'] },
 
-  // 11-20 Digraphs
   { word: 'SHIP', category: 'Digraph SH', soundCue: 'sh - ih - p', distractors: ['T', 'M', 'B', 'N'] },
   { word: 'CHIN', category: 'Digraph CH', soundCue: 'ch - ih - n', distractors: ['P', 'T', 'B', 'S'] },
   { word: 'FISH', category: 'Digraph SH', soundCue: 'f - ih - sh', distractors: ['T', 'M', 'B', 'P'] },
@@ -768,7 +749,6 @@ const BUILDERS_WORDS_BANK: { word: string; category: string; soundCue: string; d
   { word: 'DUCK', category: 'Digraph CK', soundCue: 'd - uh - ck', distractors: ['T', 'M', 'P', 'S'] },
   { word: 'LOCK', category: 'Digraph CK', soundCue: 'l - ah - ck', distractors: ['T', 'M', 'P', 'B'] },
 
-  // 21-30 Blends L & R
   { word: 'CLAP', category: 'L-Blend CL', soundCue: 'k - l - ah - p', distractors: ['M', 'T', 'S', 'B'] },
   { word: 'FROG', category: 'R-Blend FR', soundCue: 'f - r - ah - g', distractors: ['M', 'T', 'S', 'B'] },
   { word: 'DRUM', category: 'R-Blend DR', soundCue: 'd - r - uh - m', distractors: ['P', 'T', 'S', 'B'] },
@@ -780,7 +760,6 @@ const BUILDERS_WORDS_BANK: { word: string; category: string; soundCue: string; d
   { word: 'GRAB', category: 'R-Blend GR', soundCue: 'g - r - ah - b', distractors: ['M', 'T', 'S', 'P'] },
   { word: 'PLUM', category: 'L-Blend PL', soundCue: 'p - l - uh - m', distractors: ['T', 'S', 'B', 'N'] },
 
-  // 31-40 Ending Blends
   { word: 'CAMP', category: 'Ending Blend MP', soundCue: 'k - ah - m - p', distractors: ['S', 'T', 'B', 'N'] },
   { word: 'JUMP', category: 'Ending Blend MP', soundCue: 'j - uh - m - p', distractors: ['S', 'T', 'B', 'N'] },
   { word: 'NEST', category: 'Ending Blend ST', soundCue: 'n - eh - s - t', distractors: ['M', 'P', 'B', 'O'] },
@@ -792,7 +771,6 @@ const BUILDERS_WORDS_BANK: { word: string; category: string; soundCue: string; d
   { word: 'BELT', category: 'Ending Blend LT', soundCue: 'b - eh - l - t', distractors: ['M', 'P', 'S', 'N'] },
   { word: 'HAND', category: 'Ending Blend ND', soundCue: 'h - ah - n - d', distractors: ['M', 'P', 'S', 'T'] },
 
-  // 41-50 Double Letters & 4-5 Letter Compounds
   { word: 'BELL', category: 'Double Letter LL', soundCue: 'b - eh - l', distractors: ['M', 'P', 'S', 'T', 'O'] },
   { word: 'HILL', category: 'Double Letter LL', soundCue: 'h - ih - l', distractors: ['M', 'P', 'S', 'T', 'A'] },
   { word: 'WALL', category: 'Double Letter LL', soundCue: 'w - aw - l', distractors: ['M', 'P', 'S', 'T', 'E'] },
@@ -807,32 +785,34 @@ const BUILDERS_WORDS_BANK: { word: string; category: string; soundCue: string; d
 
 const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
   const item = BUILDERS_WORDS_BANK[(stageNum - 1) % BUILDERS_WORDS_BANK.length];
-  const targetLetters = item.word.split('');
+  const targetLetters = item.word.toUpperCase().split('');
   const uniqueTargetLetters = Array.from(new Set(targetLetters));
 
-  const lettersPool = [...uniqueTargetLetters];
+  // 100% guarantee all target letters are in the choices pool
+  const pool = [...uniqueTargetLetters];
+
   for (const d of item.distractors) {
-    if (lettersPool.length >= 8) break;
-    if (!lettersPool.includes(d)) {
-      lettersPool.push(d);
+    if (pool.length >= 8) break;
+    if (!pool.includes(d.toUpperCase())) {
+      pool.push(d.toUpperCase());
     }
   }
 
-  const extras = ['S', 'T', 'R', 'N', 'L', 'M', 'P', 'B', 'C', 'D'];
+  const extras = ['S', 'T', 'R', 'N', 'L', 'M', 'P', 'B', 'C', 'D', 'A', 'E', 'I', 'O', 'U'];
   for (const e of extras) {
-    if (lettersPool.length >= 8) break;
-    if (!lettersPool.includes(e)) {
-      lettersPool.push(e);
+    if (pool.length >= 8) break;
+    if (!pool.includes(e)) {
+      pool.push(e);
     }
   }
 
-  const shuffledChoices = lettersPool.slice(0, 8).sort(() => Math.random() - 0.5);
+  const shuffledChoices = pool.slice(0, 8).sort(() => 0.5 - Math.random());
 
   return {
     stageNumber: stageNum,
     skillTitle: `Stone Masonry: ${item.category} (${item.word})`,
-    instruction: `Pick the 8 letter tiles in exact order to stack and build: ${item.word}!`,
-    spokenPrompt: `Listen carefully! Pick the letters in order to build: ${item.word}!`,
+    instruction: `Pick the letter tiles in order to build: ${item.word}!`,
+    spokenPrompt: `Listen carefully! Pick the letter tiles in order to build: ${item.word}!`,
     targetSound: item.word,
     soundCue: item.soundCue,
     choices: shuffledChoices,
@@ -845,11 +825,6 @@ const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
 
 // -------------------------------------------------------------
 // LAND 3: TRICKY TRAILS (2nd - 3rd Grade)
-// Progression:
-// Stages 1-15: Magic Silent E (V_C_E rules: A_E, I_E, O_E, U_E)
-// Stages 16-30: Irregular High-Frequency Sight Words (said, could, would, laugh, friend, etc.)
-// Stages 31-40: Diphthongs & Glided Vowels (OI/OY, OU/OW, AU/AW)
-// Stages 41-50: Soft C & Soft G Rules & Silent Consonants (KN, WR, GN)
 // -------------------------------------------------------------
 const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
   1: [
@@ -1047,8 +1022,6 @@ const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
       explanation: 'BONE has a magic silent E at the end!'
     }
   ],
-
-  // --- 16 to 30: Tricky Sight Words ---
   16: [
     {
       stageNumber: 16,
@@ -1244,8 +1217,6 @@ const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
       explanation: 'BEAUTIFUL starts with EAU creating the long U sound!'
     }
   ],
-
-  // --- 31 to 40: Diphthongs (OI/OY, OU/OW, AU/AW) ---
   31: [
     {
       stageNumber: 31,
@@ -1376,8 +1347,6 @@ const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
       explanation: 'TOWN uses OW to make the /ow/ sound!'
     }
   ],
-
-  // --- 41 to 50: Soft C & G and Silent Consonants ---
   41: [
     {
       stageNumber: 41,
@@ -1512,11 +1481,6 @@ const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
 
 // -------------------------------------------------------------
 // LAND 4: WHISPERING PEAKS (3rd - 5th Grade)
-// Progression:
-// Stages 1-15: Vowel Teams (EE, EA, OA, AI, AY, OO, EW)
-// Stages 16-30: R-Controlled Vowels ("Bossy R": AR, OR, ER, IR, UR)
-// Stages 31-40: Prefixes & Suffixes (Morphology: UN-, RE-, PRE-, DIS-, -FUL, -LESS, -TION)
-// Stages 41-50: Multisyllabic Mountain Words & Silent Markers
 // -------------------------------------------------------------
 const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
   1: [
@@ -1649,8 +1613,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       explanation: 'In BREAD, the vowel team EA makes a short E /eh/ sound!'
     }
   ],
-
-  // --- 16 to 30: Bossy R (AR, OR, ER, IR, UR) ---
   16: [
     {
       stageNumber: 16,
@@ -1716,8 +1678,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       explanation: 'SISTER ends with the bossy R pattern ER!'
     }
   ],
-
-  // --- 31 to 40: Prefixes & Suffixes ---
   31: [
     {
       stageNumber: 31,
@@ -1796,8 +1756,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       explanation: 'In ACTION, -TION creates the noun ending!'
     }
   ],
-
-  // --- 41 to 50: Multisyllabic Mountain Mastery ---
   41: [
     {
       stageNumber: 41,
@@ -1880,11 +1838,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
 
 // -------------------------------------------------------------
 // LAND 5: LEXICON EMPIRE (Middle School - High School / Advanced)
-// Progression:
-// Stages 1-15: Greek Roots (CHRON, BIO, GEO, TELE, GRAPH, PHON, SPEC, PORT)
-// Stages 16-30: Scientific & Latin Roots (ASTR, AUD, AUTO, BENE, DICT, FRACT, HYDRO, LUM, MAL, STRUCT)
-// Stages 31-45: Advanced Morphemes (OMNI, PHIL, PSYCH, RUPT, SCRIB, VAC, VIS)
-// Stages 46-50: High School Mastery Words & The Shadow King Magma Showdown
 // -------------------------------------------------------------
 const LEXICON_EMPIRE_STAGES: Record<number, StageChallenge[]> = {
   1: [
@@ -2190,7 +2143,6 @@ const LEXICON_EMPIRE_STAGES: Record<number, StageChallenge[]> = {
 
 // -------------------------------------------------------------
 // UNIFIED GETTER: Returns an accurate, randomized challenge
-// for any Stage 1..50 across all 5 Lands!
 // -------------------------------------------------------------
 export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: number): StageChallenge => {
   const normalizedStage = Math.max(1, Math.min(50, stageNumber));

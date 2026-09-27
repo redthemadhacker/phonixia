@@ -43,7 +43,6 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
   const walkLeftArmRot = isWalking ? -Math.sin(walkCycle) * (isRunning ? 28 : 18) : 0;
   const walkRightArmRot = isWalking ? Math.sin(walkCycle) * (isRunning ? 28 : 18) : 0;
 
-  // Swimming motion: Arms sweep up/down, legs kick open/closed
   const swimArmSweep = Math.sin(swimCycle) * 45;
   const swimLegSpread = Math.abs(Math.sin(swimCycle)) * 25;
 
@@ -94,6 +93,22 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
           <ellipse cx="50" cy="94" rx="20" ry="5" fill="#000000" opacity="0.28" />
         )}
 
+        {/* --- BACK HAIR (Long styles / Braids) --- */}
+        {hairStyle === 'braids' && (
+          <g fill={hairColor}>
+            <rect x="23" y="36" width="7" height="30" rx="3.5" />
+            <rect x="70" y="36" width="7" height="30" rx="3.5" />
+            <circle cx="26.5" cy="65" r="3" fill="#f59e0b" />
+            <circle cx="73.5" cy="65" r="3" fill="#f59e0b" />
+          </g>
+        )}
+        {hairStyle === 'wavy' && (
+          <g fill={hairColor}>
+            <path d="M 24 35 Q 20 52 26 62 Q 30 52 30 40 Z" />
+            <path d="M 76 35 Q 80 52 74 62 Q 70 52 70 40 Z" />
+          </g>
+        )}
+
         {/* --- LEGS --- */}
         <g id="legs">
           <g style={{ transform: `rotate(${leftLegRot}deg)`, transformOrigin: '42px 72px' }}>
@@ -106,21 +121,11 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
           </g>
         </g>
 
-        {/* --- BACK HAIR --- */}
-        {hairStyle === 'braids' && (
-          <g fill={hairColor}>
-            <rect x="23" y="42" width="8" height="24" rx="4" />
-            <rect x="69" y="42" width="8" height="24" rx="4" />
-            <circle cx="27" cy="68" r="3" fill="#f59e0b" />
-            <circle cx="73" cy="68" r="3" fill="#f59e0b" />
-          </g>
-        )}
-
         {/* --- BODY / OUTFIT --- */}
         <g id="torso" filter="url(#shadow)">
           <path d="M 32 48 Q 50 44 68 48 L 65 74 Q 50 77 35 74 Z" fill={outfitColor} />
 
-          {outfitStyle === 'adventurer' && (
+          {(outfitStyle === 'adventurer' || outfitStyle === 'ranger-vest') && (
             <g>
               <path d="M 33 48 L 42 48 L 40 73 L 35 73 Z" fill="#991b1b" />
               <path d="M 67 48 L 58 48 L 60 73 L 65 73 Z" fill="#991b1b" />
@@ -131,14 +136,14 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
             </g>
           )}
 
-          {outfitStyle === 'wizard' && (
+          {(outfitStyle === 'wizard' || outfitStyle === 'phonix-cloak') && (
             <g>
               <path d="M 33 48 Q 50 56 67 48 L 65 58 Q 50 63 35 58 Z" fill="#581c87" />
               <polygon points="50,52 52,57 57,57 53,60 55,65 50,62 45,65 47,60 43,57 48,57" fill="#fbbf24" transform="scale(0.5) translate(50, 52)" />
             </g>
           )}
 
-          {outfitStyle === 'ranger' && (
+          {(outfitStyle === 'ranger' || outfitStyle === 'safari-suit') && (
             <g>
               <line x1="36" y1="49" x2="63" y2="73" stroke="#78350f" strokeWidth="3.5" />
               <circle cx="49.5" cy="61" r="3.5" fill="#fbbf24" stroke="#78350f" strokeWidth="1" />
@@ -174,9 +179,10 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
           <path d="M 46 39 Q 50 43 54 39" stroke="#78350f" strokeWidth="1.8" strokeLinecap="round" fill="none" />
         </g>
 
-        {/* --- CURLS HAIR --- */}
+        {/* --- ALL DISTINCT HAIRSTYLES --- */}
         <g id="hair" fill={hairColor}>
-          {hairStyle === 'curls' ? (
+          {/* 1. CURLS */}
+          {(hairStyle === 'curls' || hairStyle === 'curly') && (
             <g>
               <circle cx="34" cy="20" r="9" />
               <circle cx="45" cy="16" r="9.5" />
@@ -186,10 +192,60 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
               <circle cx="72" cy="28" r="8" />
               <path d="M 30 25 Q 50 18 70 25 Q 65 31 50 26 Q 35 31 30 25 Z" />
             </g>
-          ) : (
+          )}
+
+          {/* 2. SPIKY */}
+          {hairStyle === 'spiky' && (
             <g>
-              <ellipse cx="50" cy="22" rx="22" ry="14" />
-              <path d="M 28 27 Q 50 20 72 27 Z" />
+              <path d="M 28 27 L 31 14 L 38 21 L 43 10 L 50 20 L 57 9 L 63 21 L 70 14 L 72 27 Q 50 18 28 27 Z" />
+              <polygon points="36,18 40,8 44,19" />
+              <polygon points="56,19 60,8 64,18" />
+            </g>
+          )}
+
+          {/* 3. AFRO */}
+          {hairStyle === 'afro' && (
+            <g>
+              <circle cx="50" cy="20" r="18" />
+              <circle cx="35" cy="24" r="14" />
+              <circle cx="65" cy="24" r="14" />
+              <circle cx="31" cy="33" r="10" />
+              <circle cx="69" cy="33" r="10" />
+            </g>
+          )}
+
+          {/* 4. BRAIDS / CORNROWS */}
+          {hairStyle === 'braids' && (
+            <g>
+              <ellipse cx="50" cy="22" rx="20" ry="12" />
+              <line x1="38" y1="18" x2="38" y2="28" stroke="#f59e0b" strokeWidth="1.5" />
+              <line x1="46" y1="16" x2="46" y2="28" stroke="#f59e0b" strokeWidth="1.5" />
+              <line x1="54" y1="16" x2="54" y2="28" stroke="#f59e0b" strokeWidth="1.5" />
+              <line x1="62" y1="18" x2="62" y2="28" stroke="#f59e0b" strokeWidth="1.5" />
+            </g>
+          )}
+
+          {/* 5. WAVY LOCKS */}
+          {hairStyle === 'wavy' && (
+            <g>
+              <ellipse cx="50" cy="22" rx="21" ry="13" />
+              <path d="M 28 25 Q 35 18 50 20 Q 65 18 72 25 Q 68 33 60 27 Q 50 31 40 27 Q 32 33 28 25 Z" />
+            </g>
+          )}
+
+          {/* 6. SHORT FADE */}
+          {hairStyle === 'short' && (
+            <g>
+              <path d="M 31 29 Q 32 18 50 18 Q 68 18 69 29 Q 60 24 50 24 Q 40 24 31 29 Z" />
+            </g>
+          )}
+
+          {/* 7. TOP BUN */}
+          {hairStyle === 'explorer-bun' && (
+            <g>
+              <circle cx="50" cy="9" r="8" />
+              <ellipse cx="50" cy="11" rx="5" ry="2" fill="#f59e0b" />
+              <ellipse cx="50" cy="22" rx="20" ry="12" />
             </g>
           )}
         </g>
@@ -212,7 +268,32 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
           </g>
         )}
 
-        {/* --- PETS (Turtle, Dragon, Golden Eagle) --- */}
+        {accessory === 'explorer-hat' && (
+          <g filter="url(#shadow)">
+            <ellipse cx="50" cy="20" rx="24" ry="4" fill="#78350f" />
+            <path d="M 36 20 Q 37 9 50 9 Q 63 9 64 20 Z" fill="#92400e" />
+            <rect x="36" y="17" width="28" height="3" fill="#f59e0b" />
+          </g>
+        )}
+
+        {accessory === 'phonix-crown' && (
+          <g filter="url(#shadow)">
+            <polygon points="36,23 40,11 45,18 50,7 55,18 60,11 64,23" fill="#fbbf24" stroke="#d97706" strokeWidth="1" />
+            <circle cx="50" cy="18" r="2" fill="#ef4444" />
+          </g>
+        )}
+
+        {accessory === 'pilot-goggles' && (
+          <g stroke="#0f172a" strokeWidth="1.5" fill="#38bdf8" fillOpacity="0.6">
+            <rect x="37" y="19" width="11" height="7" rx="3" />
+            <rect x="52" y="19" width="11" height="7" rx="3" />
+            <line x1="48" y1="22" x2="52" y2="22" stroke="#475569" strokeWidth="2" />
+            <line x1="30" y1="22" x2="37" y2="22" stroke="#475569" strokeWidth="2" />
+            <line x1="63" y1="22" x2="70" y2="22" stroke="#475569" strokeWidth="2" />
+          </g>
+        )}
+
+        {/* --- PETS (Turtle, Dragon, Golden Eagle, Starlight Owl, Fox, Bunny) --- */}
         {showPet && (
           <g
             id="companion-pet"
@@ -245,22 +326,15 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
 
             {(companion === 'golden-eagle' || companion === 'golden-phonix') && (
               <g filter="url(#shadow)">
-                {/* Golden Eagle Body & Majestic Wings */}
                 <ellipse cx="14" cy="14" rx="8" ry="7" fill="#b45309" />
-                {/* Golden Crowned Head */}
                 <circle cx="14" cy="8" r="5" fill="#f59e0b" />
                 <polygon points="12,3 14,0 16,3" fill="#fbbf24" />
-                {/* Outstretched Wings */}
                 <path d="M 8 11 Q 0 3 6 16 Z" fill="#d97706" />
                 <path d="M 20 11 Q 28 3 22 16 Z" fill="#d97706" />
-                {/* Golden Hook Beak */}
                 <polygon points="17,8 23,9.5 17,11" fill="#fbbf24" />
-                {/* Piercing Eye */}
                 <circle cx="15" cy="7" r="1.3" fill="#1e293b" />
                 <circle cx="15.3" cy="6.7" r="0.4" fill="#ffffff" />
-                {/* Eagle Tail Feathers */}
                 <path d="M 12 20 Q 9 27 13 28 Q 15 24 15 20 Z" fill="#92400e" />
-                {/* Golden Claws / Talons */}
                 <circle cx="11" cy="21" r="1.2" fill="#fbbf24" />
                 <circle cx="16" cy="21" r="1.2" fill="#fbbf24" />
               </g>
@@ -286,8 +360,6 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
                 <circle cx="14" cy="9" r="4.5" fill="#ea580c" />
                 <polygon points="10,6 9,2 12,5" fill="#ea580c" />
                 <polygon points="18,6 19,2 16,5" fill="#ea580c" />
-                <polygon points="10,5 9.5,3 11.5,4.5" fill="#fecdd3" />
-                <polygon points="18,5 18.5,3 16.5,4.5" fill="#fecdd3" />
                 <circle cx="12" cy="9" r="1" fill="#0f172a" />
                 <circle cx="16" cy="9" r="1" fill="#0f172a" />
                 <circle cx="14" cy="11.5" r="0.8" fill="#0f172a" />
@@ -302,8 +374,6 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
                 <circle cx="14" cy="10" r="4" fill="#f8fafc" />
                 <ellipse cx="11.5" cy="4" rx="1.5" ry="4" fill="#f8fafc" />
                 <ellipse cx="16.5" cy="4" rx="1.5" ry="4" fill="#f8fafc" />
-                <ellipse cx="11.5" cy="4" rx="0.8" ry="3" fill="#f472b6" />
-                <ellipse cx="16.5" cy="4" rx="0.8" ry="3" fill="#f472b6" />
                 <circle cx="12.5" cy="10" r="0.9" fill="#0f172a" />
                 <circle cx="15.5" cy="10" r="0.9" fill="#0f172a" />
                 <polygon points="13.5,11.5 14.5,11.5 14,12.2" fill="#f472b6" />

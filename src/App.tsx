@@ -1,8 +1,7 @@
-import React, { useState, Component, ErrorInfo, ReactNode } from 'react';
+import React, { useState, ErrorInfo, ReactNode } from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import { WorldCanvas } from './components/WorldCanvas';
 import { LandLevelView } from './components/LandLevelView';
-import { MarioOverworldMap } from './components/MarioOverworldMap';
 import { ActivePlayableStage } from './components/ActivePlayableStage';
 import { IslesOfPlay } from './components/IslesOfPlay';
 import { ShellshoreArcade } from './components/ShellshoreArcade';
@@ -14,9 +13,9 @@ import { AuthGateway } from './components/AuthGateway';
 import { LandId, MinigameId } from './types/character';
 import { getCompanionGuide } from './context/GameContext';
 import { sounds } from './utils/audio';
-import { getComprehensiveStageChallenge, StageChallenge } from './data/comprehensiveCurriculum';
+import { getComprehensiveStageChallenge } from './data/comprehensiveCurriculum';
+import { MinigameDefinition } from './data/minigamesCurriculum';
 
-// Fallback screen to display any crash in plain text
 interface ErrorBoundaryProps {
   children: ReactNode;
 }
@@ -28,10 +27,6 @@ interface ErrorBoundaryState {
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false, error: null };
-
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-  }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
@@ -56,14 +51,6 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 }
 
-const LAND_NAMES: Record<LandId, string> = {
-  'sound-shallows': 'Sound Shallows',
-  'builders-guild': 'Builders Guild',
-  'tricky-trails': 'Tricky Trails',
-  'whispering-peaks': 'Whispering Peaks',
-  'lexicon-empire': 'Lexicon Empire',
-};
-
 const GameShell: React.FC = () => {
   const { 
     activeExplorer,
@@ -81,7 +68,9 @@ const GameShell: React.FC = () => {
   const [selectedLand, setSelectedLand] = useState<LandId>('sound-shallows');
   const [activeStageNumber, setActiveStageNumber] = useState<number>(1);
   const [questionRandomSeed, setQuestionRandomSeed] = useState<number>(0);
-  const [isHomeHutOpen, setIsHomeHutOpen] = useState(false);
+
+  // Auto-launch into Home Hut directly on login so player selection happens first
+  const [isHomeHutOpen, setIsHomeHutOpen] = useState(true);
   const [manualCelebrationOpen, setManualCelebrationOpen] = useState(false);
   const [isParentPinModalOpen, setIsParentPinModalOpen] = useState(false);
   const [isParentDashboardOpen, setIsParentDashboardOpen] = useState(false);
@@ -94,13 +83,19 @@ const GameShell: React.FC = () => {
   const [earnedStars, setEarnedStars] = useState(0);
   const [roundCompleted, setRoundCompleted] = useState(false);
 
-  // Retrieve comprehensive, difficulty-aligned, randomized phonics challenge across all 250 stages
   const activeQuestion = React.useMemo(() => {
     return getComprehensiveStageChallenge(selectedLand, activeStageNumber);
   }, [selectedLand, activeStageNumber, questionRandomSeed]);
 
   if (!isAuthenticated) {
-    return <AuthGateway onAuthenticated={() => setIsAuthenticated(true)} />;
+    return (
+      <AuthGateway 
+        onAuthenticated={() => {
+          setIsAuthenticated(true);
+          setIsHomeHutOpen(true);
+        }} 
+      />
+    );
   }
 
   const handleLaunchStage = (stageNum: number) => {
@@ -132,6 +127,14 @@ const GameShell: React.FC = () => {
     }
   };
 
+  const handleLaunchMinigamePractice = (minigame: MinigameDefinition) => {
+    if (minigame.hub === 'isles-of-play') {
+      setCurrentView('isles');
+    } else {
+      setCurrentView('arcade');
+    }
+  };
+
   return (
     <div className="w-full h-full min-h-[100dvh] max-h-[100dvh] bg-slate-950 flex flex-col justify-between overflow-hidden select-none fixed inset-0">
       
@@ -150,7 +153,7 @@ const GameShell: React.FC = () => {
         />
       )}
 
-      {/* 2. MAIN REALM EXPLORATION (5 PLACES TO EXPLORE WITHIN EACH REALM) */}
+      {/* 2. MAIN REALM EXPLORATION */}
       {currentView === 'land-map' && (
         <LandLevelView
           landId={selectedLand}
@@ -185,20 +188,21 @@ const GameShell: React.FC = () => {
             handleLaunchStage(nextStage);
           }}
           onClose={() => setCurrentView('land-map')}
+          onOpenMinigamePractice={handleLaunchMinigamePractice}
         />
       )}
 
-      {/* 4. ISLES OF PLAY (25 UNLOCKED PHONICS GAMES) */}
+      {/* 4. ISLES OF PLAY */}
       {currentView === 'isles' && (
         <IslesOfPlay onBackToWorld={() => setCurrentView('world')} />
       )}
 
-      {/* 5. SHELLSHORE ARCADE (25 UNLOCKED ARCADE CABINETS) */}
+      {/* 5. SHELLSHORE ARCADE */}
       {currentView === 'arcade' && (
         <ShellshoreArcade onBackToWorld={() => setCurrentView('world')} />
       )}
 
-      {/* 6. HOME HUT */}
+      {/* 6. HOME HUT (PLAYER SELECT MODAL) */}
       {isHomeHutOpen && (
         <HomeHutModal
           onClose={() => setIsHomeHutOpen(false)}
@@ -213,7 +217,7 @@ const GameShell: React.FC = () => {
         />
       )}
 
-      {/* 7. WALL OF FAME CORONATION CELEBRATION */}
+      {/* 7. WALL OF FAME CELEBRATION */}
       {(showHallOfFameCelebration || manualCelebrationOpen) && (
         <HallOfFameCelebration
           isReplay={manualCelebrationOpen}
@@ -224,7 +228,7 @@ const GameShell: React.FC = () => {
         />
       )}
 
-      {/* 8. PARENT & TEACHER PIN GATE (YOUTUBE KIDS STYLE) */}
+      {/* 8. PARENT & TEACHER PIN GATE */}
       <ParentPinModal
         isOpen={isParentPinModalOpen}
         onClose={() => setIsParentPinModalOpen(false)}

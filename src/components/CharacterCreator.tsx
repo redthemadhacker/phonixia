@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useGame, KAM_GUIDE, CELINE_GUIDE } from '../context/GameContext';
+import { useGame } from '../context/GameContext';
 import { AvatarCustomization } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
-import { Sparkles, Check, RotateCcw, User, Heart, Star } from 'lucide-react';
+import { Check, RotateCcw } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
 interface CharacterCreatorProps {
@@ -12,13 +12,13 @@ interface CharacterCreatorProps {
 const SKIN_TONES = ['#fcd34d', '#fde047', '#fed7aa', '#fbcfe8', '#d97706', '#92400e', '#78350f', '#451a03'];
 const HAIR_COLORS = ['#1e293b', '#78350f', '#b45309', '#f59e0b', '#dc2626', '#4338ca', '#059669', '#ffffff'];
 
-const HAIR_STYLES: { id: AvatarCustomization['hairStyle']; label: string }[] = [
+const HAIR_STYLES: { id: string; label: string }[] = [
   { id: 'spiky', label: 'Spiky' },
-  { id: 'curly', label: 'Curly' },
+  { id: 'curls', label: 'Curls' },
   { id: 'wavy', label: 'Wavy' },
   { id: 'afro', label: 'Afro' },
   { id: 'braids', label: 'Braids' },
-  { id: 'short', label: 'Short' },
+  { id: 'short', label: 'Short Fade' },
   { id: 'explorer-bun', label: 'Top Bun' }
 ];
 
@@ -35,16 +35,18 @@ const HEADGEARS: { id: string; label: string }[] = [
   { id: 'phonix-crown', label: 'Phonix Crown' },
   { id: 'pilot-goggles', label: 'Pilot Goggles' },
   { id: 'bandana', label: 'Flame Bandana' },
-  { id: 'cap', label: 'Adventure Cap' },
+  { id: 'glasses', label: 'Scholar Glasses' },
   { id: 'none', label: 'No Headgear' }
 ];
 
+// ALL 6 COMPANIONS FULLY POPULATED
 const COMPANIONS: { id: string; label: string; icon: string; lore: string }[] = [
-  { id: 'golden-eagle', label: 'Golden Eagle', icon: '🦅', lore: 'Majestic golden-feathered raptor that scouts phonics paths from high above' },
+  { id: 'sea-turtle', label: 'Coral Turtle', icon: '🐢', lore: 'Swims calmly through Sound Shallows rhythm waters' },
   { id: 'baby-dragon', label: 'Kam\'s Baby Dragon', icon: '🐲', lore: 'Kam\'s loyal drake that breathes sound-sparks' },
+  { id: 'golden-eagle', label: 'Golden Eagle', icon: '🦅', lore: 'Majestic golden-feathered raptor that scouts phonics paths' },
   { id: 'feather-owl', label: 'Celine\'s Starlight Owl', icon: '🦉', lore: 'Celine\'s swift night-glider that spots vowel blends' },
   { id: 'woodland-fox', label: 'Clever Fox', icon: '🦊', lore: 'Sniffs out hidden sight words on Tricky Trails' },
-  { id: 'sea-turtle', label: 'Coral Turtle', icon: '🐢', lore: 'Swims calmly through Sound Shallows rhythm waters' }
+  { id: 'bunny', label: 'Moon Bunny', icon: '🐰', lore: 'Bounces across Whispering Peaks snow banks' }
 ];
 
 export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) => {
@@ -59,14 +61,14 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
     if (gender === 'boy') {
       setCustom(prev => ({
         ...prev,
-        companionPet: 'baby-dragon',
+        companionPet: 'sea-turtle',
         title: 'Adventurer with Kam',
         outfitColor: prev.outfitColor === '#ec4899' ? '#3b82f6' : prev.outfitColor
       }));
     } else {
       setCustom(prev => ({
         ...prev,
-        companionPet: 'feather-owl',
+        companionPet: 'baby-dragon',
         title: 'Adventurer with Celine',
         outfitColor: prev.outfitColor === '#3b82f6' ? '#ec4899' : prev.outfitColor
       }));
@@ -104,7 +106,7 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
           </button>
         </div>
 
-        {/* Content Body: Avatar Preview Left + Customization Tabs Right */}
+        {/* Content Body */}
         <div className="p-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Left Preview Card */}
           <div className="md:col-span-4 flex flex-col items-center justify-center p-6 bg-slate-950 rounded-2xl border border-slate-800 text-center">
@@ -313,9 +315,9 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
               </div>
             )}
 
-            {/* Tab 3: Companion Pet */}
+            {/* Tab 3: All 6 Companions Populated */}
             {activeTab === 'pet' && (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <label className="text-xs font-bold text-slate-300 block mb-1">Select Faithful Companion</label>
                 {COMPANIONS.map(pet => (
                   <button
@@ -324,7 +326,7 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
                       setCustom(c => ({ ...c, companionPet: pet.id }));
                       sounds.playStep();
                     }}
-                    className={`w-full p-3 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                    className={`w-full p-2.5 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
                       custom.companionPet === pet.id
                         ? 'bg-amber-500/20 border-amber-400 text-amber-200 shadow-md'
                         : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'

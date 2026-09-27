@@ -141,7 +141,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5">
-                    Permanent Honor Roll. Explorers earn their place among the Eternal Flamekeepers upon defeating the Shadow King, rescuing the Golden Phoenix, and saving Phonixia!
+                    Permanent Honor Roll. Explorers earn their place among the Eternal Flamekeepers upon defeating the Shadow King, rescuing the Golden Phonix, and saving Phonixia!
                   </p>
                 </div>
               </div>
@@ -193,7 +193,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                                 )}
                               </div>
                               <div className="text-[11px] text-slate-400">
-                                Permanent Eternal Flamekeeper · Savior of the Golden Phoenix
+                                Permanent Eternal Flamekeeper · Savior of the Golden Phonix
                               </div>
                             </div>
                           </div>

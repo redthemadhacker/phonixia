@@ -272,7 +272,7 @@ export const PHONIXIA_LANDS: LandCurriculum[] = [
           makeGame('tt-1-7', 7, 'RULE_DETECTIVE', 'Soft SSS with Magic E', 'Why does FFF / AY / SSS (face) have a soft SSS sound?', 'E follows C', 'fff ay sss', 'When C is followed by E, I, or Y, it says SSS!', ['E follows C', 'A is long', 'F is quiet', 'It has two vowels'], 'E follows C', 'C makes the soft SSS sound when followed by E, I, or Y!', 3),
           makeGame('tt-1-8', 8, 'WORD_BUILDER', 'Spell RRR / OHW / ZZZ', 'Spell the fragrant flower RRR / OHW / ZZZ (rose).', 'rose', 'rrr ohw zzz', 'RRR + OHW + ZZZ + silent E', ['r', 'o', 's', 'e'], ['r', 'o', 's', 'e'], 'RRR - OHW - ZZZ spells rose!', 2),
           makeGame('tt-1-9', 9, 'MAGIC_E', 'PUH / IH / NNN to PUH / EYE / NNN', 'Transform PUH / IH / NNN (pin) into a tall pine tree:', 'pine', 'puh eye nnn', 'Short IH to Long EYE.', ['pine', 'pane', 'pone', 'pune'], 'pine', 'PUH / IH / NNN becomes PUH / EYE / NNN (pine)!', 2),
-          makeGame('tt-1-10', 10, 'WORD_BUILDER', 'Grove Champion: FFF / LLL / AY / MMM', 'Forge the Phoenix flame word FFF / LLL / AY / MMM!', 'flame', 'fff lll ay mmm', 'FFF / LLL + AY + MMM + silent E', ['fl', 'a', 'm', 'e'], ['fl', 'a', 'm', 'e'], 'Brilliant! The Magic E Grove shines bright!', 3)
+          makeGame('tt-1-10', 10, 'WORD_BUILDER', 'Grove Champion: FFF / LLL / AY / MMM', 'Forge the Phonix flame word FFF / LLL / AY / MMM!', 'flame', 'fff lll ay mmm', 'FFF / LLL + AY + MMM + silent E', ['fl', 'a', 'm', 'e'], ['fl', 'a', 'm', 'e'], 'Brilliant! The Magic E Grove shines bright!', 3)
         ]
       },
       {
@@ -548,12 +548,12 @@ export const PHONIXIA_LANDS: LandCurriculum[] = [
       },
       {
         levelNumber: 5,
-        name: 'The Golden Phoenix Scepter',
+        name: 'The Golden Phonix Scepter',
         gradeTier: 'High School & Lifelong Mastery',
         skillFocus: 'Master Polysyllabic Etymology & Phonics Pinnacle',
         description: 'Prove the ultimate mastery of the English language to reign as High Scholar of Phonixia.',
         games: [
-          makeGame('le-5-1', 1, 'RULE_DETECTIVE', 'Root of FFF / IH / LLL / AH / SSS / OH / FFF / EE', 'What does philosophy literally mean in Greek?', 'love of wisdom', 'fff ih lll ah sss oh fff ee', 'Philo (love) + sophia (wisdom).', ['love of wisdom', 'study of plants', 'law of kings', 'speech of gods'], 'love of wisdom', 'Philo (love) + Sophia (wisdom) = love of wisdom!', 5),
+          makeGame('le-5-1', 1, 'RULE_DETECTIVE', 'Root of FFF / IH / LLL / AHH / SSS / OH / FFF / EE', 'What does philosophy literally mean in Greek?', 'love of wisdom', 'fff ih lll ah sss oh fff ee', 'Philo (love) + sophia (wisdom).', ['love of wisdom', 'study of plants', 'law of kings', 'speech of gods'], 'love of wisdom', 'Philo (love) + Sophia (wisdom) = love of wisdom!', 5),
           makeGame('le-5-2', 2, 'WORD_BUILDER', 'Spell AH / MMM / NNN / IH / SH / EH / NNN / TUH', 'OMNI (all) + SCI (know) + ENT in omniscient:', 'omniscient', 'ah mmm nnn ih sh eh nnn tuh', 'OMNI + SCI + ENT', ['omni', 'sci', 'ent', 'ant'], ['omni', 'sci', 'ent'], 'Omni (all) + sci (knowing) = omniscient!', 5),
           makeGame('le-5-3', 3, 'RULE_DETECTIVE', 'Silent Letters in NNN / OO / MMM / OHW / NNN / YUH', 'Which language gave English silent initial PN in pneumonia?', 'Ancient Greek', 'nnn oo mmm ohw nnn yuh', 'Greek pronounced both letters; English dropped the first.', ['Ancient Greek', 'Latin', 'Old Norse', 'French'], 'Ancient Greek', 'Ancient Greek! English kept the spelling but silences the first consonant!', 5),
           makeGame('le-5-4', 4, 'WORD_BUILDER', 'Spell MMM / EH / TUH / MMM / OR / FFF / OH / SSS / IH / SSS', 'META (change) + MORPH (form) + OSIS (process):', 'metamorphosis', 'mmm eh tuh mmm or fff oh sss ih sss', 'META + MORPH + OSIS', ['meta', 'morph', 'osis', 'ism'], ['meta', 'morph', 'osis'], 'Meta (change) + morph (shape) = metamorphosis!', 5),
@@ -561,8 +561,8 @@ export const PHONIXIA_LANDS: LandCurriculum[] = [
           makeGame('le-5-6', 6, 'WORD_BUILDER', 'Spell MMM / IH / SSS / CHUH / IH / VUU / UH / SSS', 'Watch the spelling of mischievous (3 syllables, not 4!):', 'mischievous', 'mmm ih sss chuh ih vuu uh sss', 'MIS + CHIEV + OUS', ['mis', 'chiev', 'ous', 'ious'], ['mis', 'chiev', 'ous'], 'M-I-S-C-H-I-E-V-O-U-S (no extra "i" after v)!', 5),
           makeGame('le-5-7', 7, 'RULE_DETECTIVE', 'Root: BUH / EH / NNN / EE vs MMM / AHH / LLL', 'What is the antonym of benefactor (one who does evil)?', 'malefactor', 'mmm ahh lll eh fff ahh kuh tuh er', 'Bene = good, Male = bad.', ['malefactor', 'beneficiary', 'spectator', 'dictator'], 'malefactor', 'Male- means evil or bad, opposite of Bene-!', 5),
           makeGame('le-5-8', 8, 'WORD_BUILDER', 'Spell JUH / UH / KSS / TUH / UH / PUH / OH / ZZZ / IH / SH / UH / NNN', 'JUXTA (next to) + POSITION:', 'juxtaposition', 'juh uh kss tuh uh puh oh zzz ih sh uh nnn', 'JUXTA + POSITION', ['juxta', 'position', 'side', 'post'], ['juxta', 'position'], 'Juxta (beside) + position = placing side-by-side!', 5),
-          makeGame('le-5-9', 9, 'RULE_DETECTIVE', 'The Origin of FFF / OH / NNN / IH / KSS', 'What root gave birth to our magical world of Phonixia?', 'Greek phone meaning sound', 'fff oh nnn ih kss', 'Phon = sound / voice.', ['Greek phone meaning sound', 'Latin phoenix meaning fire', 'French reading', 'Old English stone'], 'Greek phone meaning sound', 'The Greek root "phone", meaning sound and voice!', 5),
-          makeGame('le-5-10', 10, 'WORD_BUILDER', 'Imperial Phoenix Seal: FFF / OH / NNN / IH / KSS / EE / UH', 'Spell the legendary name: FFF / OH / NNN / IH / KSS / EE / UH (Phonixia)!', 'phonixia', 'fff oh nnn ih kss ee uh', 'PHON + IX + IA', ['phon', 'ix', 'ia', 'ex'], ['phon', 'ix', 'ia'], 'ALL HAIL THE HIGH SCHOLAR OF PHONIXIA! YOU HAVE MASTERED ALL FIVE LANDS!', 5)
+          makeGame('le-5-9', 9, 'RULE_DETECTIVE', 'The Origin of FFF / OH / NNN / IH / KSS', 'What root gave birth to our magical world of Phonixia?', 'Greek phone meaning sound', 'fff oh nnn ih kss', 'Phon = sound / voice.', ['Greek phone meaning sound', 'Latin phonix meaning fire', 'French reading', 'Old English stone'], 'Greek phone meaning sound', 'The Greek root "phone", meaning sound and voice!', 5),
+          makeGame('le-5-10', 10, 'WORD_BUILDER', 'Imperial Phonix Seal: FFF / OH / NNN / IH / KSS / EE / UH', 'Spell the legendary name: FFF / OH / NNN / IH / KSS / EE / UH (Phonixia)!', 'phonixia', 'fff oh nnn ih kss ee uh', 'PHON + IX + IA', ['phon', 'ix', 'ia', 'ex'], ['phon', 'ix', 'ia'], 'ALL HAIL THE HIGH SCHOLAR OF PHONIXIA! YOU HAVE MASTERED ALL FIVE LANDS!', 5)
         ]
       }
     ]

@@ -110,7 +110,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
           </h1>
 
           <p className="text-xs sm:text-sm text-amber-200 font-bold max-w-md mx-auto leading-snug">
-            Travel across 5 magical realms to defeat the Shadow King, rescue the Golden Phoenix, and earn your place among the Eternal Flamekeepers.
+            Travel across 5 magical realms to defeat the Shadow King, rescue the Golden Phonix, and earn your place among the Eternal Flamekeepers.
           </p>
 
           <p className="text-[11px] sm:text-xs text-amber-400/90 font-medium">

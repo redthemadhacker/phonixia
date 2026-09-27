@@ -87,9 +87,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
   ];
 
   const COMPANIONS = [
+    { id: 'golden-eagle', name: 'Golden Eagle', icon: '🦅', desc: 'Majestic Golden Sky Companion' },
     { id: 'baby-dragon', name: 'Baby Dragon', icon: '🐲', desc: 'Kam’s Dragon Companion' },
     { id: 'feather-owl', name: 'Starlight Owl', icon: '🦉', desc: 'Celine’s Owl Companion' },
-    { id: 'golden-phonix', name: 'Golden Phoenix', icon: '🦅', desc: 'Legendary Flamekeeper Guide' },
     { id: 'woodland-fox', name: 'Curious Fox', icon: '🦊', desc: 'Clever & Quick' },
     { id: 'sea-turtle', name: 'Wise Turtle', icon: '🐢', desc: 'Patient & Steady' },
     { id: 'bunny', name: 'Brisk Bunny', icon: '🐰', desc: 'Speedy Reader' }
@@ -734,7 +734,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/80 text-amber-300 font-mono text-[11px] font-black uppercase tracking-widest">
                     <Crown className="w-3.5 h-3.5 fill-current" />
-                    <span>Eternal Flamekeeper · Savior of the Golden Phoenix</span>
+                    <span>Eternal Flamekeeper · Savior of the Golden Phonix</span>
                   </div>
 
                   <div className="relative mx-auto w-24 h-24 rounded-full bg-slate-950 border-4 border-amber-400 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.5)]">
@@ -747,7 +747,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                     </h3>
                     <p className="text-xs text-amber-200 font-bold">{activeExplorer.customization.title}</p>
                     <p className="text-[11px] text-slate-300 max-w-md mx-auto pt-2 leading-relaxed">
-                      Legendary savior of the Golden Phoenix! Conquered all 5 realms, vanquished the Shadow King, and earned your place on the permanent Wall of Fame!
+                      Legendary savior of the Golden Phonix! Conquered all 5 realms, vanquished the Shadow King, and earned your place on the permanent Wall of Fame!
                     </p>
                   </div>
 
@@ -786,7 +786,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       {activeExplorer.name}'s Rescue Quest in Progress
                     </h3>
                     <p className="text-xs text-slate-400 max-w-sm mx-auto pt-1">
-                      Conquer all 50 challenge stages across all five realms to defeat the Shadow King, rescue the Golden Phoenix, and unlock your Coronation Aisle &amp; Wall of Fame picture!
+                      Conquer all 50 challenge stages across all five realms to defeat the Shadow King, rescue the Golden Phonix, and unlock your Coronation Aisle &amp; Wall of Fame picture!
                     </p>
                   </div>
                 </div>

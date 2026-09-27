@@ -1,6 +1,7 @@
 import React, { useState, Component, ErrorInfo, ReactNode } from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import { WorldCanvas } from './components/WorldCanvas';
+import { LandLevelView } from './components/LandLevelView';
 import { MarioOverworldMap } from './components/MarioOverworldMap';
 import { ActivePlayableStage } from './components/ActivePlayableStage';
 import { IslesOfPlay } from './components/IslesOfPlay';
@@ -11,15 +12,26 @@ import { AuthGateway } from './components/AuthGateway';
 import { LandId, MinigameId } from './types/character';
 import { getCompanionGuide } from './context/GameContext';
 import { sounds } from './utils/audio';
+import { getComprehensiveStageChallenge, StageChallenge } from './data/comprehensiveCurriculum';
 
 // Fallback screen to display any crash in plain text
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
-  constructor(props: { children: ReactNode }) {
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
+  constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
@@ -41,31 +53,6 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
     return this.props.children;
   }
 }
-
-// Generate dynamic phonics question data for any Mario Dot Level 1-50
-const getDynamicStageQuestion = (landId: LandId, stageNum: number) => {
-  const cvcList = [
-    { target: 'FOX', soundCue: 'fff - ah - ksss', inst: 'Listen to the pure sounds: fff - ah - ksss. Spell the word!', correct: 'FOX', dist: ['BOX', 'SIX', 'FIX'] },
-    { target: 'BED', soundCue: 'b - eh - d', inst: 'Listen to the pure sounds: b - eh - d. Spell the word!', correct: 'BED', dist: ['BAD', 'BUD', 'BAT'] },
-    { target: 'CAT', soundCue: 'k - ah - t', inst: 'Listen to the pure sounds: k - ah - t. Spell the word!', correct: 'CAT', dist: ['COT', 'CUT', 'BAT'] },
-    { target: 'DOG', soundCue: 'd - ah - g', inst: 'Listen to the pure sounds: d - ah - g. Spell the word!', correct: 'DOG', dist: ['DIG', 'DUG', 'LOG'] },
-    { target: 'SUN', soundCue: 'sss - uh - nnn', inst: 'Listen to the pure sounds: sss - uh - nnn. Spell the word!', correct: 'SUN', dist: ['SIN', 'RUN', 'SIT'] },
-    { target: 'PIG', soundCue: 'p - ih - g', inst: 'Listen to the pure sounds: p - ih - g. Spell the word!', correct: 'PIG', dist: ['PUG', 'PEG', 'BIG'] },
-    { target: 'CUP', soundCue: 'k - uh - p', inst: 'Listen to the pure sounds: k - uh - p. Spell the word!', correct: 'CUP', dist: ['CAP', 'COP', 'MUG'] }
-  ];
-
-  const item = cvcList[(stageNum - 1) % cvcList.length];
-  const choices = [item.correct, ...item.dist].sort(() => Math.random() - 0.5);
-
-  return {
-    instruction: item.inst,
-    targetSound: item.target,
-    soundCue: item.soundCue,
-    choices,
-    correct: item.correct,
-    explanation: `${item.soundCue} blends cleanly into ${item.correct}!`
-  };
-};
 
 const LAND_NAMES: Record<LandId, string> = {
   'sound-shallows': 'Sound Shallows',
@@ -91,6 +78,7 @@ const GameShell: React.FC = () => {
   const [currentView, setCurrentView] = useState<'world' | 'land-map' | 'playing-stage' | 'isles' | 'arcade'>('world');
   const [selectedLand, setSelectedLand] = useState<LandId>('sound-shallows');
   const [activeStageNumber, setActiveStageNumber] = useState<number>(1);
+  const [questionRandomSeed, setQuestionRandomSeed] = useState<number>(0);
   const [isHomeHutOpen, setIsHomeHutOpen] = useState(false);
   const [manualCelebrationOpen, setManualCelebrationOpen] = useState(false);
 
@@ -102,9 +90,10 @@ const GameShell: React.FC = () => {
   const [earnedStars, setEarnedStars] = useState(0);
   const [roundCompleted, setRoundCompleted] = useState(false);
 
+  // Retrieve comprehensive, difficulty-aligned, randomized phonics challenge across all 250 stages
   const activeQuestion = React.useMemo(() => {
-    return getDynamicStageQuestion(selectedLand, activeStageNumber);
-  }, [selectedLand, activeStageNumber]);
+    return getComprehensiveStageChallenge(selectedLand, activeStageNumber);
+  }, [selectedLand, activeStageNumber, questionRandomSeed]);
 
   if (!isAuthenticated) {
     return <AuthGateway onAuthenticated={() => setIsAuthenticated(true)} />;
@@ -112,6 +101,7 @@ const GameShell: React.FC = () => {
 
   const handleLaunchStage = (stageNum: number) => {
     setActiveStageNumber(stageNum);
+    setQuestionRandomSeed((s) => s + 1);
     setSelectedAnswer(null);
     setIsAnswered(false);
     setIsCorrect(false);
@@ -156,15 +146,11 @@ const GameShell: React.FC = () => {
         />
       )}
 
-      {/* 2. COMPACT MARIO OVERWORLD MAP (50 WINDING DOTS) */}
+      {/* 2. MAIN REALM EXPLORATION (5 PLACES TO EXPLORE WITHIN EACH REALM) */}
       {currentView === 'land-map' && (
-        <MarioOverworldMap
+        <LandLevelView
           landId={selectedLand}
-          landName={LAND_NAMES[selectedLand]}
-          totalStages={50}
-          completedStages={activeExplorer.landScores[selectedLand]?.completedGamesCount || 0}
-          onLaunchStage={handleLaunchStage}
-          onBack={() => setCurrentView('world')}
+          onBackToWorld={() => setCurrentView('world')}
         />
       )}
 

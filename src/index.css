@@ -150,6 +150,21 @@ body {
   100% { opacity: 0.7; filter: drop-shadow(0 0 8px #f59e0b); }
 }
 
+@keyframes vineSwing {
+  0%, 100% { transform: rotate(-14deg); }
+  50% { transform: rotate(14deg); }
+}
+
+@keyframes cloudBob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes stackDrop {
+  from { transform: translateY(-30px) scale(1.15); opacity: 0; }
+  to { transform: translateY(0px) scale(1); opacity: 1; }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -172,4 +187,17 @@ body {
 
 .animate-laser {
   animation: laserZap 0.15s ease-in-out infinite;
+}
+
+.animate-vine {
+  transform-origin: top center;
+  animation: vineSwing 2.4s ease-in-out infinite;
+}
+
+.animate-cloud {
+  animation: cloudBob 3s ease-in-out infinite;
+}
+
+.animate-stack-drop {
+  animation: stackDrop 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }

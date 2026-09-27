@@ -24,7 +24,7 @@ const HAIR_STYLES: { id: AvatarCustomization['hairStyle']; label: string }[] = [
 
 const OUTFITS: { id: string; label: string; desc: string }[] = [
   { id: 'ranger-vest', label: 'Ranger Vest', desc: 'Sturdy green & gold explorer straps' },
-  { id: 'phoenix-cloak', label: 'Phoenix Cloak', desc: 'Blazing flame silk woven in Phoenix Keep' },
+  { id: 'phonix-cloak', label: 'Phonix Cloak', desc: 'Blazing flame silk woven in Phonix Keep' },
   { id: 'scholar-robe', label: 'Scholar Robe', desc: 'Imperial blue robe with golden sash' },
   { id: 'safari-suit', label: 'Safari Suit', desc: 'Rugged desert khaki with supply pockets' },
   { id: 'cyber-tunic', label: 'Cyber Tunic', desc: 'Neon cyan tech threads for modern explorers' }
@@ -32,7 +32,7 @@ const OUTFITS: { id: string; label: string; desc: string }[] = [
 
 const HEADGEARS: { id: string; label: string }[] = [
   { id: 'explorer-hat', label: 'Explorer Fedora' },
-  { id: 'phoenix-crown', label: 'Phoenix Crown' },
+  { id: 'phonix-crown', label: 'Phonix Crown' },
   { id: 'pilot-goggles', label: 'Pilot Goggles' },
   { id: 'bandana', label: 'Flame Bandana' },
   { id: 'cap', label: 'Adventure Cap' },
@@ -40,9 +40,9 @@ const HEADGEARS: { id: string; label: string }[] = [
 ];
 
 const COMPANIONS: { id: string; label: string; icon: string; lore: string }[] = [
+  { id: 'golden-eagle', label: 'Golden Eagle', icon: '🦅', lore: 'Majestic golden-feathered raptor that scouts phonics paths from high above' },
   { id: 'baby-dragon', label: 'Kam\'s Baby Dragon', icon: '🐲', lore: 'Kam\'s loyal drake that breathes sound-sparks' },
   { id: 'feather-owl', label: 'Celine\'s Starlight Owl', icon: '🦉', lore: 'Celine\'s swift night-glider that spots vowel blends' },
-  { id: 'golden-phonix', label: 'Golden Phoenix', icon: '🔥', lore: 'Sparks flame warmth when reading tricky sounds' },
   { id: 'woodland-fox', label: 'Clever Fox', icon: '🦊', lore: 'Sniffs out hidden sight words on Tricky Trails' },
   { id: 'sea-turtle', label: 'Coral Turtle', icon: '🐢', lore: 'Swims calmly through Sound Shallows rhythm waters' }
 ];

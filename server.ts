@@ -51,10 +51,55 @@ function rateLimiter(req: Request, res: Response, next: NextFunction) {
 // Persistent Storage Directory
 const DATA_DIR = path.join(process.cwd(), '.data');
 const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json');
+const AUDIO_CACHE_DIR = path.join(DATA_DIR, 'audio_cache');
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
+if (!fs.existsSync(AUDIO_CACHE_DIR)) {
+  fs.mkdirSync(AUDIO_CACHE_DIR, { recursive: true });
+}
+
+// High-Fidelity Free Human Audio / TTS Proxy for Phonics
+app.get('/api/tts', async (req: Request, res: Response) => {
+  try {
+    const rawText = req.query.text as string;
+    if (!rawText) {
+      return res.status(400).json({ error: 'Text query parameter is required' });
+    }
+    const text = String(rawText).trim().slice(0, 300);
+    const hash = crypto.createHash('md5').update(text.toLowerCase()).digest('hex');
+    const cachedFile = path.join(AUDIO_CACHE_DIR, `${hash}.mp3`);
+
+    if (fs.existsSync(cachedFile)) {
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      return fs.createReadStream(cachedFile).pipe(res);
+    }
+
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
+    const response = await fetch(ttsUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+      }
+    });
+
+    if (!response.ok) {
+      return res.status(502).json({ error: 'Upstream TTS service temporarily unreachable' });
+    }
+
+    const arrayBuf = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuf);
+    fs.writeFileSync(cachedFile, buffer);
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+    return res.send(buffer);
+  } catch (err: any) {
+    console.error('Error in /api/tts proxy:', err);
+    return res.status(500).json({ error: 'Failed to stream audio' });
+  }
+});
 
 interface StoredAccountRecord {
   id: string;

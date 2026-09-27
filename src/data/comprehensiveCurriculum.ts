@@ -186,8 +186,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 10,
       skillTitle: 'Letter Sounds: /j/ & /k/',
-      instruction: 'Listen: juh! Which letter makes this sound?',
-      spokenPrompt: 'Listen closely. Which letter makes the sound, juh?',
       instruction: 'Listen: juh! Which letter makes the /j/ sound like jam?',
       spokenPrompt: 'Listen! Which letter makes the jumping sound, juh?',
       targetSound: 'J /dʒ/',
@@ -201,8 +199,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 11,
       skillTitle: 'Letter Sounds: /l/ & /m/',
-      instruction: 'Listen: mmm! Which letter makes this sound?',
-      spokenPrompt: 'Listen: mmm. Which letter makes this sound?',
       instruction: 'Hum with your lips closed: mmm! Which letter is this?',
       spokenPrompt: 'Listen to the humming sound: mmm. Which letter is it?',
       targetSound: 'M /m/',
@@ -216,8 +212,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 12,
       skillTitle: 'Letter Sounds: /n/ & /o/',
-      instruction: 'Listen: ah! Which vowel makes this sound?',
-      spokenPrompt: 'Listen: ah. Which vowel makes this sound?',
       instruction: 'Open your mouth wide like a circle: ah! Which vowel is this?',
       spokenPrompt: 'Open wide. Ah! Which vowel is shaped like an open circle?',
       targetSound: 'O /ɒ/',
@@ -428,7 +422,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 27,
       skillTitle: 'CVC Short A: -AN Family',
-      instruction: 'Listen: f - ah - nnn. Which word does this spell?',
       instruction: 'Listen: f - ah - nnn. Which word has a spinning fan?',
       spokenPrompt: 'Listen: f - ah - nnn. Spell the word!',
       targetSound: 'FAN',
@@ -442,7 +435,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 28,
       skillTitle: 'CVC Short A: -AP Family',
-      instruction: 'Listen: m - ah - puh. Which word does this spell?',
       instruction: 'Listen: m - ah - puh. What word guides us on our adventure?',
       spokenPrompt: 'Listen: m - ah - puh. What word is it?',
       targetSound: 'MAP',
@@ -456,7 +448,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 29,
       skillTitle: 'CVC Short A: -AG Family',
-      instruction: 'Listen: b - ah - guh. Which word does this spell?',
       instruction: 'Listen: b - ah - guh. What holds all your treasure?',
       spokenPrompt: 'Listen: b - ah - guh. What word is it?',
       targetSound: 'BAG',
@@ -483,7 +474,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 31,
       skillTitle: 'CVC Short E: -ED Family',
-      instruction: 'Listen: b - eh - d. Which word does this spell?',
       instruction: 'Listen: b - eh - d. Where do you sleep at night?',
       spokenPrompt: 'Listen: b - eh - d. Spell the word!',
       targetSound: 'BED',
@@ -497,7 +487,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 32,
       skillTitle: 'CVC Short E: -ED Color',
-      instruction: 'Listen: r - eh - d. Which word does this spell?',
       instruction: 'Listen: r - eh - d. What vibrant color is this?',
       spokenPrompt: 'Listen: r - eh - d. What color is it?',
       targetSound: 'RED',
@@ -511,7 +500,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 33,
       skillTitle: 'CVC Short E: -ET Family',
-      instruction: 'Listen: n - eh - t. Which word does this spell?',
       instruction: 'Listen: n - eh - t. What catches seashells in the water?',
       spokenPrompt: 'Listen: n - eh - t. What word is it?',
       targetSound: 'NET',
@@ -525,7 +513,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 34,
       skillTitle: 'CVC Short E: -EN Family',
-      instruction: 'Listen: h - eh - nnn. Which word does this spell?',
       instruction: 'Listen: h - eh - nnn. Which bird pecks on the farm?',
       spokenPrompt: 'Listen: h - eh - nnn. Spell the word!',
       targetSound: 'HEN',
@@ -539,8 +526,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 35,
       skillTitle: 'CVC Short E: Rhyme Time',
-      instruction: 'Listen closely! What rhymes with NET?',
-      spokenPrompt: 'What rhymes with net? Select the rhyming word!',
       instruction: 'What rhymes with NET and gets soaked in water?',
       spokenPrompt: 'What rhymes with net? Listen for the et sound!',
       targetSound: '-ET Rhyme',
@@ -554,7 +539,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 36,
       skillTitle: 'CVC Short I: -IG Family',
-      instruction: 'Listen: p - ih - guh. Which word does this spell?',
       instruction: 'Listen: p - ih - guh. Which animal says oink?',
       spokenPrompt: 'Listen: p - ih - guh. Spell the word!',
       targetSound: 'PIG',
@@ -568,7 +552,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 37,
       skillTitle: 'CVC Short I: -IN Family',
-      instruction: 'Listen: f - ih - nnn. Which word does this spell?',
       instruction: 'Listen: f - ih - nnn. What helps a dolphin swim fast?',
       spokenPrompt: 'Listen: f - ih - nnn. Spell the word!',
       targetSound: 'FIN',
@@ -582,7 +565,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 38,
       skillTitle: 'CVC Short I: -IP Family',
-      instruction: 'Listen: z - ih - puh. Which word does this spell?',
       instruction: 'Listen: z - ih - puh. Fasten your jacket with a zip!',
       spokenPrompt: 'Listen: z - ih - puh. Spell the word!',
       targetSound: 'ZIP',
@@ -596,7 +578,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 39,
       skillTitle: 'CVC Short I: -IT Family',
-      instruction: 'Listen: s - ih - t. Which word does this spell?',
       instruction: 'Listen: s - ih - t. Rest in a chair and sit down!',
       spokenPrompt: 'Listen: s - ih - t. What word is it?',
       targetSound: 'SIT',
@@ -623,7 +604,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 41,
       skillTitle: 'CVC Short O: -OG Family',
-      instruction: 'Listen: d - ah - guh. Which word does this spell?',
       instruction: 'Listen: d - ah - guh. Who is a loyal barking friend?',
       spokenPrompt: 'Listen: d - ah - guh. Spell the word!',
       targetSound: 'DOG',
@@ -637,7 +617,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 42,
       skillTitle: 'CVC Short O: -OX Family',
-      instruction: 'Listen: f - ah - ksss. Which word does this spell?',
       instruction: 'Listen: f - ah - ksss. Which clever animal lives in the woods?',
       spokenPrompt: 'Listen: f - ah - ksss. Spell the word!',
       targetSound: 'FOX',
@@ -651,7 +630,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 43,
       skillTitle: 'CVC Short O: -OP Family',
-      instruction: 'Listen: t - ah - puh. Which word does this spell?',
       instruction: 'Listen: t - ah - puh. What spins around on the table?',
       spokenPrompt: 'Listen: t - ah - puh. Spell the word!',
       targetSound: 'TOP',
@@ -665,7 +643,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 44,
       skillTitle: 'CVC Short O: -OT Family',
-      instruction: 'Listen: p - ah - t. Which word does this spell?',
       instruction: 'Listen: p - ah - t. What cooks warm soup on the stove?',
       spokenPrompt: 'Listen: p - ah - t. Spell the word!',
       targetSound: 'POT',
@@ -692,7 +669,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 46,
       skillTitle: 'CVC Short U: -UN Family',
-      instruction: 'Listen: s - uh - nnn. Which word does this spell?',
       instruction: 'Listen: s - uh - nnn. What shines bright in the day sky?',
       spokenPrompt: 'Listen: s - uh - nnn. Spell the word!',
       targetSound: 'SUN',
@@ -706,7 +682,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 47,
       skillTitle: 'CVC Short U: -UP Family',
-      instruction: 'Listen: k - uh - puh. Which word does this spell?',
       instruction: 'Listen: k - uh - puh. What do you drink warm cocoa from?',
       spokenPrompt: 'Listen: k - uh - puh. Spell the word!',
       targetSound: 'CUP',
@@ -720,7 +695,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 48,
       skillTitle: 'CVC Short U: -UG Family',
-      instruction: 'Listen: b - uh - guh. Which word does this spell?',
       instruction: 'Listen: b - uh - guh. What small insect crawls on a leaf?',
       spokenPrompt: 'Listen: b - uh - guh. Spell the word!',
       targetSound: 'BUG',
@@ -734,7 +708,6 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 49,
       skillTitle: 'CVC Short U: -UT Family',
-      instruction: 'Listen: n - uh - t. Which word does this spell?',
       instruction: 'Listen: n - uh - t. What crunchy treat does a squirrel hide?',
       spokenPrompt: 'Listen: n - uh - t. Spell the word!',
       targetSound: 'NUT',
@@ -834,12 +807,9 @@ const BUILDERS_WORDS_BANK: { word: string; category: string; soundCue: string; d
 
 const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
   const item = BUILDERS_WORDS_BANK[(stageNum - 1) % BUILDERS_WORDS_BANK.length];
-  // Target letters
   const targetLetters = item.word.split('');
-  // Distinct letters required
   const uniqueTargetLetters = Array.from(new Set(targetLetters));
-  
-  // Fill up to exactly 8 choices
+
   const lettersPool = [...uniqueTargetLetters];
   for (const d of item.distractors) {
     if (lettersPool.length >= 8) break;
@@ -847,7 +817,7 @@ const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
       lettersPool.push(d);
     }
   }
-  // Fill more common alphabet letters if needed to ensure 8 choices
+
   const extras = ['S', 'T', 'R', 'N', 'L', 'M', 'P', 'B', 'C', 'D'];
   for (const e of extras) {
     if (lettersPool.length >= 8) break;
@@ -855,8 +825,7 @@ const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
       lettersPool.push(e);
     }
   }
-  
-  // Shuffle the 8 choices
+
   const shuffledChoices = lettersPool.slice(0, 8).sort(() => Math.random() - 0.5);
 
   return {
@@ -1258,7 +1227,7 @@ const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
       targetSound: 'THOUGHT',
       soundCue: 'thought',
       choices: ['THOUGHT', 'THROUGH', 'TAUGHT', 'TOUGH'],
-      correct: 'THOUGHT',
+      correct: 'THROUGH',
       explanation: 'THOUGHT has OUGHT making the /awt/ sound!'
     }
   ],
@@ -1334,7 +1303,6 @@ const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 35,
       skillTitle: 'Diphthong: AW (Hawk)',
       instruction: 'Which soaring bird word uses the /aw/ sound spelled AW?',
-      spokenPrompt: 'Listen! Which word has the aw sound?',
       spokenPrompt: 'Listen! Which bird word has the aw sound spelled A-W?',
       targetSound: 'HAWK',
       soundCue: 'h - aw - k',
@@ -1582,7 +1550,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 3,
       skillTitle: 'Vowel Team: OA',
       instruction: 'Which sailing watercraft uses vowel team OA in BOAT?',
-      spokenPrompt: 'Listen: b - oh - t. Spell the word you hear!',
       spokenPrompt: 'Listen: b - oh - t. Which word uses vowel team O-A?',
       targetSound: 'BOAT',
       soundCue: 'b - oh - t',
@@ -1596,7 +1563,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 4,
       skillTitle: 'Vowel Team: AI',
       instruction: 'Which word uses vowel team AI for the falling drops in RAIN?',
-      spokenPrompt: 'Listen: r - ay - n. Spell the word you hear!',
       spokenPrompt: 'Listen: r - ay - n. Which word has vowel team A-I?',
       targetSound: 'RAIN',
       soundCue: 'r - ay - n',
@@ -1610,7 +1576,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 5,
       skillTitle: 'Vowel Team: AY',
       instruction: 'Which word uses vowel team AY at the end of PLAY?',
-      spokenPrompt: 'Listen: p - l - ay. Spell the word you hear!',
       spokenPrompt: 'Listen: p - l - ay. Which word ends with A-Y?',
       targetSound: 'PLAY',
       soundCue: 'p - l - ay',
@@ -1624,7 +1589,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 6,
       skillTitle: 'Vowel Team: OO (Moon)',
       instruction: 'Which celestial word uses double O for the /oo/ sound in MOON?',
-      spokenPrompt: 'Listen: m - oo - n. Spell the word you hear!',
       spokenPrompt: 'Listen: m - oo - n. Which word has double O?',
       targetSound: 'MOON',
       soundCue: 'm - oo - n',
@@ -1638,7 +1602,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 7,
       skillTitle: 'Vowel Team: EW',
       instruction: 'Which word uses EW to make the /oo/ sound in FLEW?',
-      spokenPrompt: 'Listen: f - l - oo. Spell the word you hear!',
       spokenPrompt: 'Listen: f - l - oo. Which word uses E-W in flew?',
       targetSound: 'FLEW',
       soundCue: 'f - l - oo',
@@ -1652,7 +1615,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 8,
       skillTitle: 'Vowel Team: OE',
       instruction: 'Which body part uses vowel team OE in TOE?',
-      spokenPrompt: 'Listen: t - oh. Spell the word you hear!',
       spokenPrompt: 'Listen: t - oh. Which word uses O-E in toe?',
       targetSound: 'TOE',
       soundCue: 't - oh',
@@ -1666,7 +1628,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 9,
       skillTitle: 'Vowel Team: UE',
       instruction: 'Which vibrant sky color uses vowel team UE in BLUE?',
-      spokenPrompt: 'Listen: b - l - oo. Spell the word you hear!',
       spokenPrompt: 'Listen: b - l - oo. Which word uses U-E in blue?',
       targetSound: 'BLUE',
       soundCue: 'b - l - oo',
@@ -1708,7 +1669,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 17,
       skillTitle: 'Bossy R: OR',
       instruction: 'Which weather word uses the bossy R sound /or/ in STORM?',
-      spokenPrompt: 'Listen: s - t - or - m. Spell the word you hear!',
       spokenPrompt: 'Listen: s - t - or - m. Which word has O-R in storm?',
       targetSound: 'STORM',
       soundCue: 's - t - or - m',
@@ -1722,7 +1682,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 18,
       skillTitle: 'Bossy R: IR',
       instruction: 'Which feathered creature uses the bossy R sound /er/ in BIRD?',
-      spokenPrompt: 'Listen: b - er - d. Spell the word you hear!',
       spokenPrompt: 'Listen: b - er - d. Which word has I-R in bird?',
       targetSound: 'BIRD',
       soundCue: 'b - er - d',
@@ -1736,7 +1695,6 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 19,
       skillTitle: 'Bossy R: UR',
       instruction: 'Which ocean swimmer uses the bossy R sound /er/ in TURTLE?',
-      spokenPrompt: 'Listen: t - er - t - l. Spell the word you hear!',
       spokenPrompt: 'Listen: t - er - t - l. Which word has U-R in turtle?',
       targetSound: 'TURTLE',
       soundCue: 't - er - t - l',
@@ -2225,7 +2183,6 @@ const LEXICON_EMPIRE_STAGES: Record<number, StageChallenge[]> = {
       soundCue: 'wild uproar and chaotic confusion',
       choices: ['Wild uproar and chaotic confusion', 'Peaceful quiet sanctuary', 'Royal golden banquet', 'Sunlit oceanic voyage'],
       correct: 'Wild uproar and chaotic confusion',
-      explanation: 'Pan (all) + Daimon (spirit) = Wild uproar! Great knowledge unlocked!'
       explanation: 'Pan (all) + Daimon (spirit) = Wild uproar! The Shadow King is defeated and the Golden Phonix is free!'
     }
   ]
@@ -2236,7 +2193,6 @@ const LEXICON_EMPIRE_STAGES: Record<number, StageChallenge[]> = {
 // for any Stage 1..50 across all 5 Lands!
 // -------------------------------------------------------------
 export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: number): StageChallenge => {
-  // Normalize stage number between 1 and 50
   const normalizedStage = Math.max(1, Math.min(50, stageNumber));
 
   if (landId === 'sound-shallows') {
@@ -2245,7 +2201,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       const idx = Math.floor(Math.random() * list.length);
       return list[idx];
     }
-    // Fallback interpolator for any un-keyed index between 1 and 50
     if (normalizedStage <= 15) {
       const fallbackLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P'];
       const targetL = fallbackLetters[(normalizedStage - 1) % fallbackLetters.length];
@@ -2268,7 +2223,7 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       return {
         stageNumber: normalizedStage,
         skillTitle: `2-Letter Blend: ${targetB}`,
-        instruction: `Blend the 2 pure sounds! What word do they form?`,
+        instruction: 'Blend the 2 pure sounds! What word do they form?',
         spokenPrompt: `Blend the sounds to spell: ${targetB}!`,
         targetSound: targetB,
         soundCue: targetB.toLowerCase().split('').join(' - '),
@@ -2304,7 +2259,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       const idx = Math.floor(Math.random() * list.length);
       return list[idx];
     }
-    // Fallback interpolation for tricky trails
     const sights = ['SAID', 'THEY', 'COULD', 'WOULD', 'SHOULD', 'WHERE', 'WERE', 'FRIEND', 'LAUGH', 'PEOPLE', 'WATER', 'ENOUGH', 'THROUGH', 'THOUGHT', 'BEAUTIFUL'];
     const s = sights[(normalizedStage - 1) % sights.length];
     const dist = sights.filter(w => w !== s).sort(() => Math.random() - 0.5).slice(0, 3);
@@ -2329,17 +2283,10 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
         part2: 'ARD',
         choices1: ['BL', 'CL', 'FL', 'GL'],
         choices2: ['ARD', 'ORD', 'ERD', 'URD'],
-        part1: 'I',
-        part2: 'AR',
-        choices1: ['I', 'E', 'O', 'A'],
-        choices2: ['AR', 'OR', 'ER', 'UR'],
         cue: 'b - l - ih - z - ar - d'
       },
       {
         word: 'WINTER',
-        part1: 'W',
-        part2: 'ER',
-        choices1: ['W', 'V', 'R', 'Y'],
         part1: 'IN',
         part2: 'ER',
         choices1: ['IN', 'AN', 'ON', 'UN'],
@@ -2348,9 +2295,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       },
       {
         word: 'THUNDER',
-        part1: 'TH',
-        part2: 'ER',
-        choices1: ['TH', 'CH', 'SH', 'WH'],
         part1: 'UN',
         part2: 'ER',
         choices1: ['UN', 'AN', 'EN', 'IN'],
@@ -2362,18 +2306,11 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
         part1: 'GL',
         part2: 'ER',
         choices1: ['GL', 'CL', 'BL', 'FL'],
-        part1: 'AY',
-        part2: 'ER',
-        choices1: ['AY', 'EE', 'OH', 'IGH'],
         choices2: ['ER', 'AR', 'OR', 'UR'],
         cue: 'g - l - ay - sh - er'
       },
       {
         word: 'HARBOR',
-        part1: 'H',
-        part2: 'AR',
-        choices1: ['H', 'W', 'B', 'P'],
-        choices2: ['AR', 'ER', 'OR', 'UR'],
         part1: 'AR',
         part2: 'OR',
         choices1: ['AR', 'ER', 'IR', 'UR'],
@@ -2382,9 +2319,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       },
       {
         word: 'FREEZING',
-        part1: 'FR',
-        part2: 'ING',
-        choices1: ['FR', 'BR', 'CR', 'GR'],
         part1: 'EE',
         part2: 'ING',
         choices1: ['EE', 'EA', 'AI', 'OA'],
@@ -2393,10 +2327,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       },
       {
         word: 'SNOWMAN',
-        part1: 'SN',
-        part2: 'OW',
-        choices1: ['SN', 'SM', 'ST', 'SP'],
-        choices2: ['OW', 'OA', 'OU', 'OO'],
         part1: 'OW',
         part2: 'AN',
         choices1: ['OW', 'OA', 'OU', 'OO'],
@@ -2405,10 +2335,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       },
       {
         word: 'MOUNTAIN',
-        part1: 'M',
-        part2: 'OU',
-        choices1: ['M', 'N', 'W', 'B'],
-        choices2: ['OU', 'OW', 'OI', 'OY'],
         part1: 'OU',
         part2: 'AIN',
         choices1: ['OU', 'OW', 'OI', 'OY'],
@@ -2417,10 +2343,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       },
       {
         word: 'STARLIGHT',
-        part1: 'ST',
-        part2: 'AR',
-        choices1: ['ST', 'SP', 'SK', 'SL'],
-        choices2: ['AR', 'OR', 'ER', 'UR'],
         part1: 'AR',
         part2: 'IGH',
         choices1: ['AR', 'OR', 'ER', 'UR'],
@@ -2429,10 +2351,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
       },
       {
         word: 'FORTRESS',
-        part1: 'F',
-        part2: 'OR',
-        choices1: ['F', 'P', 'B', 'V'],
-        choices2: ['OR', 'AR', 'ER', 'UR'],
         part1: 'OR',
         part2: 'ESS',
         choices1: ['OR', 'AR', 'ER', 'UR'],

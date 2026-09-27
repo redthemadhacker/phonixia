@@ -9,13 +9,13 @@ import {
   Trash2, Camera, AlertTriangle, Scroll
 } from 'lucide-react';
 
-interface HomeHutModalProps {
+interface IslesOfPlayProps {
   onClose: () => void;
   onOpenCelebration?: () => void;
   onOpenParentPortal?: () => void;
 }
 
-export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCelebration, onOpenParentPortal }) => {
+export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onOpenCelebration, onOpenParentPortal }) => {
   const {
     account,
     activeExplorer,
@@ -145,7 +145,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
       if (deleteExplorer) {
         deleteExplorer(explorerId);
       } else {
-        // Fallback context deletion
         const updatedList = account.explorers.filter(exp => exp.id !== explorerId);
         account.explorers = updatedList;
         localStorage.setItem('phonixia_account_v2', JSON.stringify(account));
@@ -310,7 +309,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-          {/* TAB 1: EXPLORERS (NO LIMIT ON COUNT + DELETE CHILD EXPLORER) */}
+          {/* TAB 1: EXPLORERS */}
           {activeTab === 'explorers' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
@@ -476,7 +475,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                           </span>
                         </div>
 
-                        {/* Delete Single Child Profile Button */}
                         {account.explorers.length > 1 && (
                           <button
                             type="button"

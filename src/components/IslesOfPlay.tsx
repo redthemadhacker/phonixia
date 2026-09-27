@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGame, getCompanionGuide } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { PhonicsLetter } from './PhonicsLetter';
@@ -6,8 +6,8 @@ import { PhonicsWordDisplay } from './PhonicsWordDisplay';
 import { sounds } from '../utils/audio';
 import { ALL_50_MINIGAMES, MinigameDefinition } from '../data/minigamesCurriculum';
 import { 
-  ArrowLeft, ArrowRight, Volume2, RotateCcw, Flame, CheckCircle2, 
-  Coins, Sparkles, Star, Play, ChevronsUp, Compass, Waves
+  ArrowLeft, ArrowRight, Volume2, RotateCcw, 
+  Coins, ChevronsUp, Compass, Waves
 } from 'lucide-react';
 import islesBg from '../../isles.jpeg';
 
@@ -17,10 +17,10 @@ interface IslesOfPlayProps {
 
 export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
   const { activeExplorer, awardCurrency } = useGame();
-  const companionGuide = getCompanionGuide(activeExplorer);
+  const _companionGuide = getCompanionGuide(activeExplorer);
 
   // Isles of Play exclusively houses Games 1 through 25 (Preschool through Late Elementary)
-  const islesGames = React.useMemo(() => {
+  const islesGames = useMemo(() => {
     return ALL_50_MINIGAMES.filter(g => g.hub === 'isles-of-play');
   }, []);
 
@@ -28,14 +28,14 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [scoreStreak, setScoreStreak] = useState(0);
+  const [_scoreStreak, setScoreStreak] = useState(0);
 
-  // Travel & Select on the Island Archipelago (exact layout system like Shellshore Arcade)
+  // Travel & Select on the Island Archipelago
   const [playerIslandNum, setPlayerIslandNum] = useState<number>(1);
   const [hoveredIslandNum, setHoveredIslandNum] = useState<number | null>(null);
   const [isJumping, setIsJumping] = useState<boolean>(false);
   const [jumpOffset, setJumpOffset] = useState<number>(0);
-  const [isSailingToIsland, setIsSailingToIsland] = useState<boolean>(false);
+  const [_isSailingToIsland, setIsSailingToIsland] = useState<boolean>(false);
 
   // Interactive Character & Tool Animation states
   const [playerCol, setPlayerCol] = useState<number>(0);
@@ -90,7 +90,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
     requestAnimationFrame(animateJump);
   }, [isJumping, islesGames, playerIslandNum, launchMinigame]);
 
-  const handleChoiceSelect = (choice: string, choiceIdx?: number) => {
+  const handleChoiceSelect = useCallback((choice: string, _choiceIdx?: number) => {
     if (!activeGame || isAnswered) return;
     setSelectedOption(choice);
     setIsAnswered(true);
@@ -106,9 +106,9 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
       sounds.playError();
       sounds.speak('Try again! Listen closely to the sound!');
     }
-  };
+  }, [activeGame, isAnswered, awardCurrency]);
 
-  // Real Game Action Animation (Whack crab with stick, Catch turtle in net, Slingshot coconut, Pop pearl)
+  // Real Game Action Animation
   const executeToolAction = useCallback((targetCol: number) => {
     if (!activeGame || isAnswered || isActing) return;
 
@@ -151,7 +151,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
       setIsActing(false);
       setActionEffect(null);
     }, 550);
-  }, [activeGame, isAnswered, isActing]);
+  }, [activeGame, isAnswered, isActing, handleChoiceSelect]);
 
   // Keyboard navigation & space bar action in arena
   useEffect(() => {
@@ -224,8 +224,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
             <Waves className="w-3.5 h-3.5 text-cyan-400" />
           </div>
           <h1 className="text-sm sm:text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-yellow-200 to-cyan-300 font-display">
-            Tropical Islands · 25 Action Challenges
-            Preschool · Kindergarten · Elementary Phonics Voyage
+            Tropical Islands · 25 Action Challenges · Preschool to Elementary Phonics Voyage
           </h1>
         </div>
 
@@ -309,11 +308,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                 </div>
 
                 {/* Island Feature Icon */}
-                <span className="text-lg sm:text-2xl filter drop-shadow">
-                  {game.themeIcon}
-                </span>
-
-                {/* Island Feature Icon */}
                 <span className="text-xl sm:text-3xl filter drop-shadow">
                   {game.themeIcon}
                 </span>
@@ -367,8 +361,7 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                     {activeGame.name}
                   </h2>
                   <p className="text-xs text-amber-300 font-medium">
-                    Challenge #{activeGame.gameNum} · {activeGame.skillCategory}
-                    {activeGame.skillCategory} · {activeGame.gradeLevel}
+                    Challenge #{activeGame.gameNum} · {activeGame.skillCategory} · {activeGame.gradeLevel}
                   </p>
                 </div>
               </div>
@@ -431,8 +424,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                           <span className="text-xs text-amber-300 font-mono">💨</span>
                         </div>
                       );
-                    if (name.includes('crab')) {
-                      return <span className="text-2xl sm:text-3xl animate-bounce">🦀</span>;
                     }
                     if (name.includes('turtle')) {
                       return <span className="text-2xl sm:text-3xl animate-pulse">🐢</span>;
@@ -445,7 +436,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                     }
                     if (name.includes('coconut') || name.includes('slingshot')) {
                       return <span className="text-2xl sm:text-3xl animate-bounce">🥥🪵</span>;
-                      return <span className="text-2xl sm:text-3xl animate-bounce">🥥</span>;
                     }
                     return <span className="text-2xl sm:text-3xl animate-bounce">{activeGame.themeIcon}</span>;
                   };
@@ -460,6 +450,10 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                             ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
                             : isSelected && !isCorrect
                             ? 'bg-rose-900/90 border-rose-400 text-rose-200 animate-shake'
+                            : isCorrectChoice
+                            ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
+                            : isSelected
+                            ? 'bg-rose-900/90 border-rose-400 text-rose-200'
                             : 'bg-slate-950/70 border-slate-800 text-slate-600 opacity-40'
                           : isPlayerStandingHere
                           ? isLilypadGame
@@ -467,13 +461,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                             : 'bg-emerald-950/90 border-amber-300 ring-2 ring-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.8)] scale-105'
                           : isLilypadGame
                           ? 'bg-emerald-950/70 border-emerald-500/60 hover:border-emerald-300 text-slate-100 shadow-md'
-                          ? isCorrectChoice
-                            ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
-                            : isSelected
-                            ? 'bg-rose-900/90 border-rose-400 text-rose-200'
-                            : 'bg-slate-950/70 border-slate-800 text-slate-600 opacity-40'
-                          : isPlayerStandingHere
-                          ? 'bg-emerald-950/90 border-amber-300 ring-2 ring-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.8)] scale-105'
                           : 'bg-slate-950/85 border-emerald-400/60 hover:border-amber-300 text-slate-100 shadow-md'
                       }`}
                     >
@@ -518,7 +505,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                   }}
                   className="absolute bottom-1 flex flex-col items-center pointer-events-none"
                 >
-                  {/* Held Tool (Whack Stick, Catch Net, Slingshot, Pearl Wand) */}
                   <div className="relative">
                     <AvatarRenderer customization={activeExplorer.customization} size={46} showPet={false} />
                     
@@ -542,16 +528,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                         '🤿'
                       ) : (
                         '⚡'
-                      {activeGame.mechanicType === 'whack' || activeGame.name.toLowerCase().includes('crab') ? (
-                        '🏏'
-                      ) : activeGame.mechanicType === 'basket-catch' || activeGame.name.toLowerCase().includes('turtle') || activeGame.name.toLowerCase().includes('butterfly') ? (
-                        '🕸️'
-                      ) : activeGame.mechanicType === 'slingshot' ? (
-                        '🏹'
-                      ) : activeGame.mechanicType === 'bubble-pop' ? (
-                        '🫧'
-                      ) : (
-                        '🔨'
                       )}
                     </div>
                   </div>
@@ -593,14 +569,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                     ? '🥥 LAUNCH COCONUT (SPACE)'
                     : activeGame.mechanicType === 'bubble-pop'
                     ? '🫧 DIVE & POP PEARL (SPACE)'
-                  {activeGame.mechanicType === 'whack' || activeGame.name.toLowerCase().includes('crab')
-                    ? '🏏 WHACK TARGET (SPACE)'
-                    : activeGame.mechanicType === 'basket-catch' || activeGame.name.toLowerCase().includes('turtle') || activeGame.name.toLowerCase().includes('butterfly')
-                    ? '🕸️ NET CATCH (SPACE)'
-                    : activeGame.mechanicType === 'slingshot'
-                    ? '🏹 LAUNCH SLINGSHOT (SPACE)'
-                    : activeGame.mechanicType === 'bubble-pop'
-                    ? '🫧 POP PEARL (SPACE)'
                     : '⚡ STRIKE TARGET (SPACE)'}
                 </span>
               </button>
@@ -635,9 +603,6 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
                     Listen closely and try again!
                   </p>
                 )}
-                <p className="text-xs sm:text-sm font-medium text-slate-200">
-                  {activeGame.explanation}
-                </p>
                 <div className="flex items-center justify-center gap-3 pt-1">
                   {!isCorrect ? (
                     <button

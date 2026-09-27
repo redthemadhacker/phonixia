@@ -426,22 +426,16 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         onSelectChoice(choice);
       }
     } else {
-<<<<<<< HEAD
       // Wrong choice in boss combat: boss absorbs dark energy & regains 15% life source!
       // NEVER defeat boss or finish battle on a wrong answer!
-=======
       // Wrong choice: gives life force back to boss or shadow king!
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       setBossHp((prev) => Math.min(100, prev + 15));
       setBossDamageFlash(true);
       setTimeout(() => setBossDamageFlash(false), 300);
       sounds.playDamage();
       sounds.speak(`Miss! The ${bossDef.bossName} absorbs dark energy and restored 15% life force! Strike again!`);
-<<<<<<< HEAD
       // Do not end boss battle! Battle continues!
-=======
       onSelectChoice(choice);
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     }
   }, [displayedQuestion, isBossStage, bossHp, bossDef, bossSubCount, landId, activeGameIndex, isFinalBoss, onSelectChoice]);
 
@@ -597,11 +591,8 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               setTimeout(() => setWhisperingNotice(null), 3000);
             } else {
               sounds.playError();
-<<<<<<< HEAD
               setWhisperingNotice('❄️ Wipeout! Steer carefully and try carving the first sound again!');
-=======
               setWhisperingNotice(`❄️ Wipeout! Try carving the first sound again: [${whisperingConfig.part1}]!`);
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
               setTimeout(() => setWhisperingNotice(null), 2500);
             }
           } else {
@@ -611,11 +602,8 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               handleAnswerEvaluation(targetChoice);
             } else {
               sounds.playError();
-<<<<<<< HEAD
               setWhisperingNotice('❄️ Wipeout on Gate 2! Steer into the second sound gate!');
-=======
               setWhisperingNotice(`❄️ Wipeout on Gate 2! Steer into sound: [${whisperingConfig.part2}]!`);
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
               setTimeout(() => setWhisperingNotice(null), 2500);
             }
           }
@@ -767,20 +755,15 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         </div>
 
-<<<<<<< HEAD
         {/* Big, Clear, Kid-Friendly Audio Prompt with NO giveaways or hints */}
         <div className="space-y-2 px-2 text-center">
-=======
         {/* Big, Clear, Kid-Friendly Phonics Instruction */}
         <div className="space-y-1.5 px-2">
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
           <p className="text-sm sm:text-base md:text-lg text-amber-100 font-black leading-snug break-words">
             {displayedQuestion.instruction}
           </p>
 
-<<<<<<< HEAD
           <div className="flex justify-center items-center py-1">
-=======
           <div className="inline-flex items-center gap-3 bg-slate-950/90 border-2 border-amber-400 px-5 py-2 rounded-2xl shadow-inner">
             {/* Illustrated animal letters for Sound Shallows & Builders Guild */}
             {landId === 'sound-shallows' || landId === 'builders-guild' ? (
@@ -790,12 +773,10 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                 {sanitizedTargetSound}
               </span>
             )}
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
             <button
               type="button"
               title="Hear instruction and sound again"
               onClick={() => {
-<<<<<<< HEAD
                 const promptText = displayedQuestion.instruction || displayedQuestion.spokenPrompt || 'Listen closely!';
                 sounds.speak(promptText);
               }}
@@ -804,14 +785,12 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               <Volume2 className="w-5 h-5 animate-pulse" />
               <span>Tap to Hear Sound Again</span>
               <span className="text-base">🔊</span>
-=======
                 const promptText = displayedQuestion.instruction || displayedQuestion.spokenPrompt;
                 sounds.speak(promptText);
               }}
               className="p-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-400/50 cursor-pointer active:scale-90 transition-transform"
             >
               <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" />
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
             </button>
           </div>
         </div>
@@ -878,17 +857,14 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
             {/* Target Word Stacking Pedestal */}
             <div className="absolute top-2 left-4 z-20 bg-slate-950/90 border-2 border-amber-400 p-2.5 rounded-2xl text-left shadow-xl min-w-[130px]">
               <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">
-<<<<<<< HEAD
                 Word Tower ({targetBuilderWord.length} Letters):
               </div>
               <div className="text-lg sm:text-xl font-black text-white font-mono tracking-widest">
                 {Array.from({ length: targetBuilderWord.length }).map((_, i) => builderStack[i] || '_').join(' ')}
-=======
                 Target Word:
               </div>
               <div className="text-lg sm:text-xl font-black text-white font-mono tracking-wider">
                 {targetBuilderWord}
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
               </div>
 
               {/* Vertical Stacking Tower Display */}

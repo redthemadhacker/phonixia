@@ -6,15 +6,12 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
-<<<<<<< HEAD
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"
-=======
     "lint": "tsc --noEmit",
     "heroku-postbuild": "npm run build",
     "start": "tsx server.ts"
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -31,7 +28,6 @@
     "vite": "^8.3.0"
   },
   "devDependencies": {
-<<<<<<< HEAD
     "@types/node": "^22.14.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -41,7 +37,6 @@
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",
     "@types/express": "^4.17.21"
-=======
     "@types/canvas-confetti": "^1.9.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -53,6 +48,5 @@
     "tailwindcss": "^3.4.4",
     "typescript": "^5.2.2",
     "vite": "^8.3.1"
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
   }
 }

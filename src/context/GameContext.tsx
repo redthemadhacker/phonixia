@@ -66,6 +66,7 @@ interface GameContextType {
   importSaveData: (jsonStr: string) => boolean;
   logout: () => void;
   recordGameCompletion: (landId: LandId, levelNumber: number, gameNumber: number, stars: number, score: number, isWin: boolean) => void;
+  recordSkillMiss: (skillName: string) => void;
 }
 
 const DEFAULT_LAND_SCORES = {
@@ -92,6 +93,7 @@ export const KAM_GUIDE: ExplorerProfile = {
   isHallOfFameInducted: false,
   timesStorylineCompleted: 0,
   landScores: getFreshLandScores(),
+  strugglingSkills: {},
   customization: {
     skinTone: '#fcd5b5',
     hairStyle: 'curls',
@@ -118,6 +120,7 @@ export const CELINE_GUIDE: ExplorerProfile = {
   isHallOfFameInducted: false,
   timesStorylineCompleted: 0,
   landScores: getFreshLandScores(),
+  strugglingSkills: {},
   customization: {
     skinTone: '#d99058',
     hairStyle: 'curls',
@@ -157,6 +160,7 @@ const FALLBACK_EXPLORER: ExplorerProfile = {
     'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
     'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
   },
+  strugglingSkills: {},
   customization: {
     skinTone: '#fcd5b5',
     hairStyle: 'curls',
@@ -195,6 +199,7 @@ const INITIAL_ACCOUNT: Account = {
         'whispering-peaks': { completedGamesCount: 50, stars: 150, unlocked: true },
         'lexicon-empire': { completedGamesCount: 50, stars: 150, unlocked: true }
       },
+      strugglingSkills: {},
       customization: {
         skinTone: '#d99058',
         hairStyle: 'curls',
@@ -227,6 +232,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             if (!exp.landScores) {
               exp.landScores = getFreshLandScores();
+            }
+            if (!exp.strugglingSkills) {
+              exp.strugglingSkills = {};
             }
             LAND_ORDER.forEach((landId, idx) => {
               if (!exp.landScores[landId]) {
@@ -299,6 +307,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...rawExplorer,
       gender: rawExplorer.gender || 'boy',
       companionGuide: rawExplorer.gender === 'girl' ? 'celine' : 'kam',
+      strugglingSkills: rawExplorer.strugglingSkills || {},
       landScores: {
         ...DEFAULT_LAND_SCORES,
         ...(rawExplorer.landScores || {}),
@@ -363,6 +372,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
 
+  const recordSkillMiss = useCallback((skillName: string) => {
+    if (!skillName) return;
+    setAccount((prev) => ({
+      ...prev,
+      explorers: (prev.explorers || []).map((exp) => {
+        if (exp.id !== activeExplorerId) return exp;
+        const currentStruggles = exp.strugglingSkills || {};
+        return {
+          ...exp,
+          strugglingSkills: {
+            ...currentStruggles,
+            [skillName]: (currentStruggles[skillName] || 0) + 1
+          }
+        };
+      })
+    }));
+
+    // LocalStorage fallback for parent dashboard resilience
+    try {
+      const storageKey = `phonixia_struggles_${activeExplorerId}`;
+      const existing = localStorage.getItem(storageKey);
+      const parsed: Record<string, number> = existing ? JSON.parse(existing) : {};
+      parsed[skillName] = (parsed[skillName] || 0) + 1;
+      localStorage.setItem(storageKey, JSON.stringify(parsed));
+    } catch {}
+  }, [activeExplorerId]);
+
   const loginWithCredentials = (u: string, p: string): boolean => {
     const cleanUser = u.trim().toLowerCase();
     fetch('/api/auth/login', {
@@ -411,6 +447,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isHallOfFameInducted: false,
       timesStorylineCompleted: 0,
       landScores: getFreshLandScores(),
+      strugglingSkills: {},
       customization: {
         skinTone: starterGender === 'boy' ? '#fcd5b5' : '#d99058',
         hairStyle: 'curls',
@@ -462,6 +499,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isHallOfFameInducted: false,
       timesStorylineCompleted: 0,
       landScores: getFreshLandScores(),
+      strugglingSkills: {},
       customization: {
         skinTone: explorerGender === 'boy' ? '#fcd5b5' : '#d99058',
         hairStyle: 'curls',
@@ -576,6 +614,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           level: 1,
           isHallOfFameInducted: false,
           landScores: getFreshLandScores(),
+          strugglingSkills: {},
           customization: {
             ...exp.customization,
             title: exp.gender === 'boy' ? 'Adventurer with Kam' : 'Adventurer with Celine'
@@ -600,7 +639,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         arcadeTokens: 10,
         isHallOfFameInducted: false,
         timesStorylineCompleted: 0,
-        landScores: getFreshLandScores()
+        landScores: getFreshLandScores(),
+        strugglingSkills: {}
       }));
 
       return {
@@ -712,7 +752,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         exportSaveData,
         importSaveData,
         logout,
-        recordGameCompletion
+        recordGameCompletion,
+        recordSkillMiss
       }}
     >
       {children}

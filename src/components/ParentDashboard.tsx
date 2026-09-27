@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { PHONIXIA_LANDS } from '../data/curriculumData';
+import { ALL_50_MINIGAMES } from '../data/minigamesCurriculum';
 import { ExplorerProfile } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
-import { Users, UserPlus, Star, Trophy, BarChart3, Printer, LogOut, ArrowLeft, Palette, ChevronDown, ChevronUp, RotateCcw, Award, KeyRound, ShieldCheck } from 'lucide-react';
+import { 
+  Users, UserPlus, Star, Trophy, BarChart3, Printer, LogOut, 
+  ArrowLeft, Palette, ChevronDown, ChevronUp, RotateCcw, Award, 
+  AlertCircle, Sparkles, CheckCircle2, Play
+} from 'lucide-react';
 
 interface ParentDashboardProps {
   onClose: () => void;
@@ -26,7 +31,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   const [isHallOfFameExpanded, setIsHallOfFameExpanded] = useState(false);
 
   const [currentPin, setCurrentPin] = useState<string>(() => {
-    return account.parentPin || localStorage.getItem('phonixia_parent_pin') || '1234';
+    return (account as any).parentPin || localStorage.getItem('phonixia_parent_pin') || '1234';
   });
   const [newPinInput, setNewPinInput] = useState('');
   const [pinSaveMessage, setPinSaveMessage] = useState<string | null>(null);
@@ -46,7 +51,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     }
   };
 
-  // Deduplicated roster: an explorer is only included once by their unique profile ID
   const hallOfFameExplorers = account.explorers.filter((exp) => {
     const scores = Object.values(exp.landScores) as { completedGamesCount?: number }[];
     const totalCompleted = scores.reduce<number>(
@@ -87,6 +91,20 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
     if (onOpenAuthModal) onOpenAuthModal();
   };
 
+  // Helper to extract recorded skill struggles from localStorage or state
+  const rawStruggles: Record<string, number> = (activeExplorer as any).strugglingSkills || (() => {
+    try {
+      const stored = localStorage.getItem(`phonixia_struggles_${activeExplorer.id}`);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  })();
+
+  const struggleList = Object.entries(rawStruggles)
+    .filter(([_, count]) => count >= 2)
+    .sort((a, b) => b[1] - a[1]);
+
   const isEligibleToReset =
     activeExplorer.isHallOfFameInducted ||
     (activeExplorer.timesStorylineCompleted && activeExplorer.timesStorylineCompleted > 0) ||
@@ -104,6 +122,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md"
     >
       <div className="relative w-full max-w-4xl bg-slate-900 border-2 border-amber-500/50 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
+        
         {/* Header */}
         <div className="px-6 py-4 bg-slate-950/95 border-b border-amber-900/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -112,7 +131,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             </span>
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-100 font-display flex items-center gap-2">
-                <span>Home Hut · Parent & Educator Hub</span>
+                <span>Home Hut · Parent &amp; Educator Hub</span>
               </h2>
               <p className="text-xs text-slate-400">
                 Current Account: <b className="text-amber-400">{account.familyName}</b> (@{account.username})
@@ -139,7 +158,84 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
 
         {/* Content Body */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
-          {/* EXPANDABLE DEDUPLICATED HALL OF FAME BANNER */}
+          
+          {/* SKILL MASTERY & STRUGGLE DIAGNOSTICS CARD */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-950/50 via-slate-950 to-indigo-950/50 border-2 border-indigo-400/50 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-400/30">
+                  <AlertCircle className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-sm font-black text-indigo-200 uppercase tracking-wide">
+                    Areas Needing Practice ({activeExplorer.name})
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Targeted insights on recurring missed questions and recommended practice games
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-indigo-950 border border-indigo-400/40 text-indigo-300 font-bold">
+                {struggleList.length} Active Target{struggleList.length === 1 ? '' : 's'}
+              </span>
+            </div>
+
+            {struggleList.length === 0 ? (
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-center space-y-1">
+                <div className="flex items-center justify-center gap-1 text-emerald-400 font-bold text-xs">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>No Recurring Difficulties Detected!</span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  {activeExplorer.name} is making steady progress without repeated missed questions across current stages.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                {struggleList.map(([skill, missCount]) => {
+                  const recommendedMinigame = ALL_50_MINIGAMES.find((g) =>
+                    g.skillCategory.toLowerCase().includes(skill.toLowerCase()) ||
+                    skill.toLowerCase().includes(g.targetSoundOrWord.toLowerCase())
+                  ) || ALL_50_MINIGAMES[0];
+
+                  return (
+                    <div
+                      key={skill}
+                      className="p-3 rounded-xl bg-slate-900/90 border border-indigo-500/30 flex flex-col justify-between space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="text-xs font-black text-rose-300 flex items-center gap-1">
+                            <span>⚠️ {skill}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            Missed {missCount} times across recent rounds
+                          </div>
+                        </div>
+                        <span className="text-[9px] px-2 py-0.5 rounded bg-rose-950/80 border border-rose-500/40 text-rose-300 font-mono font-bold">
+                          Needs Practice
+                        </span>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="text-base">{recommendedMinigame.themeIcon}</span>
+                          <span className="text-amber-300 font-bold truncate">
+                            {recommendedMinigame.name} (#{recommendedMinigame.gameNum})
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-cyan-300 font-mono font-bold shrink-0 ml-2">
+                          {recommendedMinigame.hub === 'isles-of-play' ? 'Isles of Play' : 'Arcade'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* DEDUPLICATED HALL OF FAME BANNER */}
           <div className="rounded-3xl border-2 border-amber-400/70 bg-gradient-to-r from-amber-950/70 via-slate-900 to-amber-950/70 shadow-2xl overflow-hidden transition-all duration-300">
             <div
               onClick={() => {
@@ -162,7 +258,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5">
-                    Permanent Honor Roll. Explorers earn their place among the Eternal Flamekeepers upon defeating the Shadow King, rescuing the Golden Phonix, and saving Phonixia!
+                    Permanent Honor Roll. Explorers earn their place upon completing the questline.
                   </p>
                 </div>
               </div>
@@ -179,9 +275,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   <div className="text-center py-8 text-slate-400 text-xs space-y-2">
                     <Trophy className="w-10 h-10 mx-auto text-amber-500/40 animate-pulse" />
                     <p className="font-bold text-slate-200 text-sm">No champions yet!</p>
-                    <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
-                      Complete all 5 realms with Maya or any explorer to induct your first student!
-                    </p>
                   </div>
                 ) : (
                   <div className="max-h-72 overflow-y-auto pr-2 space-y-2.5">
@@ -203,9 +296,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-black text-amber-200">{exp.name}</span>
-                                <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-400 text-slate-950">
-                                  Grand Scholar
-                                </span>
                                 {loops > 0 && (
                                   <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 flex items-center gap-1">
                                     <Award className="w-2.5 h-2.5" />
@@ -213,21 +303,14 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[11px] text-slate-400">
-                                Permanent Eternal Flamekeeper · Savior of the Golden Phonix
-                              </div>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-3 font-mono text-xs text-right">
-                            <div>
-                              <div className="text-amber-400 font-black flex items-center justify-end gap-1 text-sm">
-                                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                                <span>{exp.totalStars}</span>
-                              </div>
-                              <div className="text-[10px] text-slate-400">Current Run Stars</div>
+                            <div className="text-amber-400 font-black flex items-center justify-end gap-1 text-sm">
+                              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                              <span>{exp.totalStars}</span>
                             </div>
-                            <span className="text-2xl">🎖️</span>
                           </div>
                         </div>
                       );
@@ -251,14 +334,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
                     Active Explorer
                   </span>
-                  {activeExplorer.isHallOfFameInducted && (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase">
-                      🏆 Eternal Flamekeeper
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-slate-400 mt-0.5">
-                  Title: <span className="text-slate-200">{activeExplorer.customization.title}</span> · Companion: <span className="capitalize text-slate-200">{activeExplorer.customization.companionPet.replace('-', ' ')}</span>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-mono mt-1 text-amber-300">
                   <span>★ {activeExplorer.totalStars} Stars</span>
@@ -272,7 +347,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
               {isEligibleToReset && (
                 <button
                   onClick={() => {
-                    if (window.confirm(`Restart ${activeExplorer.name}'s story from Level 1? Your spot among the Eternal Flamekeepers is permanent and will NEVER be removed.`)) {
+                    if (window.confirm(`Restart ${activeExplorer.name}'s story from Level 1? Your spot among the Eternal Flamekeepers is permanent.`)) {
                       resetExplorerProgress(activeExplorer.id);
                       sounds.playFanfare();
                       sounds.speak(`Story restarted for ${activeExplorer.name}! Welcome back to Sound Shallows!`);
@@ -281,7 +356,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-rose-950/80 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Restart Storyline (New Game+)</span>
+                  <span>Restart Storyline</span>
                 </button>
               )}
 
@@ -300,7 +375,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
             </div>
           </div>
 
-          {/* YOUTUBE KIDS STYLE 4-DIGIT QUICK PIN CONFIGURATION */}
+          {/* QUICK PIN CONFIGURATION */}
           <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/40 border-2 border-amber-500/50 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -310,12 +385,9 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 <div>
                   <div className="text-sm font-black text-amber-300 uppercase tracking-wide flex items-center gap-2">
                     <span>Parent &amp; Teacher Quick PIN</span>
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-400/40">
-                      YOUTUBE KIDS STYLE
-                    </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5">
-                    Configure a shorter 4-digit PIN for instant access to student stats without needing full account passwords.
+                    Configure a 4-digit PIN for instant access to student stats without full account passwords.
                   </p>
                 </div>
               </div>
@@ -389,16 +461,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       onChange={(e) => setNewKidAge(e.target.value as ExplorerProfile['ageTier'])}
                       className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-slate-100 focus:outline-none focus:border-amber-400"
                     >
-                      <option value="preschool">Sound Shallows (Letter Sounds & Rhymes)</option>
-                      <option value="kindergarten">Builders Guild (Word Building & Blending)</option>
-                      <option value="early-elementary">Tricky Trails (Silent E & Phonics Paths)</option>
-                      <option value="late-elementary">Whispering Peaks (Vowel Teams & Syllables)</option>
-                      <option value="middle-high">Lexicon Empire (Greek/Latin Roots & Rules)</option>
+                      <option value="preschool">Sound Shallows (Letter Sounds &amp; Rhymes)</option>
+                      <option value="kindergarten">Builders Guild (Word Building &amp; Blending)</option>
+                      <option value="early-elementary">Tricky Trails (Silent E &amp; Phonics Paths)</option>
+                      <option value="late-elementary">Whispering Peaks (Vowel Teams &amp; Syllables)</option>
+                      <option value="middle-high">Lexicon Empire (Greek/Latin Roots &amp; Rules)</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Explorer Gender & Companion Guide */}
                 <div className="space-y-1">
                   <label className="text-[11px] text-slate-400 block">Explorer Gender &amp; Companion</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -471,7 +542,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-extrabold text-slate-100 truncate">{exp.name}</span>
                         {isActive ? (
-                          <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded-full">
+                          <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded-full">
                             Playing Now
                           </span>
                         ) : (
@@ -501,9 +572,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   <BarChart3 className="w-4 h-4 text-amber-400" />
                   <span>Synced Land Scores for Explorer {activeExplorer.name}</span>
                 </h3>
-                <p className="text-xs text-slate-400">
-                  Scores update and sync automatically as games are completed
-                </p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -536,9 +604,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                         <div>
                           <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
                             <span>{land.name}</span>
-                          </div>
-                          <div className="text-[11px] text-slate-400">
-                            {land.levels[0]?.skillFocus} through {land.levels[4]?.skillFocus}
                           </div>
                         </div>
                       </div>

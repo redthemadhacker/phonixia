@@ -51,6 +51,8 @@ export interface ExplorerProfile {
   customization: AvatarCustomization;
   gender?: 'boy' | 'girl';
   companionGuide?: 'kam' | 'celine';
+  // Tracks recurring missed skills/concepts for Parent Dashboard & Practice Recommendations:
+  strugglingSkills?: Record<string, number>;
 }
 
 export interface Account {

@@ -6,9 +6,10 @@ import { PhonicsWordDisplay } from './PhonicsWordDisplay';
 import { sounds } from '../utils/audio';
 import { HallOfFameCelebration } from './HallOfFameCelebration';
 import { getComprehensiveStageChallenge } from '../data/comprehensiveCurriculum';
+import { ALL_50_MINIGAMES, MinigameDefinition } from '../data/minigamesCurriculum';
 import { 
   ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Star, Volume2, 
-  RotateCcw, ChevronsUp, Flame, Undo2, RefreshCw
+  RotateCcw, ChevronsUp, Flame, Undo2, RefreshCw, Gamepad2
 } from 'lucide-react';
 
 export interface GameQuestion {
@@ -50,6 +51,7 @@ interface ActivePlayableStageProps {
   onTryAgain: () => void;
   onNextLevel?: () => void;
   onClose: () => void;
+  onOpenMinigamePractice?: (minigame: MinigameDefinition) => void;
 }
 
 export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
@@ -69,7 +71,8 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   onFinishRound,
   onTryAgain,
   onNextLevel,
-  onClose
+  onClose,
+  onOpenMinigamePractice
 }) => {
   // BOSS ENCOUNTERS ARE EXCLUSIVELY IN LEXICON EMPIRE
   const isBossStage = landId === 'lexicon-empire';
@@ -127,14 +130,55 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   // Active question state for continuous multi-hit combat
   const [activeCombatQ, setActiveCombatQ] = useState<GameQuestion>(currentQuestion);
 
+  // Miss count tracker for persistent difficulty diagnosis
+  const [currentQuestionMissCount, setCurrentQuestionMissCount] = useState<number>(0);
+
   useEffect(() => {
     setActiveCombatQ(currentQuestion);
     setBossHp(100);
     setShowDeathCeremony(false);
     setBossSubCount(0);
+    setCurrentQuestionMissCount(0);
   }, [currentQuestion, activeGameIndex]);
 
   const displayedQuestion = isBossStage ? activeCombatQ : currentQuestion;
+
+  // Find best matching minigame based on current question sound or concept
+  const recommendedMinigame = useMemo(() => {
+    const rawTarget = (displayedQuestion.targetSound || displayedQuestion.correct || '').toUpperCase();
+    const instruction = (displayedQuestion.instruction || '').toUpperCase();
+
+    const matched = ALL_50_MINIGAMES.find((m) => {
+      const cat = m.skillCategory.toUpperCase();
+      const sound = m.targetSoundOrWord.toUpperCase();
+      return (
+        cat.includes(rawTarget) ||
+        sound.includes(rawTarget) ||
+        rawTarget.includes(cat) ||
+        instruction.includes(cat)
+      );
+    });
+
+    if (matched) return matched;
+
+    // Fallback based on realm theme
+    if (landId === 'sound-shallows') return ALL_50_MINIGAMES[0];
+    if (landId === 'builders-guild') return ALL_50_MINIGAMES[6];
+    if (landId === 'tricky-trails') return ALL_50_MINIGAMES[15];
+    if (landId === 'whispering-peaks') return ALL_50_MINIGAMES[18];
+    return ALL_50_MINIGAMES[25];
+  }, [displayedQuestion, landId]);
+
+  // Helper to persist struggle data for Parent Dashboard
+  const registerSkillMiss = useCallback((skillName: string) => {
+    try {
+      const storageKey = `phonixia_struggles_${activeExplorer.id}`;
+      const existing = localStorage.getItem(storageKey);
+      const parsed: Record<string, number> = existing ? JSON.parse(existing) : {};
+      parsed[skillName] = (parsed[skillName] || 0) + 1;
+      localStorage.setItem(storageKey, JSON.stringify(parsed));
+    } catch {}
+  }, [activeExplorer.id]);
 
   // Swimming animation clock & position (Sound Shallows)
   const [_swimCycle, setSwimCycle] = useState(0);
@@ -167,7 +211,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   const [whisperingPart1, setWhisperingPart1] = useState<string | null>(null);
   const [whisperingNotice, setWhisperingNotice] = useState<string | null>(null);
 
-  // Reset Whispering Peaks slalom steps on stage change
   useEffect(() => {
     setWhisperingStep(1);
     setWhisperingPart1(null);
@@ -232,13 +275,11 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return (displayedQuestion.builderTarget || displayedQuestion.correct || '').toUpperCase();
   }, [displayedQuestion]);
 
-  // Reset Builder Stack when stage changes
   useEffect(() => {
     setBuilderStack([]);
     setBuilderWrongNotice(null);
   }, [displayedQuestion, activeGameIndex]);
 
-  // Read off instructions aloud on game startup automatically
   useEffect(() => {
     sounds.stopSpeech();
     const promptText = displayedQuestion.instruction || displayedQuestion.spokenPrompt || 'Listen closely!';
@@ -248,7 +289,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return () => clearTimeout(timer);
   }, [displayedQuestion, activeGameIndex]);
 
-  // Continuous swimming animation loop
   useEffect(() => {
     let frame: number;
     const animate = () => {
@@ -261,7 +301,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return () => cancelAnimationFrame(frame);
   }, [landId]);
 
-  // Vine swinging pendulum oscillation when idle
   useEffect(() => {
     let frame: number;
     let t = 0;
@@ -278,7 +317,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return () => cancelAnimationFrame(frame);
   }, [landId, vinePlayerState]);
 
-  // Movement loop for arena characters
   useEffect(() => {
     let animId: number;
     const tick = () => {
@@ -368,6 +406,16 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   const handleAnswerEvaluation = useCallback((choice: string) => {
     const isCorrectHit = choice.trim().toLowerCase() === displayedQuestion.correct.trim().toLowerCase();
 
+    if (!isCorrectHit) {
+      const nextMiss = currentQuestionMissCount + 1;
+      setCurrentQuestionMissCount(nextMiss);
+      registerSkillMiss(displayedQuestion.targetSound || displayedQuestion.correct || 'General Phonics');
+
+      if (nextMiss >= 2) {
+        sounds.speak(`Stuck on this sound? Try practicing ${recommendedMinigame.name} in the minigame arcade!`);
+      }
+    }
+
     if (!isBossStage) {
       onSelectChoice(choice);
       return;
@@ -412,7 +460,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
       sounds.speak(`Miss! The ${bossDef.bossName} absorbs dark energy and restored 15% life force! Strike again!`);
       onSelectChoice(choice);
     }
-  }, [displayedQuestion, isBossStage, bossHp, bossDef, bossSubCount, landId, activeGameIndex, isFinalBoss, onSelectChoice]);
+  }, [displayedQuestion, isBossStage, bossHp, bossDef, bossSubCount, landId, activeGameIndex, isFinalBoss, onSelectChoice, currentQuestionMissCount, registerSkillMiss, recommendedMinigame]);
 
   // 1. Sound Shallows
   const triggerSwimStroke = useCallback((choiceOverride?: string) => {
@@ -468,11 +516,14 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         }
       } else {
         sounds.playDamage();
+        const nextMiss = currentQuestionMissCount + 1;
+        setCurrentQuestionMissCount(nextMiss);
+        registerSkillMiss(targetBuilderWord);
         setBuilderWrongNotice('Oops! That is not the right letter! Try again!');
         sounds.speak('Try again! Listen closely to the sound!');
       }
     }, 380);
-  }, [isAnswered, isHoisting, targetBuilderWord, builderStack, handleAnswerEvaluation]);
+  }, [isAnswered, isHoisting, targetBuilderWord, builderStack, handleAnswerEvaluation, currentQuestionMissCount, registerSkillMiss]);
 
   // 3. Tricky Trails
   const triggerVineLeap = useCallback((choiceOverride?: string) => {
@@ -558,6 +609,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               setTimeout(() => setWhisperingNotice(null), 3000);
             } else {
               sounds.playError();
+              const nextMiss = currentQuestionMissCount + 1;
+              setCurrentQuestionMissCount(nextMiss);
+              registerSkillMiss(whisperingConfig.part1);
               setWhisperingNotice(`❄️ Wipeout! Try carving the first sound again: [${whisperingConfig.part1}]!`);
               setTimeout(() => setWhisperingNotice(null), 2500);
             }
@@ -567,6 +621,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               handleAnswerEvaluation(targetChoice);
             } else {
               sounds.playError();
+              const nextMiss = currentQuestionMissCount + 1;
+              setCurrentQuestionMissCount(nextMiss);
+              registerSkillMiss(whisperingConfig.part2);
               setWhisperingNotice(`❄️ Wipeout on Gate 2! Steer into sound: [${whisperingConfig.part2}]!`);
               setTimeout(() => setWhisperingNotice(null), 2500);
             }
@@ -576,7 +633,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         }
       }, 350);
     }, 400);
-  }, [isAnswered, isSnowboardSliding, activeWhisperingChoices, getClosestChoiceIndex, snowboardX, whisperingConfig, whisperingStep, handleAnswerEvaluation]);
+  }, [isAnswered, isSnowboardSliding, activeWhisperingChoices, getClosestChoiceIndex, snowboardX, whisperingConfig, whisperingStep, handleAnswerEvaluation, currentQuestionMissCount, registerSkillMiss]);
 
   // 5. Lexicon Empire
   const triggerChariotLaser = useCallback((choiceOverride?: string) => {
@@ -748,6 +805,38 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
             </div>
           </div>
         </div>
+
+        {/* REPEATED MISS PRACTICE RECOMMENDATION BANNER */}
+        {currentQuestionMissCount >= 2 && (
+          <div className="mx-2 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-amber-950 via-slate-950 to-indigo-950 border-2 border-amber-400 shadow-xl flex flex-wrap items-center justify-between gap-2 animate-bounce-gentle">
+            <div className="flex items-center gap-2 text-left">
+              <span className="text-2xl p-1.5 rounded-xl bg-amber-500/20 border border-amber-400/50">
+                {recommendedMinigame.themeIcon}
+              </span>
+              <div>
+                <div className="text-xs sm:text-sm font-black text-amber-300 flex items-center gap-1.5">
+                  <Gamepad2 className="w-4 h-4 text-cyan-400" />
+                  <span>Struggling with this sound? Practice in: {recommendedMinigame.name}</span>
+                </div>
+                <div className="text-[10px] sm:text-xs text-slate-300">
+                  Target Minigame #{recommendedMinigame.gameNum} · {recommendedMinigame.skillCategory} ({recommendedMinigame.hub === 'isles-of-play' ? 'Isles of Play' : 'Arcade'})
+                </div>
+              </div>
+            </div>
+
+            {onOpenMinigamePractice && (
+              <button
+                onClick={() => {
+                  sounds.stopSpeech();
+                  onOpenMinigamePractice(recommendedMinigame);
+                }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 cursor-pointer transition-transform"
+              >
+                Practice Minigame ➔
+              </button>
+            )}
+          </div>
+        )}
 
         {/* 1. SOUND SHALLOWS */}
         {landId === 'sound-shallows' && (

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Account, ExplorerProfile, LandId } from '../types/character';
 
 export const LAND_ORDER: LandId[] = [
@@ -9,13 +9,19 @@ export const LAND_ORDER: LandId[] = [
   'lexicon-empire',
 ];
 
-export const isLandUnlocked = (arg1: any, arg2?: any): boolean => {
-  const landId: LandId = (typeof arg1 === 'string' ? arg1 : typeof arg2 === 'string' ? arg2 : '') as LandId;
-  const scores = (typeof arg1 === 'object' && arg1 !== null)
-    ? (arg1.landScores || arg1)
-    : (typeof arg2 === 'object' && arg2 !== null ? (arg2.landScores || arg2) : null);
+export const isLandUnlocked = (
+  arg1: LandId | ExplorerProfile | Record<string, any>,
+  arg2?: Record<string, any> | LandId
+): boolean => {
+  const landId: LandId = (
+    typeof arg1 === 'string' ? arg1 : typeof arg2 === 'string' ? arg2 : ''
+  ) as LandId;
 
-  if (landId === 'sound-shallows') return true;
+  const scores = (typeof arg1 === 'object' && arg1 !== null)
+    ? ((arg1 as any).landScores || arg1)
+    : (typeof arg2 === 'object' && arg2 !== null ? ((arg2 as any).landScores || arg2) : null);
+
+  if (!landId || landId === 'sound-shallows') return true;
   if (!LAND_ORDER.includes(landId)) return true;
 
   const landIndex = LAND_ORDER.indexOf(landId);
@@ -70,6 +76,8 @@ const DEFAULT_LAND_SCORES = {
   'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
 };
 
+const getFreshLandScores = () => JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES));
+
 // KAM: Red adv vest, adv bandana, wise turtle, curls, 3rd brown hair, 2nd light skin
 export const KAM_GUIDE: ExplorerProfile = {
   id: 'guide-kam',
@@ -83,15 +91,15 @@ export const KAM_GUIDE: ExplorerProfile = {
   arcadeTokens: 10,
   isHallOfFameInducted: false,
   timesStorylineCompleted: 0,
-  landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
+  landScores: getFreshLandScores(),
   customization: {
-    skinTone: '#fcd5b5', // 2nd light skin
+    skinTone: '#fcd5b5',
     hairStyle: 'curls',
-    hairColor: '#5c3818', // 3rd brown hair
+    hairColor: '#5c3818',
     outfitStyle: 'adventurer',
-    outfitColor: '#dc2626', // Red adv vest
+    outfitColor: '#dc2626',
     accessory: 'bandana',
-    companionPet: 'sea-turtle', // Wise turtle
+    companionPet: 'sea-turtle',
     title: 'Adventure Guide'
   }
 };
@@ -109,15 +117,15 @@ export const CELINE_GUIDE: ExplorerProfile = {
   arcadeTokens: 10,
   isHallOfFameInducted: false,
   timesStorylineCompleted: 0,
-  landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
+  landScores: getFreshLandScores(),
   customization: {
-    skinTone: '#d99058', // 3rd brown skin
+    skinTone: '#d99058',
     hairStyle: 'curls',
-    hairColor: '#5c3818', // 3rd brown hair
+    hairColor: '#5c3818',
     outfitStyle: 'wizard',
-    outfitColor: '#7e22ce', // Purple wizard cloak
+    outfitColor: '#7e22ce',
     accessory: 'glasses',
-    companionPet: 'baby-dragon', // Baby dragon
+    companionPet: 'baby-dragon',
     title: 'Adventure Guide'
   }
 };
@@ -218,7 +226,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               exp.companionGuide = exp.gender === 'girl' ? 'celine' : 'kam';
             }
             if (!exp.landScores) {
-              exp.landScores = JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES));
+              exp.landScores = getFreshLandScores();
             }
             LAND_ORDER.forEach((landId, idx) => {
               if (!exp.landScores[landId]) {
@@ -236,9 +244,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return parsed;
         }
       }
-    } catch {
-      // fallback
-    }
+    } catch {}
     return INITIAL_ACCOUNT;
   });
 
@@ -280,29 +286,34 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('phonixia_active_id_v2', activeExplorerId);
   }, [activeExplorerId]);
 
-  const rawExplorer =
-    (account.explorers && account.explorers.find((exp) => exp.id === activeExplorerId)) ||
-    (account.explorers && account.explorers[0]) ||
-    FALLBACK_EXPLORER;
+  const rawExplorer = useMemo(() => {
+    return (
+      (account.explorers && account.explorers.find((exp) => exp.id === activeExplorerId)) ||
+      (account.explorers && account.explorers[0]) ||
+      FALLBACK_EXPLORER
+    );
+  }, [account.explorers, activeExplorerId]);
 
-  const activeExplorer: ExplorerProfile = {
-    ...rawExplorer,
-    gender: rawExplorer.gender || 'boy',
-    companionGuide: rawExplorer.gender === 'girl' ? 'celine' : 'kam',
-    landScores: {
-      ...DEFAULT_LAND_SCORES,
-      ...(rawExplorer.landScores || {}),
-      'sound-shallows': {
-        completedGamesCount: rawExplorer.landScores?.['sound-shallows']?.completedGamesCount ?? 4,
-        stars: rawExplorer.landScores?.['sound-shallows']?.stars ?? 12,
-        unlocked: true,
+  const activeExplorer: ExplorerProfile = useMemo(() => {
+    return {
+      ...rawExplorer,
+      gender: rawExplorer.gender || 'boy',
+      companionGuide: rawExplorer.gender === 'girl' ? 'celine' : 'kam',
+      landScores: {
+        ...DEFAULT_LAND_SCORES,
+        ...(rawExplorer.landScores || {}),
+        'sound-shallows': {
+          completedGamesCount: rawExplorer.landScores?.['sound-shallows']?.completedGamesCount ?? 4,
+          stars: rawExplorer.landScores?.['sound-shallows']?.stars ?? 12,
+          unlocked: true,
+        }
       }
-    }
-  };
+    };
+  }, [rawExplorer]);
 
-  const checkLandUnlocked = (landId: LandId): boolean => {
+  const checkLandUnlocked = useCallback((landId: LandId): boolean => {
     return isLandUnlocked(landId, activeExplorer.landScores);
-  };
+  }, [activeExplorer.landScores]);
 
   const switchExplorer = (id: string) => {
     setActiveExplorerId(id);
@@ -399,7 +410,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       arcadeTokens: 5,
       isHallOfFameInducted: false,
       timesStorylineCompleted: 0,
-      landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
+      landScores: getFreshLandScores(),
       customization: {
         skinTone: starterGender === 'boy' ? '#fcd5b5' : '#d99058',
         hairStyle: 'curls',
@@ -450,7 +461,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       arcadeTokens: 3,
       isHallOfFameInducted: false,
       timesStorylineCompleted: 0,
-      landScores: JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES)),
+      landScores: getFreshLandScores(),
       customization: {
         skinTone: explorerGender === 'boy' ? '#fcd5b5' : '#d99058',
         hairStyle: 'curls',
@@ -506,6 +517,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           0
         );
 
+        const newStars = exp.totalStars + starsDelta;
+        const newLevel = Math.max(1, Math.floor(newStars / 15) + 1);
         const shouldInduct = totalCompleted >= 250;
 
         if (shouldInduct && !exp.isHallOfFameInducted) {
@@ -514,7 +527,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         return {
           ...exp,
-          totalStars: exp.totalStars + starsDelta,
+          level: newLevel,
+          totalStars: newStars,
           isHallOfFameInducted: exp.isHallOfFameInducted || shouldInduct,
           landScores: updatedLandScores
         };
@@ -556,20 +570,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updatedExplorers = (prev.explorers || []).map((exp) => {
         if (exp.id !== explorerId) return exp;
 
-        const freshLandScores = {
-          'sound-shallows': { completedGamesCount: 0, stars: 0, unlocked: true },
-          'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-          'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-          'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-          'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-        };
-
         return {
           ...exp,
           totalStars: 0,
           level: 1,
           isHallOfFameInducted: false,
-          landScores: freshLandScores,
+          landScores: getFreshLandScores(),
           customization: {
             ...exp.customization,
             title: exp.gender === 'boy' ? 'Adventurer with Kam' : 'Adventurer with Celine'
@@ -585,14 +591,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resetClassroomAndGameData = () => {
-    const freshLandScores = {
-      'sound-shallows': { completedGamesCount: 0, stars: 0, unlocked: true },
-      'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-      'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-      'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-      'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-    };
-
     setAccount((prev) => {
       const clearedExplorers = (prev.explorers || []).map((exp) => ({
         ...exp,
@@ -602,7 +600,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         arcadeTokens: 10,
         isHallOfFameInducted: false,
         timesStorylineCompleted: 0,
-        landScores: JSON.parse(JSON.stringify(freshLandScores))
+        landScores: getFreshLandScores()
       }));
 
       return {
@@ -665,9 +663,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         return true;
       }
-    } catch {
-      // invalid
-    }
+    } catch {}
     return false;
   };
 

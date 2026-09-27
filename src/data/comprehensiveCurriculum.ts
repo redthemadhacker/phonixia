@@ -2226,7 +2226,6 @@ const LEXICON_EMPIRE_STAGES: Record<number, StageChallenge[]> = {
       choices: ['Wild uproar and chaotic confusion', 'Peaceful quiet sanctuary', 'Royal golden banquet', 'Sunlit oceanic voyage'],
       correct: 'Wild uproar and chaotic confusion',
       explanation: 'Pan (all) + Daimon (spirit) = Wild uproar! Great knowledge unlocked!'
-=======
       explanation: 'Pan (all) + Daimon (spirit) = Wild uproar! The Shadow King is defeated and the Golden Phonix is free!'
     }
   ]
@@ -2344,7 +2343,6 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
         part1: 'IN',
         part2: 'ER',
         choices1: ['IN', 'AN', 'ON', 'UN'],
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         choices2: ['ER', 'AR', 'OR', 'UR'],
         cue: 'w - in - t - er'
       },

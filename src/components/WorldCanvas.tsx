@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useGame, isLandUnlocked, getCompanionGuide } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { LandmarkNode, LandId, MinigameId } from '../types/character';
 import { sounds, VOICE_PERSONAS } from '../utils/audio';
 import { 
   Lock, Volume2, VolumeX, Home, Play, Star, Footprints, 
-  Sparkles, Compass, Gamepad2, ArrowUp, ArrowDown, 
-  ArrowLeft, ArrowRight, Mic, X, ChevronsUp, Flag, CheckCircle2
+  ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Mic, X, ChevronsUp
 } from 'lucide-react';
 import phonixiaMap from '../../phonixia.png';
 
@@ -149,8 +148,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
   const lastKeyTimeRef = useRef<number>(0);
   const requestRef = useRef<number | null>(null);
   const lastStepSoundTime = useRef<number>(0);
-  const lastEnteredNodeId = useRef<string | null>(null);
-  const enterCooldown = useRef<number>(0);
 
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
@@ -200,7 +197,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       }
       setTransitioningNodeId(null);
     }, 550);
-  }, [activeExplorer, onOpenHomeHut, onSelectLand, onSelectMinigame]);
+  }, [activeExplorer.landScores, onOpenHomeHut, onSelectLand, onSelectMinigame]);
 
   const checkProximity = useCallback((x: number, y: number) => {
     const allLocations = [
@@ -220,7 +217,6 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       }
     });
 
-    // DO NOT auto-enter! Only highlight nearby node so player can pass over freely and press Space to open!
     setNearbyNode(closest);
   }, []);
 
@@ -419,7 +415,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
   };
 
   // Helper list of all map locations for dot rendering
-  const allMapNodes = [
+  const allMapNodes = useMemo(() => [
     { ...LANDMARK_NODES[0], isLand: false }, // Home Hut
     { id: 'isles-of-play', name: 'Isles of Play', tagline: '25 Phonics Island Games', description: 'Explore endless phonics mini-games across the archipelago.', x: 15, y: 52, icon: '🎮', isLand: false },
     { id: 'shellshore-arcade', name: 'Shellshore Arcade', tagline: '25 Arcade Cabinets', description: 'Mario Party-style arcade phonics games.', x: 14, y: 82, icon: '🕹️', isLand: false },
@@ -428,7 +424,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     { ...LANDMARK_NODES[3], isLand: true }, // Tricky Trails
     { ...LANDMARK_NODES[4], isLand: true }, // Whispering Peaks
     { ...LANDMARK_NODES[5], isLand: true }, // Lexicon Empire (Boss Citadel)
-  ];
+  ], []);
 
   return (
     <div
@@ -562,7 +558,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
               }}
               className="absolute z-15 -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
             >
-              {/* Lil Black Mario Dot / Castle Checkpoint */}
+              {/* Checkpoint Dot */}
               <div
                 className={`relative rounded-full flex items-center justify-center transition-all ${
                   isBoss
@@ -591,7 +587,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
                   <span className="text-[11px] sm:text-xs">{node.icon}</span>
                 )}
 
-                {/* Cleared Mario Flag on unlocked lands */}
+                {/* Cleared Flag on unlocked lands */}
                 {unlocked && isLand && landStars > 0 && !isBoss && (
                   <div className="absolute -top-3.5 -right-1 text-[10px] animate-pulse">
                     🚩
@@ -599,7 +595,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
                 )}
               </div>
 
-              {/* Mario Pipe-Hop Leap Effect when clicked */}
+              {/* Leap Effect when clicked */}
               {isLeaping && (
                 <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center animate-bounce">
                   <span className="text-xl">⭐</span>
@@ -607,7 +603,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
                 </div>
               )}
 
-              {/* Pop-Over Bouncy Mario Banner on Hover or Proximity */}
+              {/* Pop-Over Banner on Hover or Proximity */}
               {(isHovered || isNearby) && !isLeaping && (
                 <div className="absolute bottom-8 sm:bottom-9 left-1/2 -translate-x-1/2 bg-slate-950/95 border-2 border-amber-400 px-3 py-1.5 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.6)] whitespace-nowrap z-40 text-center animate-scale-up pointer-events-none">
                   <div className="text-[11px] font-black text-amber-200 flex items-center justify-center gap-1">
@@ -637,7 +633,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           <div className="w-9 h-2.5 bg-black/60 rounded-full blur-[1px]" />
         </div>
 
-        {/* TRAVELING COMPANION (Kam or Celine) */}
+        {/* TRAVELING COMPANION */}
         <div
           className="absolute z-25 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-100"
           style={{ 
@@ -646,7 +642,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
             transform: `translate(-50%, calc(-50% - ${jumpOffset * 0.9}px))`
           }}
         >
-          <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-amber-400/60 px-1.5 py-0.2 rounded-full shadow whitespace-nowrap">
+          <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-amber-400/60 px-1.5 py-0.5 rounded-full shadow whitespace-nowrap">
             <span className="text-[9px] font-bold text-amber-200">{companionGuide.name}</span>
           </div>
 
@@ -689,7 +685,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
           />
         </div>
 
-        {/* MARIO OVERWORLD D-PAD & JUMP BUTTON */}
+        {/* OVERWORLD D-PAD & JUMP BUTTON */}
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
@@ -765,7 +761,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         </div>
       </div>
 
-      {/* BOTTOM MARIO WORLD DOCK */}
+      {/* BOTTOM WORLD DOCK */}
       <div 
         style={{
           paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',

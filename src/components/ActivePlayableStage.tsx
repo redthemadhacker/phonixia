@@ -8,8 +8,7 @@ import { HallOfFameCelebration } from './HallOfFameCelebration';
 import { getComprehensiveStageChallenge } from '../data/comprehensiveCurriculum';
 import { 
   ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Star, Volume2, 
-  CheckCircle2, RotateCcw, ChevronsUp, Flame, ShieldAlert, Sparkles, Trophy,
-  Undo2, RefreshCw, Heart, Zap
+  RotateCcw, ChevronsUp, Flame, Undo2, RefreshCw
 } from 'lucide-react';
 
 export interface GameQuestion {
@@ -53,26 +52,19 @@ interface ActivePlayableStageProps {
   onClose: () => void;
 }
 
-interface RealmBossDef {
-  bossName: string;
-  icon: string;
-  defeatedSubtext: string;
-  speechDefeat: string;
-}
-
 export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   landId,
   activeExplorer,
-  companionGuide,
+  companionGuide: _companionGuide,
   currentQuestion,
   activeGameIndex,
   isAnswered,
   isCorrect,
-  selectedAnswer,
+  selectedAnswer: _selectedAnswer,
   realmLives,
   earnedStars,
-  bossBarrierHp,
-  roundCompleted = false,
+  bossBarrierHp: _bossBarrierHp,
+  roundCompleted: _roundCompleted = false,
   onSelectChoice,
   onFinishRound,
   onTryAgain,
@@ -145,7 +137,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   const displayedQuestion = isBossStage ? activeCombatQ : currentQuestion;
 
   // Swimming animation clock & position (Sound Shallows)
-  const [swimCycle, setSwimCycle] = useState(0);
+  const [_swimCycle, setSwimCycle] = useState(0);
   const [swimPos, setSwimPos] = useState<{ x: number; y: number }>({ x: 50, y: 55 });
   const [swimFacing, setSwimFacing] = useState<'left' | 'right'>('right');
   const [swimPitch, setSwimPitch] = useState<number>(0);
@@ -162,11 +154,11 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   const [vineAngle, setVineAngle] = useState(0);
   const [vineX, setVineX] = useState<number>(50);
   const [vinePlayerState, setVinePlayerState] = useState<'ground' | 'jumping' | 'swinging' | 'landing'>('ground');
-  const [vineTargetX, setVineTargetX] = useState<number | null>(null);
+  const [_vineTargetX, setVineTargetX] = useState<number | null>(null);
 
   // Whispering Peaks: Alpine Snowboard Downhill Run
   const [snowboardX, setSnowboardX] = useState<number>(50);
-  const [snowboardY, setSnowboardY] = useState<number>(14); // starts at crest (top 14%)
+  const [snowboardY, setSnowboardY] = useState<number>(14);
   const [snowboardCarve, setSnowboardCarve] = useState<number>(0);
   const [isSnowboardSliding, setIsSnowboardSliding] = useState<boolean>(false);
   const [snowboardSpray, setSnowboardSpray] = useState<boolean>(false);
@@ -201,7 +193,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return whisperingStep === 1 ? whisperingConfig.choices1 : whisperingConfig.choices2;
   }, [whisperingConfig, whisperingStep, displayedQuestion.choices]);
 
-  // Anti-Spoiler filter: never display correct answer word in the prompt badge
+  // Anti-Spoiler filter
   const sanitizedTargetSound = useMemo(() => {
     if (!displayedQuestion) return '';
     const rawTarget = displayedQuestion.targetSound || '';
@@ -286,11 +278,10 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return () => cancelAnimationFrame(frame);
   }, [landId, vinePlayerState]);
 
-  // Movement loop for arena characters (fine-tuned speeds so players do not zoom wildly)
+  // Movement loop for arena characters
   useEffect(() => {
     let animId: number;
     const tick = () => {
-      // Sound Shallows: full 2D swimming & diving (smooth controlled speed)
       if (landId === 'sound-shallows') {
         const speed = 0.75;
         setSwimPos((prev) => {
@@ -319,21 +310,18 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         });
       }
 
-      // Builders Guild: crane movement (controlled speed)
       if (landId === 'builders-guild') {
         const speed = 0.8;
         if (activeDpad.left) setCraneTrolleyX((p) => Math.max(10, p - speed));
         if (activeDpad.right) setCraneTrolleyX((p) => Math.min(90, p + speed));
       }
 
-      // Tricky Trails: vine traversal (controlled speed)
       if (landId === 'tricky-trails' && vinePlayerState === 'ground') {
         const speed = 0.8;
         if (activeDpad.left) setVineX((p) => Math.max(16, p - speed));
         if (activeDpad.right) setVineX((p) => Math.min(84, p + speed));
       }
 
-      // Whispering Peaks: snowboard carving across alpine crest
       if (landId === 'whispering-peaks' && !isSnowboardSliding) {
         const speed = 0.8;
         if (activeDpad.left) {
@@ -350,7 +338,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         }
       }
 
-      // Lexicon Empire: chariot navigation (controlled speed)
       if (landId === 'lexicon-empire') {
         const speed = 0.85;
         if (activeDpad.left) setChariotX((p) => Math.max(14, p - speed));
@@ -364,7 +351,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [landId, activeDpad, vinePlayerState, isSnowboardSliding]);
 
-  // Find index of choice closest to character X
   const getClosestChoiceIndex = useCallback((charX: number, choices: string[]) => {
     let closestIdx = 0;
     let minDiff = 999;
@@ -379,38 +365,32 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return closestIdx;
   }, []);
 
-  // Universal handler for continuous play boss battles vs regular stages
   const handleAnswerEvaluation = useCallback((choice: string) => {
     const isCorrectHit = choice.trim().toLowerCase() === displayedQuestion.correct.trim().toLowerCase();
 
     if (!isBossStage) {
-      // Normal course stage: standard completion
       onSelectChoice(choice);
       return;
     }
 
-    // Boss Stage: Continuous Multi-Hit Life Source Combat!
     if (isCorrectHit) {
       setBossDamageFlash(true);
       sounds.playDamage();
       setTimeout(() => setBossDamageFlash(false), 300);
 
-      const damageAmount = 25; // 4 hits to deplete 100% life source
+      const damageAmount = 25;
       const nextHp = Math.max(0, bossHp - damageAmount);
       setBossHp(nextHp);
 
       if (nextHp > 0) {
-        // CONTINUOUS PLAY: Boss still has HP! NO DEFEAT BANNER YET!
         sounds.playSuccess();
         sounds.speak(`Direct hit! ${bossDef.bossName}'s life source down to ${nextHp} percent! Keep going!`);
 
-        // Advance to next procedural question for continuous battle
         const nextCount = bossSubCount + 1;
         setBossSubCount(nextCount);
         const nextChallenge = getComprehensiveStageChallenge(landId, (activeGameIndex * 11 + nextCount) % 50 || 1);
         setActiveCombatQ(nextChallenge);
       } else {
-        // 100% DEPLETED: NOW the boss is completely defeated!
         setShowDeathCeremony(true);
         sounds.playFanfare();
 
@@ -422,24 +402,19 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         } else {
           sounds.speak(bossDef.speechDefeat);
         }
-        // Mark stage completed
         onSelectChoice(choice);
       }
     } else {
-      // Wrong choice in boss combat: boss absorbs dark energy & regains 15% life source!
-      // NEVER defeat boss or finish battle on a wrong answer!
-      // Wrong choice: gives life force back to boss or shadow king!
       setBossHp((prev) => Math.min(100, prev + 15));
       setBossDamageFlash(true);
       setTimeout(() => setBossDamageFlash(false), 300);
       sounds.playDamage();
       sounds.speak(`Miss! The ${bossDef.bossName} absorbs dark energy and restored 15% life force! Strike again!`);
-      // Do not end boss battle! Battle continues!
       onSelectChoice(choice);
     }
   }, [displayedQuestion, isBossStage, bossHp, bossDef, bossSubCount, landId, activeGameIndex, isFinalBoss, onSelectChoice]);
 
-  // 1. Sound Shallows: Underwater Swim & Dive
+  // 1. Sound Shallows
   const triggerSwimStroke = useCallback((choiceOverride?: string) => {
     if (isAnswered) return;
     setIsDiving(true);
@@ -463,7 +438,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     }, 300);
   }, [isAnswered, displayedQuestion, getClosestChoiceIndex, swimPos.x, handleAnswerEvaluation]);
 
-  // 2. Builders Guild: Pick letter to stack vertically in order
+  // 2. Builders Guild
   const handleBuilderLetterPick = useCallback((letter: string) => {
     if (isAnswered || isHoisting || !targetBuilderWord) return;
     setBuilderWrongNotice(null);
@@ -493,13 +468,13 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         }
       } else {
         sounds.playDamage();
-        setBuilderWrongNotice(`Oops! That is not the right letter! Try again!`);
-        sounds.speak(`Try again! Listen closely to the sound!`);
+        setBuilderWrongNotice('Oops! That is not the right letter! Try again!');
+        sounds.speak('Try again! Listen closely to the sound!');
       }
     }, 380);
   }, [isAnswered, isHoisting, targetBuilderWord, builderStack, handleAnswerEvaluation]);
 
-  // 3. Tricky Trails: Player JUMPS and SWINGS ON VINE to get the answer!
+  // 3. Tricky Trails
   const triggerVineLeap = useCallback((choiceOverride?: string) => {
     if (isAnswered || vinePlayerState !== 'ground') return;
 
@@ -511,24 +486,20 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     const targetChoice = choiceOverride || displayedQuestion.choices[targetIdx];
     const targetX = 14 + targetIdx * (72 / Math.max(count - 1, 1));
 
-    // Phase 1: Player jumps UP from ground to grab the vine!
     setVinePlayerState('jumping');
     sounds.playJump();
 
     setTimeout(() => {
-      // Phase 2: Player has gripped the vine, vine swings wide across to target choice pod!
       setVinePlayerState('swinging');
       setVineTargetX(targetX);
       setVineAngle(targetX > vineX ? 28 : -28);
       sounds.playWhoosh();
 
       setTimeout(() => {
-        // Phase 3: Player reaches target rune pod at swing apex and collects it!
         setVineX(targetX);
         sounds.playCollect();
 
         setTimeout(() => {
-          // Phase 4: Player swings down and lands back onto the jungle branch platform!
           setVinePlayerState('landing');
           setVineAngle(0);
           sounds.playStep();
@@ -543,7 +514,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     }, 200);
   }, [isAnswered, vinePlayerState, displayedQuestion, getClosestChoiceIndex, vineX, handleAnswerEvaluation]);
 
-  // 4. Whispering Peaks: Alpine Snowboard Downhill Slalom Slide (Dual-Sound Carving)
+  // 4. Whispering Peaks
   const triggerSnowboardDownhillSlide = useCallback((choiceOverride?: string) => {
     if (isAnswered || isSnowboardSliding) return;
 
@@ -556,7 +527,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     const targetChoice = choiceOverride || choicesToUse[targetIdx];
     const targetX = 14 + targetIdx * (72 / Math.max(count - 1, 1));
 
-    // Phase 1: Snowboarder carves and launches downhill directly toward the target slalom gate!
     setIsSnowboardSliding(true);
     setActiveGateIdx(targetIdx);
     setSnowboardSpray(true);
@@ -566,14 +536,12 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     const carveAngle = targetX > snowboardX ? 22 : -22;
     setSnowboardCarve(carveAngle);
     setSnowboardX(targetX);
-    setSnowboardY(68); // Slides down the mountain slope directly into the answer gate!
+    setSnowboardY(68);
 
     setTimeout(() => {
-      // Phase 2: Smashes through the slalom gate kicking up powder snow spray!
       sounds.playCollect();
 
       setTimeout(() => {
-        // Phase 3: Glides back to top ridge ready for next turn
         setSnowboardSpray(false);
         setSnowboardCarve(0);
         setSnowboardY(14);
@@ -582,7 +550,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
         if (whisperingConfig) {
           if (whisperingStep === 1) {
-            // Check gate 1
             if (targetChoice.trim().toUpperCase() === whisperingConfig.part1.trim().toUpperCase()) {
               sounds.playSuccess();
               setWhisperingPart1(targetChoice);
@@ -591,18 +558,15 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               setTimeout(() => setWhisperingNotice(null), 3000);
             } else {
               sounds.playError();
-              setWhisperingNotice('❄️ Wipeout! Steer carefully and try carving the first sound again!');
               setWhisperingNotice(`❄️ Wipeout! Try carving the first sound again: [${whisperingConfig.part1}]!`);
               setTimeout(() => setWhisperingNotice(null), 2500);
             }
           } else {
-            // Check gate 2
             if (targetChoice.trim().toUpperCase() === whisperingConfig.part2.trim().toUpperCase()) {
               sounds.playSuccess();
               handleAnswerEvaluation(targetChoice);
             } else {
               sounds.playError();
-              setWhisperingNotice('❄️ Wipeout on Gate 2! Steer into the second sound gate!');
               setWhisperingNotice(`❄️ Wipeout on Gate 2! Steer into sound: [${whisperingConfig.part2}]!`);
               setTimeout(() => setWhisperingNotice(null), 2500);
             }
@@ -614,7 +578,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     }, 400);
   }, [isAnswered, isSnowboardSliding, activeWhisperingChoices, getClosestChoiceIndex, snowboardX, whisperingConfig, whisperingStep, handleAnswerEvaluation]);
 
-  // 5. Lexicon Empire: Chariot Laser
+  // 5. Lexicon Empire
   const triggerChariotLaser = useCallback((choiceOverride?: string) => {
     if (isAnswered || !displayedQuestion) return;
 
@@ -697,7 +661,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
       <div className="relative w-full max-w-5xl bg-slate-900 border-3 border-amber-400 rounded-3xl p-3 sm:p-5 text-center space-y-2.5 shadow-[0_0_60px_rgba(0,0,0,0.85)] animate-scale-up flex flex-col max-h-[calc(100dvh-16px)] overflow-y-auto">
         
-        {/* Top Header Bar with Boss HP Health Bar (Universal for Boss Stages) */}
+        {/* Top Header Bar */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-2 px-1">
           <div className="flex items-center gap-2">
             <span className="text-xs sm:text-sm font-mono font-black text-amber-300 uppercase tracking-wide">
@@ -708,7 +672,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
             </span>
           </div>
 
-          {/* Universal Boss Life Source Bar: Starts at 100%, depleted to 0% */}
+          {/* Boss Life Source Bar */}
           {isBossStage && (
             <div className="flex-1 max-w-xs sm:max-w-sm mx-3 flex flex-col items-center">
               <div className="w-full flex items-center justify-between text-[10px] font-mono font-bold text-amber-300 mb-0.5">
@@ -755,57 +719,45 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         </div>
 
-        {/* Big, Clear, Kid-Friendly Audio Prompt with NO giveaways or hints */}
-        <div className="space-y-2 px-2 text-center">
-        {/* Big, Clear, Kid-Friendly Phonics Instruction */}
+        {/* Clear Phonics Instruction Header */}
         <div className="space-y-1.5 px-2">
           <p className="text-sm sm:text-base md:text-lg text-amber-100 font-black leading-snug break-words">
             {displayedQuestion.instruction}
           </p>
 
           <div className="flex justify-center items-center py-1">
-          <div className="inline-flex items-center gap-3 bg-slate-950/90 border-2 border-amber-400 px-5 py-2 rounded-2xl shadow-inner">
-            {/* Illustrated animal letters for Sound Shallows & Builders Guild */}
-            {landId === 'sound-shallows' || landId === 'builders-guild' ? (
-              <PhonicsWordDisplay text={sanitizedTargetSound} size={42} showSubtitle={false} />
-            ) : (
-              <span className="text-xl sm:text-2xl md:text-3xl font-black text-amber-300 font-display tracking-widest break-all">
-                {sanitizedTargetSound}
-              </span>
-            )}
-            <button
-              type="button"
-              title="Hear instruction and sound again"
-              onClick={() => {
-                const promptText = displayedQuestion.instruction || displayedQuestion.spokenPrompt || 'Listen closely!';
-                sounds.speak(promptText);
-              }}
-              className="inline-flex items-center gap-2.5 bg-gradient-to-r from-amber-500/20 via-amber-500/30 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/40 border-2 border-amber-400 px-5 py-2.5 rounded-2xl shadow-[0_0_15px_rgba(251,191,36,0.3)] cursor-pointer active:scale-95 transition-all text-amber-300 font-black text-xs sm:text-sm uppercase tracking-wider"
-            >
-              <Volume2 className="w-5 h-5 animate-pulse" />
-              <span>Tap to Hear Sound Again</span>
-              <span className="text-base">🔊</span>
-                const promptText = displayedQuestion.instruction || displayedQuestion.spokenPrompt;
-                sounds.speak(promptText);
-              }}
-              className="p-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-400/50 cursor-pointer active:scale-90 transition-transform"
-            >
-              <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
+            <div className="inline-flex items-center gap-3 bg-slate-950/90 border-2 border-amber-400 px-5 py-2 rounded-2xl shadow-inner">
+              {landId === 'sound-shallows' || landId === 'builders-guild' ? (
+                <PhonicsWordDisplay text={sanitizedTargetSound} size={42} showSubtitle={false} />
+              ) : (
+                <span className="text-xl sm:text-2xl md:text-3xl font-black text-amber-300 font-display tracking-widest break-all">
+                  {sanitizedTargetSound}
+                </span>
+              )}
+              <button
+                type="button"
+                title="Hear instruction and sound again"
+                onClick={() => {
+                  const promptText = displayedQuestion.instruction || displayedQuestion.spokenPrompt || 'Listen closely!';
+                  sounds.speak(promptText);
+                }}
+                className="p-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-400/50 cursor-pointer active:scale-90 transition-transform"
+              >
+                <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* 1. SOUND SHALLOWS: FULL 2D SWIMMING & DIVING */}
+        {/* 1. SOUND SHALLOWS */}
         {landId === 'sound-shallows' && (
           <div className="relative w-full h-[260px] xs:h-[300px] sm:h-[360px] bg-gradient-to-b from-sky-900 via-teal-950 to-blue-950 rounded-2xl border-2 border-cyan-400/60 overflow-hidden select-none">
-            {/* Luminous Animated Bubbles */}
             <div className="absolute inset-0 pointer-events-none opacity-40">
               <span className="absolute top-1/4 left-1/6 text-xl animate-float">🫧</span>
               <span className="absolute top-1/2 left-3/4 text-2xl animate-float" style={{ animationDelay: '0.8s' }}>🫧</span>
               <span className="absolute top-2/3 left-1/3 text-lg animate-float" style={{ animationDelay: '1.4s' }}>🫧</span>
             </div>
 
-            {/* Floating Sound Pearls with Depth Variations & Illustrated Alphabet Animals */}
             <div className="absolute inset-0 pointer-events-none z-20">
               {displayedQuestion.choices.map((choice, idx) => {
                 const choiceX = 14 + idx * (72 / Math.max(displayedQuestion.choices.length - 1, 1));
@@ -833,7 +785,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               })}
             </div>
 
-            {/* Free Swimming & Diving Player Avatar */}
             <div
               style={{
                 left: `${swimPos.x}%`,
@@ -851,25 +802,20 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         )}
 
-        {/* 2. BUILDERS GUILD: 8-LETTER VERTICAL WORD STACKING */}
+        {/* 2. BUILDERS GUILD */}
         {landId === 'builders-guild' && (
           <div className="relative w-full h-[260px] xs:h-[300px] sm:h-[360px] bg-gradient-to-b from-stone-900 via-amber-950 to-stone-950 rounded-2xl border-2 border-amber-500/60 overflow-hidden select-none">
-            {/* Target Word Stacking Pedestal */}
             <div className="absolute top-2 left-4 z-20 bg-slate-950/90 border-2 border-amber-400 p-2.5 rounded-2xl text-left shadow-xl min-w-[130px]">
               <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">
-                Word Tower ({targetBuilderWord.length} Letters):
-              </div>
-              <div className="text-lg sm:text-xl font-black text-white font-mono tracking-widest">
-                {Array.from({ length: targetBuilderWord.length }).map((_, i) => builderStack[i] || '_').join(' ')}
-                Target Word:
+                Target Word ({targetBuilderWord.length} Letters):
               </div>
               <div className="text-lg sm:text-xl font-black text-white font-mono tracking-wider">
                 {targetBuilderWord}
               </div>
 
-              {/* Vertical Stacking Tower Display */}
+              {/* Stacking Slots */}
               <div className="mt-2 flex flex-col-reverse gap-1 border-t border-amber-500/40 pt-2 min-h-[70px]">
-                {targetBuilderWord.split('').map((letter, i) => {
+                {targetBuilderWord.split('').map((_, i) => {
                   const stacked = builderStack[i];
                   return (
                     <div
@@ -887,7 +833,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                 })}
               </div>
 
-              {/* Stack Action Controls */}
+              {/* Stack Controls */}
               {builderStack.length > 0 && (
                 <div className="flex gap-1.5 mt-2">
                   <button
@@ -916,19 +862,16 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               )}
             </div>
 
-            {/* Wrong letter notice */}
             {builderWrongNotice && (
               <div className="absolute top-4 right-4 z-40 bg-rose-950/95 border-2 border-rose-400 px-3 py-1.5 rounded-xl text-rose-200 text-xs font-bold shadow-2xl animate-shake">
                 {builderWrongNotice}
               </div>
             )}
 
-            {/* Overhead Heavy Crane Track */}
             <div className="absolute top-0 inset-x-0 h-4 bg-stone-900 border-b-2 border-amber-500/60 flex items-center justify-around z-20">
               <div className="w-full h-1 bg-amber-400/40" />
             </div>
 
-            {/* Crane Trolley & Suspended Magnetic Hook */}
             <div
               style={{ left: `${craneTrolleyX}%`, top: '4px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }}
               className="absolute z-25 flex flex-col items-center pointer-events-none"
@@ -938,7 +881,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               <div className="text-xl sm:text-2xl filter drop-shadow">🪝</div>
             </div>
 
-            {/* 8 Letter Animal Cards Conveyor Platform */}
             <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-4 flex items-center justify-around z-20 pointer-events-none gap-1">
               {builderChoices.map((letter, idx) => (
                 <div
@@ -957,11 +899,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         )}
 
-        {/* 3. TRICKY TRAILS: PLAYER JUMPS AND SWINGS ON VINE TO GET ANSWER */}
+        {/* 3. TRICKY TRAILS */}
         {landId === 'tricky-trails' && (
           <div className="relative w-full h-[260px] xs:h-[300px] sm:h-[360px] bg-gradient-to-b from-emerald-950 via-slate-950 to-stone-950 rounded-2xl border-2 border-emerald-400/60 overflow-hidden select-none">
-            
-            {/* Hanging Jungle Canopy */}
             <div className="absolute top-0 inset-x-0 h-10 flex justify-between px-6 pointer-events-none opacity-40">
               <span className="text-2xl animate-float">🌿</span>
               <span className="text-xl animate-float" style={{ animationDelay: '0.6s' }}>🍃</span>
@@ -969,7 +909,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               <span className="text-xl animate-float" style={{ animationDelay: '1.8s' }}>🍃</span>
             </div>
 
-            {/* Hanging Golden Rune Pod Choices */}
             <div className="absolute top-8 inset-x-0 flex items-center justify-around px-4 sm:px-10 z-20 pointer-events-none">
               {displayedQuestion.choices.map((choice, idx) => (
                 <div
@@ -986,13 +925,11 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               ))}
             </div>
 
-            {/* Jungle Tree Platform at Bottom */}
             <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-amber-950 to-stone-900 border-t-2 border-emerald-600/70 flex items-center justify-between px-6 text-emerald-400 text-[10px] font-mono font-bold pointer-events-none">
               <span>🌿 Jungle Tree Platform</span>
               <span>Moss Canopy 🍃</span>
             </div>
 
-            {/* Swinging Jungle Vine hanging from canopy */}
             <div
               style={{
                 left: `${vineX}%`,
@@ -1003,14 +940,12 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               }}
               className="absolute pointer-events-none z-25 flex flex-col items-center"
             >
-              {/* Vine Rope */}
               <div className="w-2 h-44 sm:h-50 bg-gradient-to-b from-emerald-700 via-green-600 to-amber-700 rounded-b shadow-[0_0_12px_rgba(16,185,129,0.7)] flex flex-col justify-between py-2 items-center">
                 <span className="text-[10px]">🍃</span>
                 <span className="text-[10px]">🌿</span>
                 <span className="text-[10px]">🍃</span>
               </div>
 
-              {/* Player Avatar gripping the vine while swinging */}
               {(vinePlayerState === 'swinging' || vinePlayerState === 'jumping') && (
                 <div className="-mt-4 flex flex-col items-center animate-scale-up">
                   <AvatarRenderer customization={activeExplorer.customization} size={50} />
@@ -1019,7 +954,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               )}
             </div>
 
-            {/* Player standing on platform when NOT in air swinging */}
             {vinePlayerState === 'ground' && (
               <div
                 style={{ left: `${vineX}%`, bottom: '12px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }}
@@ -1031,30 +965,25 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         )}
 
-        {/* 4. WHISPERING PEAKS: ALPINE SNOWBOARD DOWNHILL SLALOM RUN */}
+        {/* 4. WHISPERING PEAKS */}
         {landId === 'whispering-peaks' && (
           <div className="relative w-full h-[290px] xs:h-[330px] sm:h-[390px] bg-gradient-to-b from-indigo-950 via-slate-900 to-sky-950 rounded-2xl border-2 border-indigo-400/60 overflow-hidden select-none">
-            
-            {/* Snowy Alpine Mountain Top Ridge Crest */}
             <div className="absolute top-0 inset-x-0 h-14 bg-gradient-to-b from-slate-800 via-indigo-950/80 to-transparent flex items-center justify-between px-6 pointer-events-none opacity-60">
               <span className="text-xl">🏔️</span>
               <span className="text-sm text-cyan-200 font-mono font-bold tracking-widest uppercase">❄️ Crest Start Ridge · Steer & Slide Down! ❄️</span>
               <span className="text-xl">🏔️</span>
             </div>
 
-            {/* Downhill Mountain Slope with Ski Tracks & Pine Trees */}
             <div className="absolute inset-0 pointer-events-none opacity-25">
               <div className="absolute top-16 left-1/4 text-2xl">🌲</div>
               <div className="absolute top-28 left-3/4 text-2xl">🌲</div>
               <div className="absolute top-20 left-2/3 text-lg">❄️</div>
               <div className="absolute top-12 left-1/8 text-lg">❄️</div>
-              {/* Slalom slope tracks */}
               <div className="absolute top-0 bottom-0 left-1/4 w-1 border-r border-dashed border-cyan-300/40" />
               <div className="absolute top-0 bottom-0 left-1/2 w-1 border-r border-dashed border-cyan-300/40" />
               <div className="absolute top-0 bottom-0 left-3/4 w-1 border-r border-dashed border-cyan-300/40" />
             </div>
 
-            {/* Downhill Slalom Answer Gates */}
             <div className="absolute bottom-6 inset-x-0 flex items-center justify-around px-4 sm:px-10 z-20 pointer-events-none">
               {activeWhisperingChoices.map((choice, idx) => {
                 const isTarget = activeGateIdx === idx;
@@ -1067,13 +996,11 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                     style={{ left: `${gateX}%`, transform: 'translateX(-50%)' }}
                     className="absolute pointer-events-auto cursor-pointer hover:scale-110 active:scale-95 transition-transform flex flex-col items-center group"
                   >
-                    {/* Slalom Gate Flags */}
                     <div className="flex items-center gap-6 mb-1 pointer-events-none">
                       <span className="text-xs">🚩</span>
                       <span className="text-xs">🚩</span>
                     </div>
 
-                    {/* Snowboard Target Gate Banner */}
                     <div className={`px-4 py-2 sm:px-5 sm:py-3 rounded-2xl border-2 flex flex-col items-center transition-all ${
                       isTarget
                         ? 'bg-gradient-to-b from-cyan-200 via-sky-300 to-indigo-400 text-slate-950 border-white ring-4 ring-cyan-300 shadow-[0_0_30px_rgba(6,182,212,1)] scale-110'
@@ -1083,14 +1010,12 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                       <span className="font-black text-sm sm:text-base tracking-wide">{choice}</span>
                     </div>
 
-                    {/* Snow Drift Base */}
                     <div className="w-16 h-2 bg-gradient-to-r from-transparent via-white/70 to-transparent rounded-full mt-1 blur-xs" />
                   </div>
                 );
               })}
             </div>
 
-            {/* 2-Sound Slalom Progress Banner */}
             <div className="absolute top-12 inset-x-0 flex justify-center pointer-events-none z-20">
               <div className="px-4 py-1.5 rounded-full bg-slate-950/85 border border-cyan-400 text-xs font-black text-cyan-200 shadow-md flex items-center gap-2">
                 <span>🏂 {whisperingStep === 1 ? 'Gate 1 of 2: Carve Sound 1' : 'Gate 2 of 2: Carve Sound 2'}</span>
@@ -1102,7 +1027,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               </div>
             </div>
 
-            {/* Whispering Slalom Notice */}
             {whisperingNotice && (
               <div className="absolute top-22 inset-x-0 flex justify-center pointer-events-none z-30 animate-bounce">
                 <div className="px-4 py-1.5 rounded-2xl bg-indigo-950/95 border-2 border-cyan-300 text-cyan-100 text-xs font-black shadow-xl">
@@ -1111,7 +1035,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               </div>
             )}
 
-            {/* Active Snowboarder (Starts at top crest, carves L/R, zooms downhill on select) */}
             <div
               style={{
                 left: `${snowboardX}%`,
@@ -1121,7 +1044,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               }}
               className="absolute z-30 flex flex-col items-center pointer-events-none select-none"
             >
-              {/* Downhill Speed Lines when sliding */}
               {isSnowboardSliding && (
                 <div className="absolute -top-10 text-cyan-200 text-xs font-mono font-black animate-pulse flex flex-col items-center">
                   <span>💨 DOWNHILL SLIDE!</span>
@@ -1131,14 +1053,12 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
               <AvatarRenderer customization={activeExplorer.customization} size={48} />
               
-              {/* Real Alpine Snowboard Deck */}
               <div className="w-18 h-3.5 -mt-1 rounded-full bg-gradient-to-r from-indigo-600 via-cyan-400 to-blue-600 border-2 border-white shadow-[0_0_15px_rgba(6,182,212,0.9)] flex items-center justify-around text-[8px] font-black text-white">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                 <span>SNOWBOARD</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
               </div>
 
-              {/* Snow Powder Spray when carving or sliding */}
               {snowboardSpray && (
                 <div className="flex items-center gap-1 text-xs -mt-1 opacity-90 text-cyan-100 animate-bounce">
                   <span>❄️</span>
@@ -1150,11 +1070,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         )}
 
-        {/* 5. LEXICON EMPIRE: CHARIOT LASER & MULTI-HIT CONTINUOUS BOSS BATTLE (EXPANDED TO PREVENT TEXT CUT-OFF) */}
+        {/* 5. LEXICON EMPIRE */}
         {landId === 'lexicon-empire' && (
           <div className="relative w-full min-h-[460px] sm:min-h-[520px] h-[460px] sm:h-[520px] bg-gradient-to-b from-purple-950 via-slate-950 to-rose-950 rounded-3xl border-3 border-rose-500 shadow-[0_0_40px_rgba(244,63,94,0.5)] overflow-hidden select-none p-3 pt-4">
-            
-            {/* Castle Boss Entity with Menacing Scary Face for Shadow King (NOT a crown) */}
             <div 
               className={`absolute top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none transition-all duration-300 ${
                 showDeathCeremony
@@ -1193,7 +1111,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               </svg>
             )}
 
-            {/* Answer Obelisks: Positioned Lower with Generous Room to Completely Prevent Text Cut-Off */}
             <div className="absolute top-36 sm:top-44 inset-x-0 flex items-center justify-around px-3 sm:px-8 z-20 pointer-events-none">
               {displayedQuestion.choices.map((choice, idx) => (
                 <div
@@ -1215,7 +1132,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         )}
 
-        {/* UNIVERSAL DEFEAT CEREMONY: HAS CLEAR ADVANCE & EXIT BUTTONS SO PLAYER IS NEVER STUCK! */}
+        {/* Universal Defeat Ceremony */}
         {showDeathCeremony && (
           <div className="p-4 sm:p-6 rounded-3xl bg-slate-950/95 border-3 border-amber-400 shadow-[0_0_50px_rgba(245,158,11,0.6)] flex flex-col items-center justify-center space-y-3 animate-scale-up">
             <div className="text-center space-y-1">
@@ -1227,7 +1144,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               </p>
             </div>
 
-            {/* Advance and Exit Action Buttons */}
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => {
@@ -1266,7 +1182,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         )}
 
-        {/* 4-WAY VIRTUAL ON-SCREEN CONTROLS & ACTIVATE BUTTON */}
+        {/* 4-Way Virtual On-Screen Controls */}
         <div className="flex items-center justify-between gap-3 px-1 pt-1">
           <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
             <button
@@ -1332,7 +1248,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </button>
         </div>
 
-        {/* LEVEL COMPLETION & PATH ADVANCEMENT */}
+        {/* Level Result Banner */}
         {isAnswered && !showDeathCeremony && (
           <div className={`p-3 sm:p-4 rounded-2xl border text-center space-y-2 animate-fade-in ${
             isCorrect ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-rose-950/90 border-rose-400 text-rose-200'
@@ -1349,9 +1265,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                 Try again! Listen to the sound and make your choice!
               </p>
             )}
-            <p className="text-xs sm:text-sm text-slate-200 font-medium">
-              {displayedQuestion.explanation}
-            </p>
             <div className="flex gap-3 justify-center pt-1">
               {!isCorrect ? (
                 <button

@@ -190,16 +190,12 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     setTimeout(() => {
       sounds.playFanfare();
       if (targetId === 'home-hut') {
-        sounds.speak('Welcome home to the Family Hub! Ready to check your reading progress?', 0.92, 1.2);
         onOpenHomeHut();
       } else if (targetId === 'isles-of-play') {
-        sounds.speak('Welcome to the Isles of Play!', 0.92, 1.2);
         onSelectMinigame('isles-of-play');
       } else if (targetId === 'shellshore-arcade') {
-        sounds.speak('Entering Shellshore Arcade!', 0.92, 1.2);
         onSelectMinigame('shellshore-arcade');
       } else if (isLand) {
-        sounds.speak(`Entering ${targetName}! Let's read!`, 0.92, 1.2);
         onSelectLand(targetId as LandId);
       }
       setTransitioningNodeId(null);
@@ -214,7 +210,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
     ];
 
     let closest: { id: string; name: string; tagline?: string; description?: string; x: number; y: number } | null = null;
-    let minDistance = 7;
+    let minDistance = 6.8;
 
     allLocations.forEach((node) => {
       const dist = Math.hypot(node.x - x, node.y - y);
@@ -224,20 +220,9 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       }
     });
 
+    // DO NOT auto-enter! Only highlight nearby node so player can pass over freely and press Space to open!
     setNearbyNode(closest);
-
-    const now = Date.now();
-    if (closest && minDistance < 4.8 && now > enterCooldown.current) {
-      const target = closest;
-      if (lastEnteredNodeId.current !== target.id) {
-        lastEnteredNodeId.current = target.id;
-        enterCooldown.current = now + 2000;
-        triggerNodeEnter(target.id, target.name);
-      }
-    } else if (!closest || minDistance > 7.0) {
-      lastEnteredNodeId.current = null;
-    }
-  }, [triggerNodeEnter]);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -270,15 +255,14 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
         matched = true;
       }
 
-      if (k === ' ' || k === 'tab' || code === 'Space' || code === 'Tab') {
+      if (k === ' ' || k === 'enter' || k === 'e' || code === 'Space' || code === 'Enter' || code === 'KeyE') {
         e.preventDefault();
         matched = true;
-        triggerWorldJump();
-      }
-
-      if ((k === 'e' || k === 'enter' || code === 'KeyE') && nearbyNode) {
-        matched = true;
-        triggerNodeEnter(nearbyNode.id, nearbyNode.name);
+        if (nearbyNode) {
+          triggerNodeEnter(nearbyNode.id, nearbyNode.name);
+        } else {
+          triggerWorldJump();
+        }
       }
 
       if (matched) {
@@ -346,7 +330,7 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       const running = isHeld || dirs.shift;
       setIsRunning(running);
 
-      const baseSpeed = running ? 36 : 20;
+      const baseSpeed = running ? 20 : 12;
 
       let newX = playerPosRef.current.x;
       let newY = playerPosRef.current.y;

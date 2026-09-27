@@ -4,7 +4,7 @@ import { PHONIXIA_LANDS } from '../data/curriculumData';
 import { ExplorerProfile } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
-import { Users, UserPlus, Star, Trophy, BarChart3, Printer, LogOut, ArrowLeft, Palette, ChevronDown, ChevronUp, RotateCcw, Award } from 'lucide-react';
+import { Users, UserPlus, Star, Trophy, BarChart3, Printer, LogOut, ArrowLeft, Palette, ChevronDown, ChevronUp, RotateCcw, Award, KeyRound, ShieldCheck } from 'lucide-react';
 
 interface ParentDashboardProps {
   onClose: () => void;
@@ -24,6 +24,27 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
   const [newKidAge, setNewKidAge] = useState<ExplorerProfile['ageTier']>('preschool');
   const [newKidGender, setNewKidGender] = useState<'boy' | 'girl'>('boy');
   const [isHallOfFameExpanded, setIsHallOfFameExpanded] = useState(false);
+
+  const [currentPin, setCurrentPin] = useState<string>(() => {
+    return account.parentPin || localStorage.getItem('phonixia_parent_pin') || '1234';
+  });
+  const [newPinInput, setNewPinInput] = useState('');
+  const [pinSaveMessage, setPinSaveMessage] = useState<string | null>(null);
+
+  const handleSaveCustomPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPinInput.length === 4 && /^\d{4}$/.test(newPinInput)) {
+      localStorage.setItem('phonixia_parent_pin', newPinInput);
+      setCurrentPin(newPinInput);
+      setPinSaveMessage(`Quick PIN updated to ${newPinInput}!`);
+      sounds.playSuccess();
+      setNewPinInput('');
+      setTimeout(() => setPinSaveMessage(null), 4000);
+    } else {
+      sounds.playError();
+      setPinSaveMessage('Please enter exactly 4 numbers.');
+    }
+  };
 
   // Deduplicated roster: an explorer is only included once by their unique profile ID
   const hallOfFameExplorers = account.explorers.filter((exp) => {
@@ -141,7 +162,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5">
-                    Permanent Honor Roll. Explorers earn their place among the Eternal Flamekeepers upon defeating the Shadow King, rescuing the Golden Phoenix, and saving Phonixia!
+                    Permanent Honor Roll. Explorers earn their place among the Eternal Flamekeepers upon defeating the Shadow King, rescuing the Golden Phonix, and saving Phonixia!
                   </p>
                 </div>
               </div>
@@ -193,7 +214,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                                 )}
                               </div>
                               <div className="text-[11px] text-slate-400">
-                                Permanent Eternal Flamekeeper · Savior of the Golden Phoenix
+                                Permanent Eternal Flamekeeper · Savior of the Golden Phonix
                               </div>
                             </div>
                           </div>
@@ -277,6 +298,55 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                 </button>
               )}
             </div>
+          </div>
+
+          {/* YOUTUBE KIDS STYLE 4-DIGIT QUICK PIN CONFIGURATION */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/40 border-2 border-amber-500/50 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-xl shadow-inner">
+                  🔢
+                </div>
+                <div>
+                  <div className="text-sm font-black text-amber-300 uppercase tracking-wide flex items-center gap-2">
+                    <span>Parent &amp; Teacher Quick PIN</span>
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-400/40">
+                      YOUTUBE KIDS STYLE
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Configure a shorter 4-digit PIN for instant access to student stats without needing full account passwords.
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs font-mono bg-black/70 px-3 py-1.5 rounded-xl border border-amber-500/40 text-slate-300">
+                Active PIN: <b className="text-amber-400 font-mono tracking-widest">•••• ({currentPin})</b>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveCustomPin} className="flex flex-wrap items-center gap-3 pt-1">
+              <input
+                type="password"
+                maxLength={4}
+                pattern="\d{4}"
+                inputMode="numeric"
+                placeholder="New 4-digit PIN (e.g. 1234)"
+                value={newPinInput}
+                onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                className="px-4 py-2 rounded-xl bg-slate-950 border border-amber-400/60 text-sm font-mono text-center tracking-widest text-white focus:outline-none focus:ring-2 focus:ring-amber-400 w-52"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer active:scale-95 shadow transition-all"
+              >
+                Save Quick PIN
+              </button>
+              {pinSaveMessage && (
+                <span className="text-xs font-bold text-emerald-400 animate-fade-in">
+                  ✓ {pinSaveMessage}
+                </span>
+              )}
+            </form>
           </div>
 
           {/* Switch Kid / Explorer Section */}

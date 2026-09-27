@@ -3,7 +3,9 @@ import { useGame, getCompanionGuide } from '../context/GameContext';
 import { LandId } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
 import { ActivePlayableStage } from './ActivePlayableStage';
+import { CuteTravelCutscene } from './CuteTravelCutscene';
 import { sounds, VOICE_PERSONAS } from '../utils/audio';
+import { getComprehensiveStageChallenge } from '../data/comprehensiveCurriculum';
 import { 
   ArrowLeft, Star, Volume2, CheckCircle2, RotateCcw, 
   Footprints, Play, ArrowLeft as ArrowLeftIcon, 
@@ -39,6 +41,9 @@ interface GameQuestion {
   explanation: string;
   missionTitle?: string;
   actionPrompt?: string;
+  spokenPrompt?: string;
+  builderLetters?: string[];
+  builderTarget?: string;
 }
 
 const LAND_STATIONS: Record<LandId, StationNode[]> = {
@@ -68,7 +73,7 @@ const LAND_STATIONS: Record<LandId, StationNode[]> = {
     { stationIndex: 2, name: 'Alpine Cavern', skillTitle: 'Vowel Teams OA & AI', x: 46, y: 25, icon: '⛰️' },
     { stationIndex: 3, name: 'Bossy R Pass', skillTitle: 'Bossy R (AR & OR)', x: 78, y: 32, icon: '🌪️' },
     { stationIndex: 4, name: 'Blizzard Bluff', skillTitle: 'Bossy R (ER, IR, UR)', x: 34, y: 72, icon: '🏔️' },
-    { stationIndex: 5, name: 'Phoenix Eyrie', skillTitle: 'Multi-Syllable Peak Challenge', x: 74, y: 68, icon: '👑' },
+    { stationIndex: 5, name: 'Phonix Eyrie', skillTitle: 'Multi-Syllable Peak Challenge', x: 74, y: 68, icon: '👑' },
   ],
   'lexicon-empire': [
     { stationIndex: 1, name: 'Colonnade of Time', skillTitle: 'Greek Root CHRON & BIO', x: 22, y: 32, icon: '🏛️' },
@@ -187,13 +192,13 @@ const LAND_THEMES: Record<LandId, LandTheme> = {
   'lexicon-empire': {
     questName: 'Shadow King Magma Showdown',
     questAction: 'Dodge the Shadow King\'s magma fireballs & strike the Royal Obelisk!',
-    questLore: 'The Final Boss Battle! Storm the Obsidian Fortress of the Shadow King, shatter his dark energy shield, and rescue the Golden Phoenix!',
+    questLore: 'The Final Boss Battle! Storm the Obsidian Fortress of the Shadow King, shatter his dark energy shield, and rescue the Golden Phonix!',
     mechanic: 'boss',
     icon: '🔥',
     skyGradient: 'from-purple-950 via-slate-950 to-rose-950',
     groundGradient: 'from-slate-950 via-purple-950 to-rose-950',
     groundBorder: 'border-rose-500',
-    decor: ['🔥', '⚡', '👑', '🗿', '🔥'],
+    decor: ['🔥', '⚡', '👹', '🗿', '🔥'],
     blockBg: 'bg-gradient-to-b from-amber-300 via-rose-400 to-purple-600 text-slate-950',
     blockBorder: 'border-amber-300',
     blockShadow: 'shadow-[0_0_25px_rgba(244,63,94,0.7)]',
@@ -207,207 +212,19 @@ const LAND_THEMES: Record<LandId, LandTheme> = {
 
 // Rich procedural question bank ensures NO TWO GAMES ARE THE SAME
 const GET_GAME_QUESTION = (landId: LandId, overallGameIndex: number): GameQuestion => {
-  const seed = (overallGameIndex * 37 + Math.floor(Date.now() / 60000)) % 1000;
-
-  if (landId === 'sound-shallows') {
-    const letters = ['B', 'M', 'S', 'T', 'P', 'F', 'R', 'D', 'C', 'N', 'L', 'G', 'H', 'J', 'W', 'Z'];
-    const letter = letters[(overallGameIndex + seed) % letters.length];
-    
-    if (overallGameIndex <= 10) {
-      const distractors = letters.filter(l => l !== letter).sort(() => Math.random() - 0.5).slice(0, 3);
-      return {
-        missionTitle: `Mission 1-${overallGameIndex}: Pearl Reef Trench`,
-        actionPrompt: `Swim up to pop the /${letter.toLowerCase()}/ Sound Pearl!`,
-        instruction: 'Listen carefully! Which letter makes this initial sound?',
-        targetSound: `/${letter.toLowerCase()}/`,
-        soundCue: `Which letter makes the sound, /${letter.toLowerCase()}/?`,
-        choices: [letter, ...distractors].sort(() => Math.random() - 0.5),
-        correct: letter,
-        explanation: `Letter ${letter} makes the sound /${letter.toLowerCase()}/!`
-      };
-    } else if (overallGameIndex <= 20) {
-      const rhymes = [
-        { word: 'PAN', rh: 'FAN', dist: ['CAT', 'PIG', 'DOG'] },
-        { word: 'BAT', rh: 'HAT', dist: ['SUN', 'CUP', 'LOG'] },
-        { word: 'PIG', rh: 'WIG', dist: ['PEN', 'BED', 'RUN'] },
-        { word: 'SUN', rh: 'RUN', dist: ['HOP', 'SIT', 'MAN'] },
-        { word: 'HOP', rh: 'TOP', dist: ['BUG', 'MAP', 'BED'] },
-        { word: 'BUG', rh: 'MUG', dist: ['FIN', 'POT', 'HEN'] },
-        { word: 'CAT', rh: 'MAT', dist: ['FOX', 'LIP', 'BUS'] },
-        { word: 'DOG', rh: 'LOG', dist: ['RAT', 'PIN', 'WEB'] },
-        { word: 'NET', rh: 'WET', dist: ['CUP', 'MOP', 'FAN'] },
-        { word: 'LIP', rh: 'TIP', dist: ['BAG', 'RUG', 'MUD'] },
-      ];
-      const r = rhymes[(overallGameIndex + seed) % rhymes.length];
-      return {
-        missionTitle: `Mission 2-${overallGameIndex - 10}: Clamshell Rhyme Cove`,
-        actionPrompt: `Pop the rhyming pearl for ${r.word}!`,
-        instruction: `Find the pearl that rhymes with ${r.word}:`,
-        targetSound: r.word,
-        soundCue: `Which word rhymes with ${r.word}?`,
-        choices: [r.rh, ...r.dist].sort(() => Math.random() - 0.5),
-        correct: r.rh,
-        explanation: `${r.word} and ${r.rh} both rhyme!`
-      };
-    } else {
-      const blends = [
-        { blend: '/b/ /a/ /t/', word: 'BAT', dist: ['BET', 'BIT', 'BOT'] },
-        { blend: '/s/ /u/ /n/', word: 'SUN', dist: ['SIN', 'SON', 'SAD'] },
-        { blend: '/m/ /a/ /p/', word: 'MAP', dist: ['MOP', 'MUP', 'MAT'] },
-        { blend: '/p/ /i/ /g/', word: 'PIG', dist: ['PUG', 'PEG', 'PIN'] },
-        { blend: '/h/ /e/ /n/', word: 'HEN', dist: ['HAT', 'HOT', 'HUT'] },
-        { blend: '/f/ /o/ /x/', word: 'FOX', dist: ['FIX', 'FAX', 'BOX'] },
-        { blend: '/c/ /u/ /p/', word: 'CUP', dist: ['CAP', 'COP', 'CUT'] },
-        { blend: '/r/ /e/ /d/', word: 'RED', dist: ['ROD', 'RAD', 'RID'] },
-      ];
-      const b = blends[(overallGameIndex + seed) % blends.length];
-      return {
-        missionTitle: `Mission 3-${overallGameIndex - 20}: Sunken Sound Lagoon`,
-        actionPrompt: `Blend the phonemes and pop the target pearl!`,
-        instruction: 'Blend these sounds together to form the word:',
-        targetSound: b.blend,
-        soundCue: `Blend these sounds: ${b.blend}. What word is it?`,
-        choices: [b.word, ...b.dist].sort(() => Math.random() - 0.5),
-        correct: b.word,
-        explanation: `${b.blend} blends into the word ${b.word}!`
-      };
-    }
-  }
-
-  if (landId === 'builders-guild') {
-    if (overallGameIndex <= 20) {
-      const cvc = [
-        { word: 'CAT', prompt: '/c/ /a/ /t/', dist: ['COT', 'CUT', 'CAR'] },
-        { word: 'DOG', prompt: '/d/ /o/ /g/', dist: ['DIG', 'DUG', 'DOT'] },
-        { word: 'BED', prompt: '/b/ /e/ /d/', dist: ['BAD', 'BUD', 'BAT'] },
-        { word: 'PIG', prompt: '/p/ /i/ /g/', dist: ['PEG', 'PUG', 'PIN'] },
-        { word: 'VAN', prompt: '/v/ /a/ /n/', dist: ['VON', 'VET', 'CAN'] },
-        { word: 'FOX', prompt: '/f/ /o/ /x/', dist: ['FAX', 'FIX', 'BOX'] },
-        { word: 'NET', prompt: '/n/ /e/ /t/', dist: ['NOT', 'NUT', 'PET'] },
-        { word: 'ZIP', prompt: '/z/ /i/ /p/', dist: ['ZAP', 'LIP', 'TIP'] },
-      ];
-      const c = cvc[(overallGameIndex + seed) % cvc.length];
-      return {
-        missionTitle: `Mission 1-${overallGameIndex}: Quarry Forge Anvil`,
-        actionPrompt: `Headbutt the Question Brick to forge the word!`,
-        instruction: 'What word do these keystones build?',
-        targetSound: c.prompt,
-        soundCue: `What word does ${c.prompt} build?`,
-        choices: [c.word, ...c.dist].sort(() => Math.random() - 0.5),
-        correct: c.word,
-        explanation: `${c.prompt} builds the word ${c.word}!`
-      };
-    } else {
-      const digraphs = [
-        { word: 'SHIP', target: 'SH', cue: '__IP (sails on ocean)', dist: ['CH', 'TH', 'WH'] },
-        { word: 'CHIN', target: 'CH', cue: '__IN (on your face)', dist: ['SH', 'TH', 'PH'] },
-        { word: 'THAT', target: 'TH', cue: '__AT (pointing over there)', dist: ['WH', 'CH', 'SH'] },
-        { word: 'WHALE', target: 'WH', cue: '__ALE (giant sea swimmer)', dist: ['SH', 'CH', 'TH'] },
-        { word: 'FISH', target: 'SH', cue: 'FI__ (swims in pond)', dist: ['CH', 'TH', 'WH'] },
-        { word: 'MUCH', target: 'CH', cue: 'MU__ (a lot of something)', dist: ['SH', 'TH', 'PH'] },
-        { word: 'MOTH', target: 'TH', cue: 'MO__ (night winged insect)', dist: ['SH', 'CH', 'WH'] },
-      ];
-      const d = digraphs[(overallGameIndex + seed) % digraphs.length];
-      return {
-        missionTitle: `Mission 2-${overallGameIndex - 20}: Steam Gear Works`,
-        actionPrompt: `Smash the masonry block to complete the digraph!`,
-        instruction: 'Pick the correct digraph for the word:',
-        targetSound: d.cue,
-        soundCue: `Which digraph completes ${d.cue}?`,
-        choices: [d.target, ...d.dist].sort(() => Math.random() - 0.5),
-        correct: d.target,
-        explanation: `${d.target} finishes the word ${d.word}!`
-      };
-    }
-  }
-
-  if (landId === 'tricky-trails') {
-    if (overallGameIndex <= 20) {
-      const sights = [
-        'THE', 'AND', 'SAID', 'YOU', 'LOOK', 'COME', 'HAVE', 'THEY', 
-        'WERE', 'WHERE', 'WHAT', 'THERE', 'COULD', 'WOULD', 'SOME'
-      ];
-      const s = sights[(overallGameIndex + seed) % sights.length];
-      const dist = sights.filter(w => w !== s).sort(() => Math.random() - 0.5).slice(0, 3);
-      return {
-        missionTitle: `Mission 1-${overallGameIndex}: Bramble Pit Trail`,
-        actionPrompt: `Leap the vine pit to grab the Rune Pod!`,
-        instruction: 'Read the tricky sight word:',
-        targetSound: s,
-        soundCue: `Can you spot the sight word: ${s}?`,
-        choices: [s, ...dist].sort(() => Math.random() - 0.5),
-        correct: s,
-        explanation: `Great reading! "${s}" is an essential sight word.`
-      };
-    } else {
-      const magicE = [
-        { base: 'CAP', magic: 'CAPE', dist: ['COP', 'CUP', 'COPE'] },
-        { base: 'PIN', magic: 'PINE', dist: ['PAN', 'PUN', 'PALE'] },
-        { base: 'HOP', magic: 'HOPE', dist: ['HIP', 'HEAP', 'HYPE'] },
-        { base: 'TUB', magic: 'TUBE', dist: ['TAB', 'TOE', 'TAIL'] },
-        { base: 'KIT', magic: 'KITE', dist: ['KAT', 'KNOT', 'KEPT'] },
-        { base: 'ROB', magic: 'ROBE', dist: ['RUB', 'RIB', 'ROOF'] },
-        { base: 'NOT', magic: 'NOTE', dist: ['NUT', 'NET', 'NEAT'] },
-      ];
-      const m = magicE[(overallGameIndex + seed) % magicE.length];
-      return {
-        missionTitle: `Mission 2-${overallGameIndex - 20}: Magic Silent E Grove`,
-        actionPrompt: `Snatch the magical Silent E fruit!`,
-        instruction: `Magic Silent E: Add 'e' to ${m.base}. What does it become?`,
-        targetSound: `${m.base} + E`,
-        soundCue: `Add silent E to ${m.base}. What does it make?`,
-        choices: [m.magic, ...m.dist].sort(() => Math.random() - 0.5),
-        correct: m.magic,
-        explanation: `Silent E makes the vowel say its name: ${m.base} becomes ${m.magic}!`
-      };
-    }
-  }
-
-  if (landId === 'whispering-peaks') {
-    const vowelTeams = [
-      { word: 'BOAT', target: 'OA', cue: 'B - OA - T', dist: ['OE', 'OW', 'OO'] },
-      { word: 'RAIN', target: 'AI', cue: 'R - AI - N', dist: ['AY', 'EA', 'EY'] },
-      { word: 'MEAT', target: 'EA', cue: 'M - EA - T', dist: ['EE', 'EI', 'EY'] },
-      { word: 'STAR', target: 'AR', cue: 'Bossy R: ST - AR', dist: ['OR', 'ER', 'IR'] },
-      { word: 'CORN', target: 'OR', cue: 'Bossy R: C - OR - N', dist: ['AR', 'UR', 'ER'] },
-      { word: 'BIRD', target: 'IR', cue: 'Bossy R: B - IR - D', dist: ['AR', 'OR', 'UR'] },
-      { word: 'TREE', target: 'EE', cue: 'Vowel Team: TR - EE', dist: ['EA', 'IE', 'EY'] },
-      { word: 'GOAT', target: 'OA', cue: 'Vowel Team: G - OA - T', dist: ['OW', 'OU', 'OO'] },
-    ];
-    const vt = vowelTeams[(overallGameIndex + seed) % vowelTeams.length];
-    return {
-      missionTitle: `Mission ${overallGameIndex}: Frost Cloud Peak`,
-      actionPrompt: `Bounce high off the clouds to shatter the Frost Crystal!`,
-      instruction: `Identify the vowel sound pattern in the word:`,
-      targetSound: vt.word,
-      soundCue: `Which letters make the vowel sound in ${vt.word}?`,
-      choices: [vt.target, ...vt.dist].sort(() => Math.random() - 0.5),
-      correct: vt.target,
-      explanation: `${vt.cue} uses '${vt.target}'!`
-    };
-  }
-
-  // Lexicon Empire: Final Boss Showdown vs The Shadow King!
-  const roots = [
-    { root: 'CHRON', meaning: 'Time', example: 'Chronological', dist: ['Earth', 'Life', 'Sound'] },
-    { root: 'BIO', meaning: 'Life', example: 'Biology', dist: ['Water', 'Time', 'Light'] },
-    { root: 'GEO', meaning: 'Earth', example: 'Geology', dist: ['Sky', 'Life', 'Heat'] },
-    { root: 'TELE', meaning: 'Far/Distant', example: 'Telescope', dist: ['Near', 'Small', 'Fast'] },
-    { root: 'GRAPH', meaning: 'Write/Draw', example: 'Autograph', dist: ['Speak', 'Hear', 'Count'] },
-    { root: 'PHON', meaning: 'Sound', example: 'Symphony', dist: ['Color', 'Shape', 'Taste'] },
-    { root: 'SPEC', meaning: 'Look/See', example: 'Inspect', dist: ['Touch', 'Smell', 'Move'] },
-    { root: 'PORT', meaning: 'Carry', example: 'Transport', dist: ['Break', 'Throw', 'Build'] },
-  ];
-  const r = roots[(overallGameIndex + seed) % roots.length];
+  const challenge = getComprehensiveStageChallenge(landId, overallGameIndex);
   return {
-    missionTitle: `Boss Showdown ${overallGameIndex}: Magma Citadel of the Shadow King`,
-    actionPrompt: `Heroic Strike! Hit the Royal Obelisk to shatter the Shadow King's cage!`,
-    instruction: `Shadow King's Barrier: What is the linguistic power of "${r.root}"?`,
-    targetSound: `${r.root} (${r.example})`,
-    soundCue: `The root is ${r.root}, as in ${r.example}. What does it mean?`,
-    choices: [r.meaning, ...r.dist].sort(() => Math.random() - 0.5),
-    correct: r.meaning,
-    explanation: `The root "${r.root}" translates to "${r.meaning}"! You damaged the Shadow King!`
+    missionTitle: challenge.skillTitle,
+    actionPrompt: challenge.instruction,
+    instruction: challenge.instruction,
+    targetSound: challenge.targetSound,
+    soundCue: challenge.soundCue,
+    choices: challenge.choices,
+    correct: challenge.correct,
+    explanation: challenge.explanation,
+    spokenPrompt: challenge.spokenPrompt,
+    builderLetters: challenge.builderLetters,
+    builderTarget: challenge.builderTarget
   };
 };
 
@@ -456,6 +273,17 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
   const [jumpOffset, setJumpOffset] = useState<number>(0);
   const [isJumping, setIsJumping] = useState<boolean>(false);
 
+  // Cute Travel Cutscene State across all 50 stages in all 5 games
+  const [travelingState, setTravelingState] = useState<{
+    from: number;
+    to: number;
+    stationName: string;
+    skillTitle: string;
+  } | null>(null);
+
+  // Return to Phonixia Citadel Travel Animation
+  const [isReturningToPhonixia, setIsReturningToPhonixia] = useState<boolean>(false);
+
   // Refs for callbacks to prevent stale closures in event listeners
   const triggerMapJumpRef = useRef<() => void>(() => {});
   const handleSelectChoiceRef = useRef<(choice: string) => void>(() => {});
@@ -478,6 +306,11 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     } else {
       sounds.speak('Not quite! Listen closely to the sound and try again!');
       setEarnedStars((prev) => Math.max(1, prev - 1));
+
+      // Getting an answer wrong restores life force to boss barrier!
+      if (theme.mechanic === 'boss') {
+        setBossBarrierHp((prev) => Math.min(100, prev + 15));
+      }
 
       // Screen damage flash
       setScreenDamageFlash(true);
@@ -575,6 +408,28 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     setPlayerPos({ x: st.x, y: Math.min(88, st.y + 5) });
   }, [stations, landProgress.completedGamesCount]);
 
+  const triggerTravelAnimation = useCallback((nextStage: number) => {
+    if (nextStage > 50) {
+      setActiveGameIndex(null);
+      setCurrentQuestion(null);
+      return;
+    }
+    const targetStationIdx = Math.min(4, Math.floor((nextStage - 1) / 10));
+    const targetStation = stations[targetStationIdx] || stations[0];
+    const nextQ = GET_GAME_QUESTION(landId, nextStage);
+
+    setActiveGameIndex(null);
+    setCurrentQuestion(null);
+    setSelectedStation(null);
+
+    setTravelingState({
+      from: activeGameIndex || 1,
+      to: nextStage,
+      stationName: targetStation.name,
+      skillTitle: nextQ.missionTitle || targetStation.skillTitle
+    });
+  }, [stations, landId, activeGameIndex]);
+
   const isStationUnlocked = useCallback((stIndex: number): boolean => {
     return landProgress.completedGamesCount >= (stIndex - 1) * 10;
   }, [landProgress.completedGamesCount]);
@@ -583,13 +438,17 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     sounds.stopSpeech();
     if (isStationUnlocked(station.stationIndex)) {
       sounds.playSuccess();
-      sounds.speak(`Welcome to ${station.name}! Complete each challenge to advance!`);
-      setSelectedStation(station);
+      const stationStart = (station.stationIndex - 1) * 10 + 1;
+      const targetStage = Math.min(
+        station.stationIndex * 10,
+        Math.max(stationStart, landProgress.completedGamesCount + 1)
+      );
+      triggerTravelAnimation(targetStage);
     } else {
       sounds.playError();
       sounds.speak(`This area is locked! Complete all challenges in the previous station first!`);
     }
-  }, [isStationUnlocked]);
+  }, [isStationUnlocked, landProgress.completedGamesCount, triggerTravelAnimation]);
 
   const checkProximity = useCallback((x: number, y: number) => {
     let closest: StationNode | null = null;
@@ -603,20 +462,9 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
       }
     });
 
+    // DO NOT auto-open! Player passes over freely and presses Space bar to enter!
     setNearbyStation(closest);
-
-    const now = Date.now();
-    if (closest && minDistance < 4.2 && now > enterCooldown.current && !selectedStation && activeGameIndex === null) {
-      const target = closest as StationNode;
-      if (lastEnteredStation.current !== target.stationIndex) {
-        lastEnteredStation.current = target.stationIndex;
-        enterCooldown.current = now + 2000;
-        triggerStationOpen(target);
-      }
-    } else if (!closest || minDistance > 7.5) {
-      lastEnteredStation.current = null;
-    }
-  }, [stations, triggerStationOpen, selectedStation, activeGameIndex]);
+  }, [stations]);
 
   // Global Keyboard event handling (Uses Refs to avoid stale closures!)
   useEffect(() => {
@@ -626,11 +474,15 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
       const code = e.code || '';
       let matched = false;
 
-      // Space bar, Tab, W, ArrowUp jump action
-      if (k === ' ' || k === 'tab' || k === 'w' || k === 'arrowup' || code === 'Space' || code === 'Tab' || code === 'KeyW' || code === 'ArrowUp') {
+      // Space bar or Enter: If on/near a station, jump to enter and travel! Otherwise jump on map.
+      if (k === ' ' || k === 'enter' || code === 'Space' || code === 'Enter') {
         e.preventDefault();
         matched = true;
-        triggerMapJumpRef.current();
+        if (nearbyStation) {
+          triggerStationOpen(nearbyStation);
+        } else {
+          triggerMapJumpRef.current();
+        }
       }
 
       if (k === 'arrowup' || k === 'up' || k === 'w' || code === 'ArrowUp' || code === 'KeyW') {
@@ -724,7 +576,7 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
 
       const running = dirs.shift;
       setIsRunning(running);
-      const baseSpeed = running ? 26 : 14;
+      const baseSpeed = running ? 18 : 10;
 
       let moving = false;
       let newX = playerPosRef.current.x;
@@ -823,10 +675,6 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     setRoundCompleted(false);
     setEarnedStars(3);
     setSelectedStation(null);
-
-    setTimeout(() => {
-      sounds.speak(`${q.instruction} ${q.soundCue}`);
-    }, 250);
   };
 
   const finishGameRound = () => {
@@ -861,8 +709,8 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
         <button
           onClick={() => {
             sounds.stopSpeech();
-            sounds.playStep();
-            onBackToWorld();
+            sounds.playFanfare();
+            setIsReturningToPhonixia(true);
           }}
           className="pointer-events-auto px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-slate-950/85 backdrop-blur-md hover:bg-slate-900 text-amber-300 border border-amber-500/70 text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-xl transition-transform hover:scale-105 active:scale-95"
         >
@@ -923,11 +771,17 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
           className="absolute inset-0 w-full h-full object-fill select-none pointer-events-none z-0"
         />
 
-        {/* 5 Clean Landmark Stations on the Map */}
+        {/* 5 Clean Mario-Style Landmark Station Circular Nodes on the Map */}
         {stations.map((st) => {
           const unlocked = isStationUnlocked(st.stationIndex);
           const completedInStation = Math.min(10, Math.max(0, landProgress.completedGamesCount - (st.stationIndex - 1) * 10));
           const isMastered = completedInStation >= 10;
+          const isNearby = nearbyStation?.stationIndex === st.stationIndex;
+          const stationStart = (st.stationIndex - 1) * 10 + 1;
+          const activeStage = Math.min(
+            st.stationIndex * 10,
+            Math.max(stationStart, landProgress.completedGamesCount + 1)
+          );
 
           return (
             <div
@@ -937,41 +791,53 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
                 e.stopPropagation();
                 triggerStationOpen(st);
               }}
-              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-115 active:scale-95 group"
+              className="absolute z-15 -translate-x-1/2 -translate-y-1/2 cursor-pointer group select-none"
             >
+              {/* Mario Circular Node */}
               <div
-                className={`relative px-3.5 py-2.5 rounded-2xl border-2 shadow-2xl flex flex-col items-center backdrop-blur-md transition-all ${
+                className={`relative rounded-full flex flex-col items-center justify-center transition-all ${
                   unlocked
-                    ? 'bg-slate-950/90 border-amber-400 hover:border-amber-300'
-                    : 'bg-slate-950/80 border-slate-800 opacity-60'
+                    ? isNearby
+                      ? 'w-10 h-10 sm:w-12 sm:h-12 bg-amber-400 border-2 border-white ring-4 ring-amber-400/80 shadow-[0_0_20px_rgba(245,158,11,1)] scale-120 animate-bounce'
+                      : 'w-8 h-8 sm:w-10 sm:h-10 bg-black border-2 border-amber-400 shadow-xl hover:scale-115'
+                    : 'w-7 h-7 sm:w-9 sm:h-9 bg-slate-900 border-2 border-slate-700 opacity-60'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{st.icon}</span>
-                  <div className="text-left">
-                    <span className="text-xs font-black text-amber-300 tracking-wide block uppercase">
-                      {st.name}
-                    </span>
-                    <span className="text-[10px] text-slate-300 font-bold block">
-                      {st.skillTitle}
-                    </span>
+                <span className="text-sm sm:text-base">{st.icon}</span>
+
+                {/* Cleared Mario Flag */}
+                {isMastered && (
+                  <div className="absolute -top-3.5 -right-1 text-xs animate-pulse">
+                    🚩
+                  </div>
+                )}
+              </div>
+
+              {/* Station Number & Stars mini pill */}
+              <div className="mt-1 flex items-center justify-center">
+                <span className={`text-[9px] font-mono font-black px-1.5 py-0.2 rounded-full shadow ${
+                  isMastered
+                    ? 'bg-amber-400 text-slate-950'
+                    : unlocked
+                    ? 'bg-slate-950/90 text-amber-300 border border-amber-500/50'
+                    : 'bg-slate-900 text-slate-500'
+                }`}>
+                  #{st.stationIndex} · {completedInStation}/10
+                </span>
+              </div>
+
+              {/* Pop-Over Mario Banner on Proximity */}
+              {isNearby && (
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-slate-950/95 border-2 border-amber-400 px-3 py-1.5 rounded-xl shadow-[0_0_25px_rgba(245,158,11,0.7)] whitespace-nowrap z-40 text-center animate-scale-up pointer-events-none">
+                  <div className="text-[11px] font-black text-amber-200 flex items-center justify-center gap-1">
+                    <span>{st.icon}</span>
+                    <span>{st.name}</span>
+                  </div>
+                  <div className="text-[9px] font-bold text-slate-300">
+                    {unlocked ? `Level ${activeStage} · Press SPACE or Tap to Play` : 'Locked · Complete earlier stages first'}
                   </div>
                 </div>
-
-                {/* Stars / Clear Status badge */}
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.2 rounded-full ${
-                    isMastered
-                      ? 'bg-amber-400 text-slate-950 font-black'
-                      : unlocked
-                      ? 'bg-slate-800 text-amber-300 border border-amber-500/40'
-                      : 'bg-slate-900 text-slate-500'
-                  }`}>
-                    {completedInStation} / 10
-                  </span>
-                  {isMastered && <span className="text-xs">⭐</span>}
-                </div>
-              </div>
+              )}
             </div>
           );
         })}
@@ -1133,64 +999,6 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
         </div>
       </div>
 
-      {/* 1. STATION HUB MODAL: Sequential Mario Progression */}
-      {selectedStation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
-          <div className="relative w-full max-w-lg bg-slate-900 border-2 border-amber-400 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{selectedStation.icon}</span>
-                <div>
-                  <h3 className="text-sm font-black text-amber-300 uppercase tracking-wide">
-                    {selectedStation.name}
-                  </h3>
-                  <p className="text-[11px] text-slate-400">{selectedStation.skillTitle} · Complete in Order to Advance</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  sounds.stopSpeech();
-                  setSelectedStation(null);
-                }}
-                className="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 max-h-[50vh] overflow-y-auto pr-1">
-              {Array.from({ length: 10 }, (_, i) => {
-                const gameNum = (selectedStation.stationIndex - 1) * 10 + (i + 1);
-                const isCleared = landProgress.completedGamesCount >= gameNum;
-                const isUnlocked = landProgress.completedGamesCount >= (gameNum - 1);
-
-                return (
-                  <button
-                    key={gameNum}
-                    disabled={!isUnlocked}
-                    onClick={() => startPlayableGame(gameNum)}
-                    className={`p-3 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${
-                      isCleared
-                        ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow'
-                        : isUnlocked
-                        ? 'bg-slate-950 border-amber-500/70 text-slate-200 hover:border-amber-300 hover:scale-105'
-                        : 'bg-slate-950 border-slate-800 text-slate-600 opacity-40 cursor-not-allowed'
-                    }`}
-                  >
-                    <span className="text-lg font-black font-mono">
-                      {isCleared ? '⭐' : isUnlocked ? '▶' : '🔒'}
-                    </span>
-                    <span className="text-[10px] font-black uppercase mt-1">
-                      {isCleared ? 'Cleared' : isUnlocked ? 'Play' : 'Locked'}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 2. ACTIVE PLAYABLE PHONICS GAME STAGE: REALM-SPECIFIC VIDEO GAME */}
       {activeGameIndex !== null && currentQuestion && (
         <ActivePlayableStage
@@ -1209,10 +1017,43 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
           onSelectChoice={handleSelectChoice}
           onFinishRound={finishGameRound}
           onTryAgain={() => startPlayableGame(activeGameIndex)}
-          onNextLevel={() => startPlayableGame(activeGameIndex + 1)}
+          onNextLevel={() => triggerTravelAnimation(activeGameIndex + 1)}
           onClose={() => {
             sounds.stopSpeech();
             setActiveGameIndex(null);
+          }}
+        />
+      )}
+
+      {/* 3. CUTE TRAVEL CUTSCENE: CHARACTER TRAVELS TO NEXT LEVEL ACROSS ALL 50 STAGES */}
+      {travelingState && (
+        <CuteTravelCutscene
+          landId={landId}
+          fromStage={travelingState.from}
+          toStage={travelingState.to}
+          stationName={travelingState.stationName}
+          skillTitle={travelingState.skillTitle}
+          activeExplorer={activeExplorer}
+          onArrived={() => {
+            const destStage = travelingState.to;
+            setTravelingState(null);
+            startPlayableGame(destStage);
+          }}
+        />
+      )}
+
+      {/* 4. RETURN TRAVEL CUTSCENE: TRAVEL BACK TO PHONIXIA CITADEL */}
+      {isReturningToPhonixia && (
+        <CuteTravelCutscene
+          landId={landId}
+          fromStage={landProgress.completedGamesCount || 1}
+          toStage={1}
+          stationName="Phonixia Citadel"
+          skillTitle="Returning to Phonixia Harbor"
+          activeExplorer={activeExplorer}
+          onArrived={() => {
+            setIsReturningToPhonixia(false);
+            onBackToWorld();
           }}
         />
       )}

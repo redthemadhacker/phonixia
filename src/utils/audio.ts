@@ -64,6 +64,7 @@ class SoundManager {
 
   private audioCtx: AudioContext | null = null;
   private cachedVoices: SpeechSynthesisVoice[] = [];
+  private currentAudio: HTMLAudioElement | null = null;
 
   constructor() {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -105,24 +106,126 @@ class SoundManager {
   }
 
   public stopSpeech() {
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.currentAudio = null;
+    }
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
   }
 
-  public speakPhonicsSlow(text: string) {
-    if (!this.speechEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
-    this.speak(text, 0.65, 1.15);
+  public cleanPhonicsForSpeech(rawText: string): string {
+    if (!rawText) return '';
+    let text = rawText.trim();
+
+    // Isolated single letter pronunciation corrections
+    if (text.toLowerCase() === 'x') {
+      return 'ks';
+    }
+    if (text.toLowerCase() === 'c') {
+      return 'k';
+    }
+
+    // Fix repeated consonant phoneme spelling so speech engine doesn't say "k - s - s - s"
+    text = text.replace(/ksss/gi, 'ks');
+    text = text.replace(/\bk\s*s\s*s\s*s\b/gi, 'ks');
+    text = text.replace(/fff\s*-\s*ah\s*-\s*ksss/gi, 'f... ah... ks... spells fox!');
+    text = text.replace(/d\s*-\s*ah\s*-\s*g/gi, 'd... ah... g... spells dog!');
+    text = text.replace(/p\s*-\s*ih\s*-\s*g/gi, 'p... ih... g... spells pig!');
+    text = text.replace(/k\s*-\s*ah\s*-\s*t/gi, 'k... ah... t... spells cat!');
+
+    // Convert phonetic slashes into natural spoken equivalents
+    text = text.replace(/\/æ\//g, 'short a');
+    text = text.replace(/\/ɒ\//g, 'short o');
+    text = text.replace(/\/ɛ\//g, 'short e');
+    text = text.replace(/\/ɪ\//g, 'short i');
+    text = text.replace(/\/ʌ\//g, 'short u');
+    text = text.replace(/\/eɪ\//g, 'long a');
+    text = text.replace(/\/aɪ\//g, 'long i');
+    text = text.replace(/\/oʊ\//g, 'long o');
+    text = text.replace(/\/uː\//g, 'long u');
+    text = text.replace(/\/ʃ\//g, 'sh');
+    text = text.replace(/\/tʃ\//g, 'ch');
+    text = text.replace(/\/θ\//g, 'th');
+    text = text.replace(/\/ŋk\//g, 'nk');
+    text = text.replace(/\/bl\//g, 'b l');
+    text = text.replace(/\/ɡr\//g, 'g r');
+    text = text.replace(/\/st\//g, 's t');
+    text = text.replace(/\/nd\//g, 'n d');
+    text = text.replace(/\/mp\//g, 'm p');
+    text = text.replace(/\/b\//g, 'b');
+    text = text.replace(/\/t\//g, 't');
+    text = text.replace(/\/m\//g, 'm');
+    text = text.replace(/\/g\//g, 'g');
+    text = text.replace(/\/s\//g, 's');
+    text = text.replace(/\/d\//g, 'd');
+    text = text.replace(/\/w\//g, 'w');
+    text = text.replace(/\/k\//g, 'k');
+
+    // Clean elongated strings
+    text = text.replace(/\bshhh\b/gi, 'sh');
+    text = text.replace(/\bchhh\b/gi, 'ch');
+    text = text.replace(/\bthhh\b/gi, 'th');
+    text = text.replace(/\bmmm\b/gi, 'm');
+    text = text.replace(/\bsss\b/gi, 's');
+    text = text.replace(/\bfff\b/gi, 'f');
+    text = text.replace(/\blll\b/gi, 'l');
+    text = text.replace(/\bnnn\b/gi, 'n');
+    text = text.replace(/\baaa\b/gi, 'ah');
+    text = text.replace(/\bpuh\b/gi, 'p');
+    text = text.replace(/\bbuh\b/gi, 'b');
+    text = text.replace(/\btuh\b/gi, 't');
+    text = text.replace(/\bduh\b/gi, 'd');
+    text = text.replace(/\bkuh\b/gi, 'k');
+    text = text.replace(/\bguh\b/gi, 'g');
+    text = text.replace(/\bjuh\b/gi, 'j');
+    text = text.replace(/\bwuu\b/gi, 'w');
+    text = text.replace(/\bzzz\b/gi, 'z');
+
+    return text;
   }
 
+  public speakPhonicsSlow(text: string) {
+    if (!this.speechEnabled) return;
+    this.speak(text, 0.75, 1.2);
+  }
+
+  private lastSpokenText: string = '';
+  private lastSpokenTime: number = 0;
+
   public speak(text: string, customRate?: number, customPitch?: number) {
-    if (!this.speechEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
+    if (!this.speechEnabled || typeof window === 'undefined') return;
 
-    window.speechSynthesis.cancel();
+    const spokenText = this.cleanPhonicsForSpeech(text);
+    if (!spokenText) return;
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    // Prevent immediate duplicate speech within 800ms
+    const now = Date.now();
+    if (spokenText === this.lastSpokenText && now - this.lastSpokenTime < 800) {
+      return;
+    }
+    this.lastSpokenText = spokenText;
+    this.lastSpokenTime = now;
+
+    this.stopSpeech();
+
     const persona = VOICE_PERSONAS.find((p) => p.id === this.activePersonaId) || VOICE_PERSONAS[0];
 
+    // Priority: Clean, direct Web Speech Synthesis with warm persona voice
+    this.fallbackSpeechSynthesis(spokenText, customRate, customPitch, persona);
+  }
+
+  private fallbackSpeechSynthesis(
+    spokenText: string,
+    customRate: number | undefined,
+    customPitch: number | undefined,
+    persona: VoicePersona
+  ) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+    const utterance = new SpeechSynthesisUtterance(spokenText);
     utterance.rate = customRate ?? persona.rate;
     utterance.pitch = customPitch ?? persona.pitch;
 
@@ -142,31 +245,26 @@ class SoundManager {
         const listToSearch = langMatches.length > 0 ? langMatches : voices;
 
         if (persona.id === 'ms-rachel') {
-          // Warm expressive female voice
           chosenVoice = listToSearch.find(v => {
             const n = v.name.toLowerCase();
-            return n.includes('samantha') || n.includes('victoria') || n.includes('zira') || n.includes('karen') || (n.includes('female') && !n.includes('male'));
+            return n.includes('natural') || n.includes('google us english') || n.includes('samantha') || n.includes('ava') || n.includes('victoria') || n.includes('karen') || (n.includes('female') && !n.includes('male'));
           });
         } else if (persona.id === 'us-female') {
-          // Alternative female or standard female
           chosenVoice = listToSearch.find(v => {
             const n = v.name.toLowerCase();
-            return (n.includes('female') || n.includes('samantha') || n.includes('karen') || n.includes('susan') || n.includes('linda') || n.includes('zira')) && !n.includes('male');
+            return (n.includes('google') || n.includes('samantha') || n.includes('karen') || n.includes('ava') || n.includes('zira')) && !n.includes('male');
           });
         } else if (persona.id === 'us-male') {
-          // Strict male voice
           chosenVoice = listToSearch.find(v => {
             const n = v.name.toLowerCase();
             return n.includes('david') || n.includes('alex') || n.includes('mark') || n.includes('george') || n.includes('guy') || n.includes('male');
           });
         } else if (persona.id === 'uk-female') {
-          // UK British female
           chosenVoice = listToSearch.find(v => {
             const n = v.name.toLowerCase();
             return (n.includes('female') || n.includes('victoria') || n.includes('hazel') || n.includes('serena') || n.includes('stephanie')) && !n.includes('male');
           });
         } else if (persona.id === 'uk-male') {
-          // UK British male
           chosenVoice = listToSearch.find(v => {
             const n = v.name.toLowerCase();
             return (n.includes('male') || n.includes('daniel') || n.includes('george') || n.includes('oliver') || n.includes('arthur'));

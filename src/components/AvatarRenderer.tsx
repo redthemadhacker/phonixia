@@ -243,15 +243,70 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
               </g>
             )}
 
-            {companion === 'golden-eagle' && (
+            {(companion === 'golden-eagle' || companion === 'golden-phonix') && (
               <g filter="url(#shadow)">
+                {/* Golden Eagle Body & Majestic Wings */}
                 <ellipse cx="14" cy="14" rx="8" ry="7" fill="#b45309" />
+                {/* Golden Crowned Head */}
                 <circle cx="14" cy="8" r="5" fill="#f59e0b" />
-                <path d="M 8 11 Q 1 4 7 16 Z" fill="#d97706" />
-                <path d="M 20 11 Q 27 4 21 16 Z" fill="#d97706" />
-                <polygon points="17,8 22,9 17,11" fill="#fbbf24" />
-                <circle cx="15" cy="7" r="1.2" fill="#1e293b" />
+                <polygon points="12,3 14,0 16,3" fill="#fbbf24" />
+                {/* Outstretched Wings */}
+                <path d="M 8 11 Q 0 3 6 16 Z" fill="#d97706" />
+                <path d="M 20 11 Q 28 3 22 16 Z" fill="#d97706" />
+                {/* Golden Hook Beak */}
+                <polygon points="17,8 23,9.5 17,11" fill="#fbbf24" />
+                {/* Piercing Eye */}
+                <circle cx="15" cy="7" r="1.3" fill="#1e293b" />
+                <circle cx="15.3" cy="6.7" r="0.4" fill="#ffffff" />
+                {/* Eagle Tail Feathers */}
                 <path d="M 12 20 Q 9 27 13 28 Q 15 24 15 20 Z" fill="#92400e" />
+                {/* Golden Claws / Talons */}
+                <circle cx="11" cy="21" r="1.2" fill="#fbbf24" />
+                <circle cx="16" cy="21" r="1.2" fill="#fbbf24" />
+              </g>
+            )}
+
+            {companion === 'feather-owl' && (
+              <g filter="url(#shadow)">
+                <ellipse cx="14" cy="14" rx="7.5" ry="7" fill="#4338ca" />
+                <circle cx="14" cy="9" r="5" fill="#4f46e5" />
+                <polygon points="10,5 9,2 12,4" fill="#a5b4fc" />
+                <polygon points="18,5 19,2 16,4" fill="#a5b4fc" />
+                <circle cx="11.5" cy="8.5" r="2.2" fill="#fef08a" />
+                <circle cx="16.5" cy="8.5" r="2.2" fill="#fef08a" />
+                <circle cx="11.5" cy="8.5" r="1" fill="#1e1b4b" />
+                <circle cx="16.5" cy="8.5" r="1" fill="#1e1b4b" />
+                <polygon points="13,10.5 15,10.5 14,12" fill="#f59e0b" />
+              </g>
+            )}
+
+            {companion === 'woodland-fox' && (
+              <g filter="url(#shadow)">
+                <ellipse cx="14" cy="15" rx="7" ry="6" fill="#ea580c" />
+                <circle cx="14" cy="9" r="4.5" fill="#ea580c" />
+                <polygon points="10,6 9,2 12,5" fill="#ea580c" />
+                <polygon points="18,6 19,2 16,5" fill="#ea580c" />
+                <polygon points="10,5 9.5,3 11.5,4.5" fill="#fecdd3" />
+                <polygon points="18,5 18.5,3 16.5,4.5" fill="#fecdd3" />
+                <circle cx="12" cy="9" r="1" fill="#0f172a" />
+                <circle cx="16" cy="9" r="1" fill="#0f172a" />
+                <circle cx="14" cy="11.5" r="0.8" fill="#0f172a" />
+                <path d="M 7 15 Q 1 12 3 19 Q 8 18 8 16 Z" fill="#ea580c" />
+                <circle cx="2.5" cy="18" r="1.5" fill="#ffffff" />
+              </g>
+            )}
+
+            {companion === 'bunny' && (
+              <g filter="url(#shadow)">
+                <ellipse cx="14" cy="15" rx="6.5" ry="5.5" fill="#f8fafc" />
+                <circle cx="14" cy="10" r="4" fill="#f8fafc" />
+                <ellipse cx="11.5" cy="4" rx="1.5" ry="4" fill="#f8fafc" />
+                <ellipse cx="16.5" cy="4" rx="1.5" ry="4" fill="#f8fafc" />
+                <ellipse cx="11.5" cy="4" rx="0.8" ry="3" fill="#f472b6" />
+                <ellipse cx="16.5" cy="4" rx="0.8" ry="3" fill="#f472b6" />
+                <circle cx="12.5" cy="10" r="0.9" fill="#0f172a" />
+                <circle cx="15.5" cy="10" r="0.9" fill="#0f172a" />
+                <polygon points="13.5,11.5 14.5,11.5 14,12.2" fill="#f472b6" />
               </g>
             )}
           </g>

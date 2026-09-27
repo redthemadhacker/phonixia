@@ -59,4 +59,5 @@ export interface Account {
   username: string;
   role: 'parent' | 'teacher';
   explorers: ExplorerProfile[];
+  parentPin?: string;
 }

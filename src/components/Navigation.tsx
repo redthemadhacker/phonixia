@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { Volume2, VolumeX, Sparkles, UserPlus, Users } from 'lucide-react';
+import { sounds } from '../utils/audio';
 
 interface NavigationProps {
   currentView: string;
@@ -21,12 +22,16 @@ export const Navigation: React.FC<NavigationProps> = ({
   const {
     account,
     activeExplorer,
-    switchExplorer,
-    soundEnabled,
-    toggleSound
+    switchExplorer
   } = useGame();
 
+  const [soundEnabled, setSoundEnabled] = useState(sounds.soundEnabled);
   const [explorerDropdownOpen, setExplorerDropdownOpen] = useState(false);
+
+  const toggleSound = () => {
+    sounds.soundEnabled = !soundEnabled;
+    setSoundEnabled(!soundEnabled);
+  };
 
   return (
     <header 

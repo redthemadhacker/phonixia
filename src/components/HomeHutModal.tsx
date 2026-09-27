@@ -12,9 +12,10 @@ import {
 interface HomeHutModalProps {
   onClose: () => void;
   onOpenCelebration?: () => void;
+  onOpenParentPortal?: () => void;
 }
 
-export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCelebration }) => {
+export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCelebration, onOpenParentPortal }) => {
   const {
     account,
     activeExplorer,
@@ -87,9 +88,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
   ];
 
   const COMPANIONS = [
+    { id: 'golden-eagle', name: 'Golden Eagle', icon: '🦅', desc: 'Majestic Golden Sky Companion' },
     { id: 'baby-dragon', name: 'Baby Dragon', icon: '🐲', desc: 'Kam’s Dragon Companion' },
     { id: 'feather-owl', name: 'Starlight Owl', icon: '🦉', desc: 'Celine’s Owl Companion' },
-    { id: 'golden-phonix', name: 'Golden Phoenix', icon: '🦅', desc: 'Legendary Flamekeeper Guide' },
     { id: 'woodland-fox', name: 'Curious Fox', icon: '🦊', desc: 'Clever & Quick' },
     { id: 'sea-turtle', name: 'Wise Turtle', icon: '🐢', desc: 'Patient & Steady' },
     { id: 'bunny', name: 'Brisk Bunny', icon: '🐰', desc: 'Speedy Reader' }
@@ -700,7 +701,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                           <div className="text-xs font-black text-slate-100 font-display uppercase tracking-wide">
                             {land.name}
                           </div>
-                          <div className="text-[10px] text-slate-400">{land.gradeLevel}</div>
+                          <div className="text-[10px] text-amber-400/80 font-mono font-bold">50 Adventure Stages</div>
                         </div>
 
                         <div className="flex items-center gap-3 text-xs font-mono font-bold">
@@ -734,7 +735,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/80 text-amber-300 font-mono text-[11px] font-black uppercase tracking-widest">
                     <Crown className="w-3.5 h-3.5 fill-current" />
-                    <span>Eternal Flamekeeper · Savior of the Golden Phoenix</span>
+                    <span>Eternal Flamekeeper · Savior of the Golden Phonix</span>
                   </div>
 
                   <div className="relative mx-auto w-24 h-24 rounded-full bg-slate-950 border-4 border-amber-400 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.5)]">
@@ -747,7 +748,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                     </h3>
                     <p className="text-xs text-amber-200 font-bold">{activeExplorer.customization.title}</p>
                     <p className="text-[11px] text-slate-300 max-w-md mx-auto pt-2 leading-relaxed">
-                      Legendary savior of the Golden Phoenix! Conquered all 5 realms, vanquished the Shadow King, and earned your place on the permanent Wall of Fame!
+                      Legendary savior of the Golden Phonix! Conquered all 5 realms, vanquished the Shadow King, and earned your place on the permanent Wall of Fame!
                     </p>
                   </div>
 
@@ -786,7 +787,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       {activeExplorer.name}'s Rescue Quest in Progress
                     </h3>
                     <p className="text-xs text-slate-400 max-w-sm mx-auto pt-1">
-                      Conquer all 50 challenge stages across all five realms to defeat the Shadow King, rescue the Golden Phoenix, and unlock your Coronation Aisle &amp; Wall of Fame picture!
+                      Conquer all 50 challenge stages across all five realms to defeat the Shadow King, rescue the Golden Phonix, and unlock your Coronation Aisle &amp; Wall of Fame picture!
                     </p>
                   </div>
                 </div>
@@ -835,6 +836,39 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
           {/* TAB 5: SETTINGS & TEACHER CLASSROOM RESET */}
           {activeTab === 'settings' && (
             <div className="space-y-4">
+              {/* PARENT & TEACHER ACCESS PORTAL WITH PIN / PASSWORD (YOUTUBE KIDS STYLE) */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border-2 border-amber-400 shadow-xl space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-2xl shadow-inner">
+                      🔒
+                    </div>
+                    <div>
+                      <div className="text-sm font-black text-amber-300 uppercase tracking-wide flex items-center gap-2">
+                        <span>Parent &amp; Teacher Portal</span>
+                        <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-mono border border-amber-400/40">
+                          GROWN-UPS ONLY
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 mt-0.5 max-w-md">
+                        Enter your 4-digit PIN (or account password) to inspect kids progress, view detailed accuracy stats, or set a shorter quick PIN.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sounds.playStep();
+                      if (onOpenParentPortal) onOpenParentPortal();
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <span>Enter PIN / Login ➔</span>
+                  </button>
+                </div>
+              </div>
+
               {syncStatus && (
                 <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-bold text-center animate-fade-in">
                   {syncStatus}

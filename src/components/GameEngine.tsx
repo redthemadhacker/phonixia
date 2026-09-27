@@ -4,6 +4,8 @@ import { LandId } from '../types/character';
 import { useGame, getCompanionGuide } from '../context/GameContext';
 import { sounds } from '../utils/audio';
 import { AvatarRenderer } from './AvatarRenderer';
+import { PhonicsLetter } from './PhonicsLetter';
+import { PhonicsWordDisplay } from './PhonicsWordDisplay';
 import confetti from 'canvas-confetti';
 import { 
   Volume2, Sparkles, CheckCircle2, XCircle, ArrowRight, 
@@ -108,7 +110,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
   // Audio Handler with isolated phonetic breakdown
   const handlePlayAudio = (slow: boolean = false) => {
-    const textToSpeak = challenge.spokenAudioText || challenge.targetSoundOrWord;
+    const textToSpeak = challenge.prompt || challenge.spokenAudioText;
     if (slow) {
       sounds.speakPhonicsSlow(textToSpeak);
     } else {
@@ -573,9 +575,14 @@ export const GameEngine: React.FC<GameEngineProps> = ({
             <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span className="truncate"><b>Sound Rule:</b> {challenge.phonicsRuleTip}</span>
           </div>
-          <span className="text-amber-400 font-bold shrink-0">
-            Target Sound: <b>{challenge.targetSoundOrWord}</b>
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-amber-400 font-bold shrink-0">Target Sound:</span>
+            {landId === 'sound-shallows' || landId === 'builders-guild' ? (
+              <PhonicsWordDisplay text={challenge.targetSoundOrWord} size={28} />
+            ) : (
+              <b className="text-amber-300 font-black">{challenge.targetSoundOrWord}</b>
+            )}
+          </div>
         </div>
 
         {/* Challenge Prompt Banner */}
@@ -707,13 +714,17 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                       }}
                       className="group flex flex-col items-center cursor-pointer transition-transform hover:scale-110 active:scale-95"
                     >
-                      <div className={`relative w-11 h-11 sm:w-13 sm:h-13 rounded-full flex flex-col items-center justify-center font-black text-lg sm:text-xl shadow-xl border-3 transition-all ${
+                      <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex flex-col items-center justify-center font-black text-lg sm:text-xl shadow-xl border-3 transition-all overflow-hidden ${
                         isSelected
                           ? 'bg-gradient-to-b from-cyan-200 via-cyan-400 to-blue-500 text-slate-950 border-white shadow-[0_0_20px_rgba(6,182,212,0.8)] scale-110'
                           : 'bg-gradient-to-b from-cyan-300 via-sky-400 to-blue-600 text-slate-950 border-cyan-100 shadow-[0_4px_0_rgba(8,145,178,1)]'
                       }`}>
-                        <span className="font-display drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">{opt}</span>
-                        <span className="absolute -top-1.5 -right-1 text-xs">🫧</span>
+                        {opt.length === 1 ? (
+                          <PhonicsLetter letter={opt} size={36} showBadge={false} />
+                        ) : (
+                          <span className="font-display drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)] text-sm">{opt}</span>
+                        )}
+                        <span className="absolute -top-1 -right-1 text-xs">🫧</span>
                       </div>
                       <span className="text-[8px] font-black text-cyan-200 mt-1 bg-slate-950/80 px-1 rounded border border-cyan-400/40">
                         PEARL

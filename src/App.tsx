@@ -1,4 +1,4 @@
-import React, { useState, ErrorInfo, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, useRef, ErrorInfo, ReactNode } from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import { WorldCanvas } from './components/WorldCanvas';
 import { LandLevelView } from './components/LandLevelView';
@@ -82,6 +82,38 @@ const GameShell: React.FC = () => {
   const [realmLives, setRealmLives] = useState(3);
   const [earnedStars, setEarnedStars] = useState(0);
   const [roundCompleted, setRoundCompleted] = useState(false);
+
+  // 5-MINUTE INACTIVITY SESSION TIMEOUT
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleInactivityLogout = useCallback(() => {
+    sessionStorage.removeItem('phonixia_active_session');
+    setIsAuthenticated(false);
+    setCurrentView('world');
+    setIsHomeHutOpen(true);
+    sounds.playError();
+    sounds.speak('Session timed out after 5 minutes of inactivity. Please sign in again.');
+  }, []);
+
+  const resetIdleTimer = useCallback(() => {
+    if (!isAuthenticated) return;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    // 5 minutes = 300,000 ms
+    timeoutRef.current = setTimeout(handleInactivityLogout, 5 * 60 * 1000);
+  }, [isAuthenticated, handleInactivityLogout]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const events = ['mousedown', 'mousemove', 'keydown', 'touchstart', 'scroll', 'click'];
+    events.forEach(event => window.addEventListener(event, resetIdleTimer));
+    resetIdleTimer();
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      events.forEach(event => window.removeEventListener(event, resetIdleTimer));
+    };
+  }, [isAuthenticated, resetIdleTimer]);
 
   const activeQuestion = React.useMemo(() => {
     return getComprehensiveStageChallenge(selectedLand, activeStageNumber);

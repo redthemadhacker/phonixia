@@ -165,7 +165,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   }, [displayedQuestion, landId]);
 
   // Swimming animation clock & position (Sound Shallows)
-  const [_swimCycle, setSwimCycle] = useState(0);
   const [swimPos, setSwimPos] = useState<{ x: number; y: number }>({ x: 50, y: 55 });
   const [swimFacing, setSwimFacing] = useState<'left' | 'right'>('right');
   const [swimPitch, setSwimPitch] = useState<number>(0);
@@ -183,7 +182,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   const [vineX, setVineX] = useState<number>(50);
   const [vinePlayerState, setVinePlayerState] = useState<'ground' | 'jumping' | 'swinging' | 'landing'>('ground');
 
-  // Whispering Peaks: Alpine Snowboard Downhill Run (Inline Layout)
+  // Whispering Peaks: Alpine Snowboard Downhill Run (Strict Inline Row)
   const [snowboardX, setSnowboardX] = useState<number>(50);
   const [snowboardCarve, setSnowboardCarve] = useState<number>(0);
   const [isSnowboardSliding, setIsSnowboardSliding] = useState<boolean>(false);
@@ -267,18 +266,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     }, 350);
     return () => clearTimeout(timer);
   }, [displayedQuestion, activeGameIndex]);
-
-  useEffect(() => {
-    let frame: number;
-    const animate = () => {
-      setSwimCycle((c) => c + 0.12);
-      frame = requestAnimationFrame(animate);
-    };
-    if (landId === 'sound-shallows') {
-      frame = requestAnimationFrame(animate);
-    }
-    return () => cancelAnimationFrame(frame);
-  }, [landId]);
 
   useEffect(() => {
     let frame: number;
@@ -392,7 +379,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         recordSkillMiss(displayedQuestion.targetSound || displayedQuestion.correct || 'General Phonics');
       }
 
-      // Check if 3 hearts depleted (Game Over restart check)
       if (realmLives <= 1) {
         sounds.playGameOver();
         sounds.speak('You ran out of hearts! Let us restart this stage from the beginning!');
@@ -410,7 +396,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
       return;
     }
 
-    // LEXICON EMPIRE BOSS COMBAT LOGIC
     if (isCorrectHit) {
       setBossDamageFlash(true);
       sounds.playDamage();
@@ -428,7 +413,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         const nextChallenge = getComprehensiveStageChallenge(landId, (activeGameIndex * 11 + nextCount) % 50 || 1);
         setActiveCombatQ(nextChallenge);
       } else {
-        // Boss 100% defeated ONLY on correct final blow
         setShowDeathCeremony(true);
         sounds.playFanfare();
 
@@ -443,13 +427,12 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         onSelectChoice(choice);
       }
     } else {
-      // WRONG ANSWER IN BOSS COMBAT: DO NOT WIN, DO NOT REDUCE BOSS HP!
       setBossHp((prev) => Math.min(100, prev + 15));
       setBossDamageFlash(true);
       setTimeout(() => setBossDamageFlash(false), 300);
       sounds.playDamage();
       sounds.speak(`Miss! The ${bossDef.bossName} absorbs dark energy and restored 15% life force! Try again!`);
-      onSelectChoice(choice); // Will deduct player's heart via realmLives!
+      onSelectChoice(choice);
     }
   }, [displayedQuestion, isBossStage, bossHp, bossDef, bossSubCount, landId, activeGameIndex, isFinalBoss, onSelectChoice, currentQuestionMissCount, recordSkillMiss, recommendedMinigame, realmLives]);
 
@@ -514,7 +497,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         }
         setBuilderWrongNotice('Oops! That letter is out of order or incorrect. Try again!');
         sounds.speak('Try again! Listen closely to the sound!');
-        handleAnswerEvaluation('__WRONG__'); // Trigger heart deduction
+        handleAnswerEvaluation('__WRONG__');
       }
     }, 380);
   }, [isAnswered, isHoisting, targetBuilderWord, builderStack, handleAnswerEvaluation, currentQuestionMissCount, recordSkillMiss]);
@@ -557,7 +540,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     }, 200);
   }, [isAnswered, vinePlayerState, displayedQuestion, getClosestChoiceIndex, vineX, handleAnswerEvaluation]);
 
-  // 4. Whispering Peaks (Clean horizontal row that never gets cut off)
+  // 4. Whispering Peaks (Strict Inline Row)
   const triggerSnowboardDownhillSlide = useCallback((choiceOverride?: string) => {
     if (isAnswered || isSnowboardSliding) return;
 
@@ -709,35 +692,31 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     return <HallOfFameCelebration onDismiss={onClose} />;
   }
 
-  // GAME OVER: 3 Hearts Lost screen
   const isOutOfLives = realmLives <= 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
-      <div className="relative w-full max-w-5xl bg-slate-900 border-3 border-amber-400 rounded-3xl p-3 sm:p-5 text-center space-y-2.5 shadow-[0_0_60px_rgba(0,0,0,0.85)] animate-scale-up flex flex-col max-h-[calc(100dvh-16px)] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-1.5 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
+      <div className="relative w-full max-w-5xl bg-slate-900 border-2 sm:border-3 border-amber-400 rounded-2xl sm:rounded-3xl p-2.5 sm:p-5 text-center space-y-2 shadow-[0_0_60px_rgba(0,0,0,0.85)] animate-scale-up flex flex-col max-h-[96dvh] overflow-y-auto">
         
         {/* Top Header Bar */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2 px-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm font-mono font-black text-amber-300 uppercase tracking-wide">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 px-1">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="text-[11px] sm:text-sm font-mono font-black text-amber-300 uppercase tracking-wide truncate max-w-[120px] sm:max-w-none">
               {isBossStage ? `Boss: ${bossDef.bossName}` : `Stage #${activeGameIndex}`}
             </span>
-            <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 font-bold">
+            <span className="text-[9px] sm:text-xs px-2 py-0.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 font-bold hidden xs:inline">
               {isBossStage ? (isFinalBoss ? 'Throne Citadel' : 'Realm Guardian') : 'Adventure Course'}
             </span>
           </div>
 
           {/* Boss Life Source Bar */}
           {isBossStage && (
-            <div className="flex-1 max-w-xs sm:max-w-sm mx-3 flex flex-col items-center">
-              <div className="w-full flex items-center justify-between text-[10px] font-mono font-bold text-amber-300 mb-0.5">
-                <span className="flex items-center gap-1">
-                  <span>{bossDef.icon}</span>
-                  <span className="truncate">{bossDef.bossName}</span>
-                </span>
-                <span>{bossHp}% Life Source</span>
+            <div className="flex-1 max-w-[120px] xs:max-w-xs sm:max-w-sm mx-2 flex flex-col items-center">
+              <div className="w-full flex items-center justify-between text-[9px] sm:text-[10px] font-mono font-bold text-amber-300 mb-0.5 truncate">
+                <span className="truncate">{bossDef.bossName}</span>
+                <span>{bossHp}%</span>
               </div>
-              <div className="w-full h-3 bg-slate-950 rounded-full border border-amber-500/60 overflow-hidden p-0.5">
+              <div className="w-full h-2.5 sm:h-3 bg-slate-950 rounded-full border border-amber-500/60 overflow-hidden p-0.5">
                 <div
                   style={{ width: `${bossHp}%` }}
                   className={`h-full rounded-full transition-all duration-300 ${
@@ -752,21 +731,20 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
             </div>
           )}
 
-          <div className="flex items-center gap-3">
-            {/* Lives Indicator with Heart Loss Animation */}
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-0.5 sm:gap-1">
               {Array.from({ length: 3 }).map((_, i) => (
-                <span key={i} className={`text-base sm:text-lg transition-transform ${i < realmLives ? 'scale-100' : 'scale-90 opacity-40 grayscale'}`}>
+                <span key={i} className={`text-xs sm:text-base transition-transform ${i < realmLives ? 'scale-100' : 'scale-90 opacity-40 grayscale'}`}>
                   {i < realmLives ? '❤️' : '🖤'}
                 </span>
               ))}
             </div>
 
-            <div className="flex gap-1 text-amber-400">
+            <div className="flex gap-0.5 sm:gap-1 text-amber-400">
               {Array.from({ length: 3 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                  className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${
                     i < earnedStars ? 'fill-amber-400 text-amber-400' : 'text-slate-600'
                   }`}
                 />
@@ -776,19 +754,19 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         </div>
 
         {/* Clear Phonics Instruction Header */}
-        <div className="space-y-1.5 px-2">
-          <p className="text-sm sm:text-base md:text-lg text-amber-100 font-black leading-snug break-words">
+        <div className="space-y-1 px-1 sm:px-2">
+          <p className="text-xs sm:text-base md:text-lg text-amber-100 font-black leading-snug break-words">
             {landId === 'builders-guild'
               ? `Pick the letter tiles in order to build: ${targetBuilderWord}!`
               : displayedQuestion.instruction}
           </p>
 
-          <div className="flex justify-center items-center py-1">
-            <div className="inline-flex items-center gap-3 bg-slate-950/90 border-2 border-amber-400 px-5 py-2 rounded-2xl shadow-inner">
+          <div className="flex justify-center items-center py-0.5">
+            <div className="inline-flex items-center gap-2 sm:gap-3 bg-slate-950/90 border-2 border-amber-400 px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-xl sm:rounded-2xl shadow-inner">
               {landId === 'sound-shallows' || landId === 'builders-guild' ? (
-                <PhonicsWordDisplay text={sanitizedTargetSound} size={42} showSubtitle={false} />
+                <PhonicsWordDisplay text={sanitizedTargetSound} size={32} showSubtitle={false} />
               ) : (
-                <span className="text-xl sm:text-2xl md:text-3xl font-black text-amber-300 font-display tracking-widest break-all">
+                <span className="text-lg sm:text-2xl md:text-3xl font-black text-amber-300 font-display tracking-widest break-all">
                   {sanitizedTargetSound}
                 </span>
               )}
@@ -801,9 +779,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                     : (displayedQuestion.instruction || displayedQuestion.spokenPrompt || 'Listen closely!');
                   sounds.speak(promptText);
                 }}
-                className="p-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-400/50 cursor-pointer active:scale-90 transition-transform"
+                className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-400/50 cursor-pointer active:scale-90 transition-transform"
               >
-                <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
@@ -811,18 +789,18 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
         {/* REPEATED MISS PRACTICE RECOMMENDATION BANNER */}
         {currentQuestionMissCount >= 2 && !isOutOfLives && (
-          <div className="mx-2 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-amber-950 via-slate-950 to-indigo-950 border-2 border-amber-400 shadow-xl flex flex-wrap items-center justify-between gap-2 animate-bounce-gentle">
+          <div className="mx-1 sm:mx-2 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-950 via-slate-950 to-indigo-950 border border-amber-400 shadow-xl flex flex-wrap items-center justify-between gap-1.5 animate-bounce-gentle">
             <div className="flex items-center gap-2 text-left">
-              <span className="text-2xl p-1.5 rounded-xl bg-amber-500/20 border border-amber-400/50">
+              <span className="text-xl sm:text-2xl p-1 rounded-lg bg-amber-500/20 border border-amber-400/50">
                 {recommendedMinigame.themeIcon}
               </span>
               <div>
-                <div className="text-xs sm:text-sm font-black text-amber-300 flex items-center gap-1.5">
-                  <Gamepad2 className="w-4 h-4 text-cyan-400" />
-                  <span>Struggling with this sound? Practice in: {recommendedMinigame.name}</span>
+                <div className="text-[11px] sm:text-sm font-black text-amber-300 flex items-center gap-1">
+                  <Gamepad2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="truncate">Practice in: {recommendedMinigame.name}</span>
                 </div>
-                <div className="text-[10px] sm:text-xs text-slate-300">
-                  Target Minigame #{recommendedMinigame.gameNum} · {recommendedMinigame.skillCategory} ({recommendedMinigame.hub === 'isles-of-play' ? 'Isles of Play' : 'Arcade'})
+                <div className="text-[9px] sm:text-xs text-slate-300 truncate">
+                  Minigame #{recommendedMinigame.gameNum} · {recommendedMinigame.skillCategory}
                 </div>
               </div>
             </div>
@@ -833,9 +811,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                   sounds.stopSpeech();
                   onOpenMinigamePractice(recommendedMinigame);
                 }}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 cursor-pointer transition-transform"
+                className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 cursor-pointer"
               >
-                Practice Minigame ➔
+                Practice ➔
               </button>
             )}
           </div>
@@ -843,7 +821,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
         {/* 1. SOUND SHALLOWS */}
         {landId === 'sound-shallows' && (
-          <div className="relative w-full h-[260px] xs:h-[300px] sm:h-[360px] bg-gradient-to-b from-sky-900 via-teal-950 to-blue-950 rounded-2xl border-2 border-cyan-400/60 overflow-hidden select-none">
+          <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-sky-900 via-teal-950 to-blue-950 rounded-2xl border-2 border-cyan-400/60 overflow-hidden select-none">
             <div className="absolute inset-0 pointer-events-none z-20">
               {displayedQuestion.choices.map((choice, idx) => {
                 const choiceX = 14 + idx * (72 / Math.max(displayedQuestion.choices.length - 1, 1));
@@ -856,13 +834,13 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                     style={{ left: `${choiceX}%`, top: `${choiceY}%`, transform: 'translate(-50%, -50%)' }}
                     className="absolute pointer-events-auto cursor-pointer group hover:scale-110 active:scale-95 transition-transform"
                   >
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-cyan-200 via-teal-400 to-blue-600 border-3 border-white flex flex-col items-center justify-center text-slate-950 font-black text-sm sm:text-base shadow-[0_0_25px_rgba(6,182,212,0.8)] overflow-hidden">
+                    <div className="w-13 h-13 xs:w-16 xs:h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-b from-cyan-200 via-teal-400 to-blue-600 border-2 sm:border-3 border-white flex flex-col items-center justify-center text-slate-950 font-black text-xs sm:text-base shadow-[0_0_25px_rgba(6,182,212,0.8)] overflow-hidden">
                       {choice.length === 1 ? (
-                        <PhonicsLetter letter={choice} size={42} showBadge={false} />
+                        <PhonicsLetter letter={choice} size={34} showBadge={false} />
                       ) : (
                         <div className="flex flex-col items-center">
-                          <PhonicsWordDisplay text={choice} size={24} />
-                          <span className="text-[10px] text-white font-mono font-bold">{choice}</span>
+                          <PhonicsWordDisplay text={choice} size={20} />
+                          <span className="text-[9px] sm:text-[10px] text-white font-mono font-bold">{choice}</span>
                         </div>
                       )}
                     </div>
@@ -880,35 +858,35 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               }}
               className="absolute z-30 pointer-events-none flex flex-col items-center select-none"
             >
-              <AvatarRenderer customization={activeExplorer.customization} size={50} />
+              <AvatarRenderer customization={activeExplorer.customization} size={44} isSwimming={true} />
             </div>
           </div>
         )}
 
         {/* 2. BUILDERS GUILD */}
         {landId === 'builders-guild' && (
-          <div className="relative w-full h-[260px] xs:h-[300px] sm:h-[360px] bg-gradient-to-b from-stone-900 via-amber-950 to-stone-950 rounded-2xl border-2 border-amber-500/60 overflow-hidden select-none">
-            <div className="absolute top-2 left-4 z-20 bg-slate-950/90 border-2 border-amber-400 p-2.5 rounded-2xl text-left shadow-xl min-w-[130px]">
-              <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">
+          <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-stone-900 via-amber-950 to-stone-950 rounded-2xl border-2 border-amber-500/60 overflow-hidden select-none">
+            <div className="absolute top-1.5 left-2 z-20 bg-slate-950/90 border border-amber-400 p-2 rounded-xl text-left shadow-xl min-w-[100px] xs:min-w-[120px]">
+              <div className="text-[9px] font-mono font-bold text-amber-400 uppercase tracking-widest">
                 Target Word:
               </div>
-              <div className="text-lg sm:text-xl font-black text-white font-mono tracking-wider">
+              <div className="text-base sm:text-xl font-black text-white font-mono tracking-wider">
                 {targetBuilderWord}
               </div>
 
-              <div className="mt-2 flex flex-col-reverse gap-1 border-t border-amber-500/40 pt-2 min-h-[70px]">
+              <div className="mt-1 flex flex-col-reverse gap-0.5 border-t border-amber-500/40 pt-1">
                 {targetBuilderWord.split('').map((_, i) => {
                   const stacked = builderStack[i];
                   return (
                     <div
                       key={i}
-                      className={`h-7 px-3 rounded-lg border-2 font-mono font-black text-sm flex items-center justify-between transition-all ${
+                      className={`h-5 xs:h-6 px-2 rounded border font-mono font-black text-xs flex items-center justify-between transition-all ${
                         stacked
-                          ? 'bg-amber-400 text-slate-950 border-white shadow-md animate-scale-up'
+                          ? 'bg-amber-400 text-slate-950 border-white shadow animate-scale-up'
                           : 'bg-slate-900 border-dashed border-amber-500/50 text-slate-500'
                       }`}
                     >
-                      <span>Slot #{i + 1}</span>
+                      <span className="text-[9px]">#{i + 1}</span>
                       <span>{stacked || '_'}</span>
                     </div>
                   );
@@ -916,16 +894,16 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               </div>
 
               {builderStack.length > 0 && (
-                <div className="flex gap-1.5 mt-2">
+                <div className="flex gap-1 mt-1">
                   <button
                     onClick={() => {
                       sounds.playDamage();
                       setBuilderStack((prev) => prev.slice(0, -1));
                       setBuilderWrongNotice(null);
                     }}
-                    className="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] font-bold border border-amber-500/40 flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 py-0.5 rounded bg-slate-800 text-amber-300 text-[9px] font-bold border border-amber-500/40 flex items-center justify-center cursor-pointer"
                   >
-                    <Undo2 className="w-3 h-3" />
+                    <Undo2 className="w-2.5 h-2.5 mr-0.5" />
                     <span>Undo</span>
                   </button>
                   <button
@@ -934,66 +912,61 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                       setBuilderStack([]);
                       setBuilderWrongNotice(null);
                     }}
-                    className="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-rose-300 text-[10px] font-bold border border-rose-500/40 flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 py-0.5 rounded bg-slate-800 text-rose-300 text-[9px] font-bold border border-rose-500/40 flex items-center justify-center cursor-pointer"
                   >
-                    <RefreshCw className="w-3 h-3" />
-                    <span>Reset</span>
+                    <RefreshCw className="w-2.5 h-2.5 mr-0.5" />
+                    <span>Clear</span>
                   </button>
                 </div>
               )}
             </div>
 
             {builderWrongNotice && (
-              <div className="absolute top-4 right-4 z-40 bg-rose-950/95 border-2 border-rose-400 px-3 py-1.5 rounded-xl text-rose-200 text-xs font-bold shadow-2xl animate-shake">
+              <div className="absolute top-2 right-2 z-40 bg-rose-950/95 border border-rose-400 px-2 py-1 rounded-lg text-rose-200 text-[10px] font-bold shadow-xl animate-shake">
                 {builderWrongNotice}
               </div>
             )}
 
-            <div className="absolute top-0 inset-x-0 h-4 bg-stone-900 border-b-2 border-amber-500/60 flex items-center justify-around z-20">
-              <div className="w-full h-1 bg-amber-400/40" />
-            </div>
-
             <div
-              style={{ left: `${craneTrolleyX}%`, top: '4px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }}
+              style={{ left: `${craneTrolleyX}%`, top: '2px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }}
               className="absolute z-25 flex flex-col items-center pointer-events-none"
             >
-              <div className="w-10 h-4 bg-amber-500 rounded-b border border-amber-300 shadow" />
-              <div style={{ height: `${hoistHookY * 2.2}px`, transition: 'height 0.25s ease-in-out' }} className="w-1 bg-slate-300" />
-              <div className="text-xl sm:text-2xl filter drop-shadow">🪝</div>
+              <div className="w-8 h-3 bg-amber-500 rounded-b border border-amber-300 shadow" />
+              <div style={{ height: `${hoistHookY * 1.8}px`, transition: 'height 0.25s ease-in-out' }} className="w-0.5 bg-slate-300" />
+              <div className="text-base sm:text-xl">🪝</div>
             </div>
 
-            {/* Guaranteed all letters available */}
-            <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-4 flex items-center justify-around z-20 pointer-events-none gap-1">
+            <div className="absolute bottom-1.5 inset-x-1 sm:inset-x-4 flex items-center justify-around z-20 pointer-events-none gap-0.5">
               {builderChoices.map((letter, idx) => (
                 <div
                   key={idx}
                   onClick={() => handleBuilderLetterPick(letter)}
-                  className="pointer-events-auto cursor-pointer hover:scale-115 active:scale-90 transition-transform group"
+                  className="pointer-events-auto cursor-pointer hover:scale-115 active:scale-90 transition-transform shrink min-w-0"
                 >
-                  <PhonicsLetter letter={letter} size={44} />
+                  <PhonicsLetter letter={letter} size={36} />
                 </div>
               ))}
             </div>
 
-            <div style={{ left: `${craneTrolleyX}%`, bottom: '52px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }} className="absolute z-30 pointer-events-none">
-              <AvatarRenderer customization={activeExplorer.customization} size={48} />
+            <div style={{ left: `${craneTrolleyX}%`, bottom: '44px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }} className="absolute z-30 pointer-events-none">
+              <AvatarRenderer customization={activeExplorer.customization} size={40} />
             </div>
           </div>
         )}
 
         {/* 3. TRICKY TRAILS */}
         {landId === 'tricky-trails' && (
-          <div className="relative w-full h-[260px] xs:h-[300px] sm:h-[360px] bg-gradient-to-b from-emerald-950 via-slate-950 to-stone-950 rounded-2xl border-2 border-emerald-400/60 overflow-hidden select-none">
-            <div className="absolute top-8 inset-x-0 flex items-center justify-around px-4 sm:px-10 z-20 pointer-events-none">
+          <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-emerald-950 via-slate-950 to-stone-950 rounded-2xl border-2 border-emerald-400/60 overflow-hidden select-none">
+            <div className="absolute top-4 sm:top-6 inset-x-0 flex items-center justify-around px-2 sm:px-8 z-20 pointer-events-none">
               {displayedQuestion.choices.map((choice, idx) => (
                 <div
                   key={idx}
                   onClick={() => triggerVineLeap(choice)}
                   style={{ left: `${14 + idx * (72 / Math.max(displayedQuestion.choices.length - 1, 1))}%`, transform: 'translateX(-50%)' }}
-                  className="absolute pointer-events-auto cursor-pointer hover:scale-115 active:scale-95 transition-transform flex flex-col items-center"
+                  className="absolute pointer-events-auto cursor-pointer hover:scale-110 active:scale-95 transition-transform flex flex-col items-center max-w-[85px] sm:max-w-[120px]"
                 >
-                  <div className="w-1.5 h-6 bg-emerald-500 rounded" />
-                  <div className="px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl bg-gradient-to-b from-emerald-300 via-emerald-400 to-teal-500 text-slate-950 border-2 border-emerald-100 font-black text-sm sm:text-lg shadow-[0_0_20px_rgba(16,185,129,0.7)]">
+                  <div className="w-1 h-4 bg-emerald-500 rounded" />
+                  <div className="px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-b from-emerald-300 via-emerald-400 to-teal-500 text-slate-950 border border-emerald-100 font-black text-xs sm:text-base shadow-lg truncate max-w-full text-center">
                     {choice}
                   </div>
                 </div>
@@ -1010,85 +983,85 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               }}
               className="absolute pointer-events-none z-25 flex flex-col items-center"
             >
-              <div className="w-2 h-44 sm:h-50 bg-gradient-to-b from-emerald-700 via-green-600 to-amber-700 rounded-b shadow-[0_0_12px_rgba(16,185,129,0.7)] flex flex-col justify-between py-2 items-center" />
+              <div className="w-1.5 h-36 sm:h-48 bg-gradient-to-b from-emerald-700 via-green-600 to-amber-700 rounded-b" />
               {(vinePlayerState === 'swinging' || vinePlayerState === 'jumping') && (
-                <div className="-mt-4 flex flex-col items-center animate-scale-up">
-                  <AvatarRenderer customization={activeExplorer.customization} size={50} />
+                <div className="-mt-3 flex flex-col items-center animate-scale-up">
+                  <AvatarRenderer customization={activeExplorer.customization} size={42} />
                 </div>
               )}
             </div>
 
             {vinePlayerState === 'ground' && (
               <div
-                style={{ left: `${vineX}%`, bottom: '12px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }}
+                style={{ left: `${vineX}%`, bottom: '10px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }}
                 className="absolute z-30 pointer-events-none flex flex-col items-center"
               >
-                <AvatarRenderer customization={activeExplorer.customization} size={48} />
+                <AvatarRenderer customization={activeExplorer.customization} size={42} />
               </div>
             )}
           </div>
         )}
 
-        {/* 4. WHISPERING PEAKS: INLINE HORIZONTAL GATES (NEVER CUT OFF) */}
+        {/* 4. WHISPERING PEAKS: STRICT HORIZONTAL ROW (SIDE-BY-SIDE) */}
         {landId === 'whispering-peaks' && (
-          <div className="relative w-full h-[270px] xs:h-[310px] sm:h-[350px] bg-gradient-to-b from-indigo-950 via-slate-900 to-sky-950 rounded-2xl border-2 border-indigo-400/60 overflow-hidden select-none flex flex-col justify-between p-3">
-            {/* Mountain Crest Progress */}
-            <div className="w-full flex items-center justify-between text-xs font-mono font-bold text-cyan-200 border-b border-indigo-500/40 pb-1 z-20">
-              <span className="flex items-center gap-1">
+          <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-indigo-950 via-slate-900 to-sky-950 rounded-2xl border-2 border-indigo-400/60 overflow-hidden select-none flex flex-col justify-between p-2.5 sm:p-3">
+            <div className="w-full flex items-center justify-between text-[11px] font-mono font-bold text-cyan-200 border-b border-indigo-500/40 pb-1 z-20">
+              <span className="flex items-center gap-1 truncate">
                 <span>🏔️</span>
                 <span>Alpine Downhill Slalom</span>
               </span>
-              <span className="px-3 py-0.5 rounded-full bg-indigo-900 border border-cyan-400/50 text-cyan-300">
-                {whisperingStep === 1 ? 'Gate 1 of 2' : 'Gate 2 of 2'}
+              <span className="px-2 py-0.5 rounded-full bg-indigo-900 border border-cyan-400/50 text-cyan-300 text-[10px] shrink-0">
+                {whisperingStep === 1 ? 'Gate 1/2' : 'Gate 2/2'}
               </span>
             </div>
 
             {whisperingNotice && (
-              <div className="absolute top-10 inset-x-0 flex justify-center pointer-events-none z-30 animate-bounce">
-                <div className="px-4 py-1.5 rounded-2xl bg-indigo-950/95 border-2 border-cyan-300 text-cyan-100 text-xs font-black shadow-xl">
+              <div className="absolute top-8 inset-x-0 flex justify-center pointer-events-none z-30 animate-bounce">
+                <div className="px-3 py-1 rounded-xl bg-indigo-950/95 border border-cyan-300 text-cyan-100 text-[10px] sm:text-xs font-black shadow-xl">
                   {whisperingNotice}
                 </div>
               </div>
             )}
 
-            {/* INLINE Slalom Answer Gates */}
-            <div className="w-full flex items-center justify-around gap-2 z-20 my-auto">
+            {/* STRICT SINGLE HORIZONTAL ROW: Side-by-side like Builders Guild */}
+            <div className="w-full flex flex-row flex-nowrap items-center justify-around gap-1.5 sm:gap-3 z-20 my-auto px-1 overflow-x-auto">
               {activeWhisperingChoices.map((choice, idx) => {
                 const isTarget = activeGateIdx === idx;
                 return (
                   <div
                     key={idx}
                     onClick={() => triggerSnowboardDownhillSlide(choice)}
-                    className={`flex-1 p-2 sm:p-3 rounded-2xl border-2 flex flex-col items-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                    className={`flex-1 min-w-0 p-2 sm:p-3 rounded-xl sm:rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
                       isTarget
-                        ? 'bg-gradient-to-b from-cyan-200 via-sky-300 to-indigo-400 text-slate-950 border-white ring-4 ring-cyan-300 shadow-[0_0_30px_rgba(6,182,212,1)] scale-105'
-                        : 'bg-slate-900/90 border-cyan-400/70 text-cyan-100 hover:border-cyan-200 shadow-md'
+                        ? 'bg-gradient-to-b from-cyan-200 via-sky-300 to-indigo-400 text-slate-950 border-white ring-2 ring-cyan-300 shadow-lg scale-105'
+                        : 'bg-slate-900/90 border-cyan-400/70 text-cyan-100 hover:border-cyan-200 shadow'
                     }`}
                   >
-                    <span className="text-xs mb-1">🚩</span>
-                    <span className="font-black text-sm sm:text-base tracking-wide">{choice}</span>
-                    <span className="text-[9px] text-cyan-300 font-mono mt-1">Carve ➔</span>
+                    <span className="text-[10px] sm:text-xs mb-0.5">🚩</span>
+                    <span className="font-black text-xs sm:text-base tracking-wide truncate max-w-full text-center">
+                      {choice}
+                    </span>
+                    <span className="text-[8px] sm:text-[9px] text-cyan-300 font-mono mt-0.5 hidden xs:inline">Carve ➔</span>
                   </div>
                 );
               })}
             </div>
 
-            {/* Snowboarder Avatar */}
             <div
               style={{
                 left: `${snowboardX}%`,
-                bottom: '12px',
+                bottom: '8px',
                 transform: `translateX(-50%) rotate(${snowboardCarve}deg)`,
                 transition: isSnowboardSliding ? 'left 0.3s ease-out, transform 0.2s' : 'left 0.08s ease-out, transform 0.1s ease-out'
               }}
               className="absolute z-30 flex flex-col items-center pointer-events-none select-none"
             >
-              <AvatarRenderer customization={activeExplorer.customization} size={46} />
-              <div className="w-16 h-3 rounded-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-blue-500 border border-white shadow flex items-center justify-center text-[7px] font-black text-white">
+              <AvatarRenderer customization={activeExplorer.customization} size={40} />
+              <div className="w-14 h-2.5 rounded-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-blue-500 border border-white shadow flex items-center justify-center text-[6px] font-black text-white">
                 SNOWBOARD
               </div>
               {snowboardSpray && (
-                <div className="text-[10px] text-cyan-200 animate-bounce">❄️ ✨ ❄️</div>
+                <div className="text-[9px] text-cyan-200 animate-bounce">❄️ ✨ ❄️</div>
               )}
             </div>
           </div>
@@ -1096,33 +1069,32 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
         {/* 5. LEXICON EMPIRE */}
         {landId === 'lexicon-empire' && (
-          <div className="relative w-full min-h-[380px] sm:min-h-[440px] h-[380px] sm:h-[440px] bg-gradient-to-b from-purple-950 via-slate-950 to-rose-950 rounded-3xl border-3 border-rose-500 shadow-[0_0_40px_rgba(244,63,94,0.5)] overflow-hidden select-none p-3 pt-4">
+          <div className="relative w-full h-[250px] xs:h-[290px] sm:h-[360px] bg-gradient-to-b from-purple-950 via-slate-950 to-rose-950 rounded-2xl border-2 sm:border-3 border-rose-500 shadow-lg overflow-hidden select-none p-2 sm:p-3">
             <div 
-              className={`absolute top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none transition-all duration-300 ${
+              className={`absolute top-2 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none transition-all duration-300 ${
                 showDeathCeremony
                   ? 'scale-50 rotate-90 opacity-0 translate-y-16 blur-sm'
                   : bossDamageFlash
-                  ? 'scale-120 brightness-150 filter drop-shadow-[0_0_30px_rgba(239,68,68,1)]'
+                  ? 'scale-115 brightness-150 filter drop-shadow-[0_0_20px_rgba(239,68,68,1)]'
                   : 'scale-100'
               }`}
             >
               {isFinalBoss ? (
                 <div className="relative flex flex-col items-center">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-b from-black via-rose-950 to-purple-950 border-2 border-rose-500 flex items-center justify-center shadow-[0_0_35px_rgba(225,29,72,1)] animate-pulse">
-                    <span className="text-4xl sm:text-5xl filter drop-shadow-[0_0_20px_rgba(255,0,0,1)]">👹</span>
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-b from-black via-rose-950 to-purple-950 border border-rose-500 flex items-center justify-center shadow-md animate-pulse">
+                    <span className="text-3xl sm:text-4xl">👹</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] font-black uppercase text-rose-300 bg-black/95 px-3 py-0.5 rounded-full border border-rose-500/70 mt-1 shadow-lg">
-                    <Flame className="w-3 h-3 text-rose-500 animate-bounce" />
-                    <span>THE SHADOW KING</span>
-                    <Flame className="w-3 h-3 text-rose-500 animate-bounce" />
+                  <div className="flex items-center gap-0.5 text-[8px] sm:text-[10px] font-black uppercase text-rose-300 bg-black/95 px-2 py-0.5 rounded-full border border-rose-500/70 mt-0.5">
+                    <Flame className="w-2.5 h-2.5 text-rose-500" />
+                    <span>SHADOW KING</span>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
-                  <div className="text-4xl sm:text-5xl filter drop-shadow-[0_0_20px_rgba(244,63,94,0.9)] animate-pulse">
+                  <div className="text-3xl sm:text-4xl filter drop-shadow animate-pulse">
                     {bossDef.icon}
                   </div>
-                  <span className="text-[10px] font-black uppercase text-rose-300 bg-black/85 px-2.5 py-0.5 rounded border border-rose-500/60 mt-1">
+                  <span className="text-[9px] font-black uppercase text-rose-300 bg-black/85 px-2 py-0.5 rounded border border-rose-500/60 mt-0.5">
                     {bossDef.bossName}
                   </span>
                 </div>
@@ -1131,41 +1103,41 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
             {laserBeamTarget && (
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-35">
-                <line x1={`${chariotX}%`} y1="78%" x2={`${laserBeamTarget.x}%`} y2={`${laserBeamTarget.y}%`} stroke="#f59e0b" strokeWidth="6" className="animate-pulse" />
+                <line x1={`${chariotX}%`} y1="78%" x2={`${laserBeamTarget.x}%`} y2={`${laserBeamTarget.y}%`} stroke="#f59e0b" strokeWidth="4" className="animate-pulse" />
               </svg>
             )}
 
-            <div className="absolute top-36 sm:top-40 inset-x-0 flex items-center justify-around px-3 sm:px-8 z-20 pointer-events-none">
+            <div className="absolute top-28 sm:top-36 inset-x-0 flex items-center justify-around px-2 sm:px-6 z-20 pointer-events-none">
               {displayedQuestion.choices.map((choice, idx) => (
                 <div
                   key={idx}
                   onClick={() => triggerChariotLaser(choice)}
                   style={{ left: `${14 + idx * (72 / Math.max(displayedQuestion.choices.length - 1, 1))}%`, transform: 'translateX(-50%)' }}
-                  className="absolute pointer-events-auto cursor-pointer hover:scale-110 active:scale-95 transition-transform"
+                  className="absolute pointer-events-auto cursor-pointer hover:scale-105 active:scale-95 transition-transform max-w-[80px] xs:max-w-[110px] sm:max-w-[150px]"
                 >
-                  <div className="px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-2xl bg-gradient-to-b from-rose-700 via-rose-800 to-rose-950 text-white border-2 border-rose-300 font-black text-xs sm:text-sm shadow-2xl break-words max-w-[130px] sm:max-w-[170px] text-center leading-snug">
+                  <div className="px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-b from-rose-700 via-rose-800 to-rose-950 text-white border border-rose-300 font-black text-[10px] sm:text-sm shadow-xl break-words text-center leading-snug">
                     {choice}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ left: `${chariotX}%`, bottom: '24px', transform: 'translateX(-50%)' }} className="absolute z-30 pointer-events-none">
-              <AvatarRenderer customization={activeExplorer.customization} size={48} />
+            <div style={{ left: `${chariotX}%`, bottom: '16px', transform: 'translateX(-50%)' }} className="absolute z-30 pointer-events-none">
+              <AvatarRenderer customization={activeExplorer.customization} size={42} />
             </div>
           </div>
         )}
 
         {/* GAME OVER (0 Hearts Left) MODAL */}
         {isOutOfLives && (
-          <div className="p-5 sm:p-6 rounded-3xl bg-rose-950/95 border-3 border-rose-500 shadow-2xl flex flex-col items-center justify-center space-y-3 animate-scale-up">
-            <HeartCrack className="w-12 h-12 text-rose-400 animate-bounce" />
-            <div className="text-center space-y-1">
-              <h3 className="text-base sm:text-lg font-black text-rose-100 uppercase tracking-wide">
+          <div className="p-4 sm:p-5 rounded-2xl bg-rose-950/95 border-2 border-rose-500 shadow-2xl flex flex-col items-center justify-center space-y-2 animate-scale-up">
+            <HeartCrack className="w-10 h-10 text-rose-400 animate-bounce" />
+            <div className="text-center space-y-0.5">
+              <h3 className="text-sm sm:text-base font-black text-rose-100 uppercase tracking-wide">
                 Out of Hearts!
               </h3>
-              <p className="text-xs sm:text-sm text-rose-200">
-                You lost all 3 hearts on this course! Take a breath, listen carefully, and restart this stage.
+              <p className="text-[11px] sm:text-xs text-rose-200">
+                You lost all 3 hearts! Take a breath, listen carefully, and restart this stage.
               </p>
             </div>
             <button
@@ -1173,35 +1145,35 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                 onTryAgain();
                 sounds.speak('Stage restarted. Listen closely to the sounds!');
               }}
-              className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1.5"
             >
-              <RotateCcw className="w-4 h-4" />
-              <span>Restart Stage from Beginning</span>
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Restart Stage</span>
             </button>
           </div>
         )}
 
         {/* Defeat Ceremony (Boss Only) */}
         {showDeathCeremony && (
-          <div className="p-4 sm:p-6 rounded-3xl bg-slate-950/95 border-3 border-amber-400 shadow-[0_0_50px_rgba(245,158,11,0.6)] flex flex-col items-center justify-center space-y-3 animate-scale-up">
-            <div className="text-center space-y-1">
-              <span className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-rose-400 font-display block uppercase">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/95 border-2 border-amber-400 shadow-2xl flex flex-col items-center justify-center space-y-2.5 animate-scale-up">
+            <div className="text-center space-y-0.5">
+              <span className="text-base sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-rose-400 uppercase">
                 💥 {bossDef.bossName} Defeated! 💥
               </span>
-              <p className="text-xs sm:text-sm font-bold text-amber-200">
+              <p className="text-xs font-bold text-amber-200">
                 {bossDef.defeatedSubtext}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
               <button
                 onClick={() => {
                   sounds.stopSpeech();
                   onClose();
                 }}
-                className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold border border-slate-600 cursor-pointer shadow transition-transform active:scale-95"
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-600 cursor-pointer shadow active:scale-95"
               >
-                Exit to Realm Map
+                Exit to Map
               </button>
 
               {activeGameIndex >= 50 ? (
@@ -1210,10 +1182,10 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                     sounds.stopSpeech();
                     setShowCoronationAisle(true);
                   }}
-                  className="px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 hover:from-amber-300 hover:to-yellow-200 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(245,158,11,0.8)] cursor-pointer border-2 border-white transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg cursor-pointer border border-white hover:scale-105 active:scale-95 flex items-center gap-1.5"
                 >
                   <span>👑</span>
-                  <span>Claim Throne & Celebrate!</span>
+                  <span>Claim Throne!</span>
                 </button>
               ) : (
                 <button
@@ -1222,48 +1194,48 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                     if (onNextLevel) onNextLevel();
                     else onFinishRound();
                   }}
-                  className="px-7 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 hover:from-emerald-300 hover:to-teal-200 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(16,185,129,0.7)] cursor-pointer border-2 border-white transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg cursor-pointer border border-white hover:scale-105 active:scale-95 flex items-center gap-1.5"
                 >
-                  <span>Advance to Next Level ➔</span>
+                  <span>Next Level ➔</span>
                 </button>
               )}
             </div>
           </div>
         )}
 
-        {/* 4-Way Virtual On-Screen Controls */}
+        {/* 4-Way Virtual Controls */}
         {!isOutOfLives && (
-          <div className="flex items-center justify-between gap-3 px-1 pt-1">
-            <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+          <div className="flex items-center justify-between gap-2 px-0.5 pt-0.5">
+            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
               <button
                 onMouseDown={() => setActiveDpad((prev) => ({ ...prev, left: true }))}
                 onMouseUp={() => setActiveDpad((prev) => ({ ...prev, left: false }))}
                 onTouchStart={() => setActiveDpad((prev) => ({ ...prev, left: true }))}
                 onTouchEnd={() => setActiveDpad((prev) => ({ ...prev, left: false }))}
-                className="w-10 h-9 sm:w-11 sm:h-10 rounded-xl flex items-center justify-center bg-slate-900 text-amber-300 border border-amber-500/40 active:scale-95"
+                className="w-9 h-8 sm:w-11 sm:h-10 rounded-lg flex items-center justify-center bg-slate-900 text-amber-300 border border-amber-500/40 active:scale-95"
               >
-                <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
               </button>
 
               {landId === 'sound-shallows' ? (
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-0.5">
                   <button
                     onMouseDown={() => setActiveDpad((prev) => ({ ...prev, up: true }))}
                     onMouseUp={() => setActiveDpad((prev) => ({ ...prev, up: false }))}
                     onTouchStart={() => setActiveDpad((prev) => ({ ...prev, up: true }))}
                     onTouchEnd={() => setActiveDpad((prev) => ({ ...prev, up: false }))}
-                    className="w-10 h-7 sm:w-11 sm:h-8 rounded-lg flex items-center justify-center bg-slate-900 text-cyan-300 border border-cyan-500/40 active:scale-95"
+                    className="w-9 h-6 sm:w-11 sm:h-7 rounded flex items-center justify-center bg-slate-900 text-cyan-300 border border-cyan-500/40 active:scale-95"
                   >
-                    <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+                    <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
                   </button>
                   <button
                     onMouseDown={() => setActiveDpad((prev) => ({ ...prev, down: true }))}
                     onMouseUp={() => setActiveDpad((prev) => ({ ...prev, down: false }))}
                     onTouchStart={() => setActiveDpad((prev) => ({ ...prev, down: true }))}
                     onTouchEnd={() => setActiveDpad((prev) => ({ ...prev, down: false }))}
-                    className="w-10 h-7 sm:w-11 sm:h-8 rounded-lg flex items-center justify-center bg-slate-900 text-cyan-300 border border-cyan-500/40 active:scale-95"
+                    className="w-9 h-6 sm:w-11 sm:h-7 rounded flex items-center justify-center bg-slate-900 text-cyan-300 border border-cyan-500/40 active:scale-95"
                   >
-                    <ArrowDown className="w-4 h-4 stroke-[2.5]" />
+                    <ArrowDown className="w-3.5 h-3.5 stroke-[2.5]" />
                   </button>
                 </div>
               ) : null}
@@ -1273,27 +1245,27 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                 onMouseUp={() => setActiveDpad((prev) => ({ ...prev, right: false }))}
                 onTouchStart={() => setActiveDpad((prev) => ({ ...prev, right: true }))}
                 onTouchEnd={() => setActiveDpad((prev) => ({ ...prev, right: false }))}
-                className="w-10 h-9 sm:w-11 sm:h-10 rounded-xl flex items-center justify-center bg-slate-900 text-amber-300 border border-amber-500/40 active:scale-95"
+                className="w-9 h-8 sm:w-11 sm:h-10 rounded-lg flex items-center justify-center bg-slate-900 text-amber-300 border border-amber-500/40 active:scale-95"
               >
-                <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
               </button>
             </div>
 
             <button
               onClick={() => triggerRealmAction()}
-              className="h-11 sm:h-12 px-6 sm:px-8 rounded-2xl border-2 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
+              className="h-9 sm:h-11 px-4 sm:px-7 rounded-xl sm:rounded-2xl border bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow active:scale-95"
             >
-              <ChevronsUp className="w-5 h-5 stroke-[3]" />
+              <ChevronsUp className="w-4 h-4 stroke-[3]" />
               <span>
                 {landId === 'sound-shallows'
-                  ? 'DIVE / POP'
+                  ? 'DIVE'
                   : landId === 'builders-guild'
-                  ? 'DROP HOOK'
+                  ? 'DROP'
                   : landId === 'tricky-trails'
-                  ? 'JUMP & SWING'
+                  ? 'SWING'
                   : landId === 'whispering-peaks'
-                  ? 'SLIDE DOWNHILL 🏂'
-                  : 'FIRE LASER'}
+                  ? 'SLIDE 🏂'
+                  : 'FIRE'}
               </span>
             </button>
           </div>
@@ -1301,43 +1273,43 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
         {/* Level Result Banner */}
         {isAnswered && !showDeathCeremony && !isOutOfLives && (
-          <div className={`p-3 sm:p-4 rounded-2xl border text-center space-y-2 animate-fade-in ${
+          <div className={`p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border text-center space-y-1.5 animate-fade-in ${
             isCorrect ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-rose-950/90 border-rose-400 text-rose-200'
           }`}>
-            <div className="text-sm sm:text-base font-black uppercase tracking-wider">
-              {isCorrect ? '⭐ Correct! Phonics Mastered!' : '❌ Not Quite! Listen closely to the pure sound!'}
+            <div className="text-xs sm:text-sm font-black uppercase tracking-wider">
+              {isCorrect ? '⭐ Correct! Phonics Mastered!' : '❌ Not Quite!'}
             </div>
             {isCorrect ? (
-              <p className="text-xs sm:text-sm text-slate-200 font-medium">
+              <p className="text-[11px] sm:text-xs text-slate-200 font-medium">
                 {displayedQuestion.explanation}
               </p>
             ) : (
-              <p className="text-xs sm:text-sm text-rose-300 font-medium">
+              <p className="text-[11px] sm:text-xs text-rose-300 font-medium">
                 Try again! You lost a heart ({realmLives}/3 remaining).
               </p>
             )}
-            <div className="flex gap-3 justify-center pt-1">
+            <div className="flex gap-2 justify-center pt-0.5">
               {!isCorrect ? (
                 <button
                   onClick={() => {
                     sounds.stopSpeech();
                     onTryAgain();
                   }}
-                  className="px-6 py-2.5 rounded-xl bg-slate-800 text-slate-100 font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer border border-rose-400/40 hover:bg-slate-700"
+                  className="px-4 py-1.5 rounded-lg bg-slate-800 text-slate-100 font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-rose-400/40 hover:bg-slate-700"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-3.5 h-3.5" />
                   <span>Try Again</span>
                 </button>
               ) : (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
                       sounds.stopSpeech();
                       onClose();
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-bold cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer"
                   >
-                    Exit to Map
+                    Exit
                   </button>
 
                   <button
@@ -1346,9 +1318,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                       if (onNextLevel) onNextLevel();
                       else onFinishRound();
                     }}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl flex items-center gap-2 cursor-pointer hover:scale-105"
+                    className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow flex items-center gap-1 cursor-pointer hover:scale-105"
                   >
-                    <span>Travel to Next Level ➔</span>
+                    <span>Next Level ➔</span>
                   </button>
                 </div>
               )}

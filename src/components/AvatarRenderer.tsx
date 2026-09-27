@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AvatarCustomization } from '../types/character';
 
 interface AvatarRendererProps {
@@ -21,9 +21,25 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
   isRunning = false,
   isSwimming = false,
   walkCycle = 0,
-  swimCycle = 0,
+  swimCycle,
   showPet = true,
 }) => {
+  // Internal continuous swimming animation clock if no external loop is passed
+  const [internalSwimCycle, setInternalSwimCycle] = useState(0);
+
+  useEffect(() => {
+    if (!isSwimming || swimCycle !== undefined) return;
+    let animId: number;
+    const loop = () => {
+      setInternalSwimCycle((c) => c + 0.12);
+      animId = requestAnimationFrame(loop);
+    };
+    animId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animId);
+  }, [isSwimming, swimCycle]);
+
+  const activeSwimCycle = swimCycle !== undefined ? swimCycle : internalSwimCycle;
+
   const skin = customization?.skinTone || '#fcd5b5';
   const hairStyle = customization?.hairStyle || 'curls';
   const hairColor = customization?.hairColor || '#5c3818';
@@ -32,24 +48,27 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
   const accessory = customization?.accessory || 'bandana';
   const companion = customization?.companionPet || 'sea-turtle';
 
+  // Smooth buoyant bobbing
   const bobY = isSwimming
-    ? Math.sin(swimCycle * 2) * 3
+    ? Math.sin(activeSwimCycle * 2) * 3.5
     : isWalking
     ? Math.sin(walkCycle * 2) * (isRunning ? 3.5 : 2)
     : 0;
 
+  // Walking cycle rotations
   const walkLeftLegRot = isWalking ? Math.sin(walkCycle) * (isRunning ? 26 : 16) : 0;
   const walkRightLegRot = isWalking ? -Math.sin(walkCycle) * (isRunning ? 26 : 16) : 0;
   const walkLeftArmRot = isWalking ? -Math.sin(walkCycle) * (isRunning ? 28 : 18) : 0;
   const walkRightArmRot = isWalking ? Math.sin(walkCycle) * (isRunning ? 28 : 18) : 0;
 
-  const swimArmSweep = Math.sin(swimCycle) * 45;
-  const swimLegSpread = Math.abs(Math.sin(swimCycle)) * 25;
+  // Swimming motion: Dynamic breaststroke arm sweeps & flutter kicks
+  const swimArmSweep = Math.sin(activeSwimCycle) * 45;
+  const swimLegSpread = Math.sin(activeSwimCycle * 1.5) * 22;
 
   const leftLegRot = isSwimming ? -swimLegSpread : walkLeftLegRot;
   const rightLegRot = isSwimming ? swimLegSpread : walkRightLegRot;
-  const leftArmRot = isSwimming ? -70 + swimArmSweep : walkLeftArmRot;
-  const rightArmRot = isSwimming ? 70 - swimArmSweep : walkRightArmRot;
+  const leftArmRot = isSwimming ? -65 + swimArmSweep : walkLeftArmRot;
+  const rightArmRot = isSwimming ? 65 - swimArmSweep : walkRightArmRot;
 
   const isFlipped = facing === 'left';
 
@@ -74,20 +93,20 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
         </defs>
 
         {isSwimming ? (
-          <g id="water-wake" opacity="0.75">
+          <g id="water-wake" opacity="0.8">
             <ellipse
               cx="50"
               cy="80"
-              rx={26 + Math.sin(swimCycle * 2) * 3}
-              ry={7 + Math.sin(swimCycle * 2) * 1.5}
+              rx={25 + Math.sin(activeSwimCycle * 2) * 3}
+              ry={7 + Math.sin(activeSwimCycle * 2) * 1.5}
               fill="none"
               stroke="#38bdf8"
               strokeWidth="2.5"
               strokeDasharray="4 2"
             />
             <ellipse cx="50" cy="79" rx="19" ry="5.5" fill="#0284c7" opacity="0.35" />
-            <circle cx={42 + Math.sin(swimCycle) * 3} cy="81" r="2" fill="#e0f2fe" opacity="0.8" />
-            <circle cx={58 - Math.sin(swimCycle) * 3} cy="81" r="2" fill="#e0f2fe" opacity="0.8" />
+            <circle cx={42 + Math.sin(activeSwimCycle) * 3} cy="81" r="2" fill="#e0f2fe" opacity="0.8" />
+            <circle cx={58 - Math.sin(activeSwimCycle) * 3} cy="81" r="2" fill="#e0f2fe" opacity="0.8" />
           </g>
         ) : (
           <ellipse cx="50" cy="94" rx="20" ry="5" fill="#000000" opacity="0.28" />
@@ -111,11 +130,11 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
 
         {/* --- LEGS --- */}
         <g id="legs">
-          <g style={{ transform: `rotate(${leftLegRot}deg)`, transformOrigin: '42px 72px' }}>
+          <g style={{ transform: `rotate(${leftLegRot}deg)`, transformOrigin: '42px 72px', transition: isSwimming ? 'none' : 'transform 0.1s' }}>
             <rect x="37" y="72" width="9" height="18" rx="4.5" fill="#1e293b" />
             <ellipse cx="41.5" cy="90" rx="6" ry="3.5" fill="#0f172a" />
           </g>
-          <g style={{ transform: `rotate(${rightLegRot}deg)`, transformOrigin: '58px 72px' }}>
+          <g style={{ transform: `rotate(${rightLegRot}deg)`, transformOrigin: '58px 72px', transition: isSwimming ? 'none' : 'transform 0.1s' }}>
             <rect x="54" y="72" width="9" height="18" rx="4.5" fill="#1e293b" />
             <ellipse cx="58.5" cy="90" rx="6" ry="3.5" fill="#0f172a" />
           </g>
@@ -153,11 +172,11 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
 
         {/* --- ARMS --- */}
         <g id="arms">
-          <g style={{ transform: `rotate(${leftArmRot}deg)`, transformOrigin: '32px 50px' }}>
+          <g style={{ transform: `rotate(${leftArmRot}deg)`, transformOrigin: '32px 50px', transition: isSwimming ? 'none' : 'transform 0.1s' }}>
             <rect x="25" y="49" width="8" height="17" rx="4" fill={outfitColor} />
             <circle cx="29" cy="67" r="4.5" fill={skin} />
           </g>
-          <g style={{ transform: `rotate(${rightArmRot}deg)`, transformOrigin: '68px 50px' }}>
+          <g style={{ transform: `rotate(${rightArmRot}deg)`, transformOrigin: '68px 50px', transition: isSwimming ? 'none' : 'transform 0.1s' }}>
             <rect x="67" y="49" width="8" height="17" rx="4" fill={outfitColor} />
             <circle cx="71" cy="67" r="4.5" fill={skin} />
           </g>
@@ -181,7 +200,6 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
 
         {/* --- ALL DISTINCT HAIRSTYLES --- */}
         <g id="hair" fill={hairColor}>
-          {/* 1. CURLS */}
           {(hairStyle === 'curls' || hairStyle === 'curly') && (
             <g>
               <circle cx="34" cy="20" r="9" />
@@ -194,7 +212,6 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
             </g>
           )}
 
-          {/* 2. SPIKY */}
           {hairStyle === 'spiky' && (
             <g>
               <path d="M 28 27 L 31 14 L 38 21 L 43 10 L 50 20 L 57 9 L 63 21 L 70 14 L 72 27 Q 50 18 28 27 Z" />
@@ -203,7 +220,6 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
             </g>
           )}
 
-          {/* 3. AFRO */}
           {hairStyle === 'afro' && (
             <g>
               <circle cx="50" cy="20" r="18" />
@@ -214,7 +230,6 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
             </g>
           )}
 
-          {/* 4. BRAIDS / CORNROWS */}
           {hairStyle === 'braids' && (
             <g>
               <ellipse cx="50" cy="22" rx="20" ry="12" />
@@ -225,7 +240,6 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
             </g>
           )}
 
-          {/* 5. WAVY LOCKS */}
           {hairStyle === 'wavy' && (
             <g>
               <ellipse cx="50" cy="22" rx="21" ry="13" />
@@ -233,14 +247,12 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
             </g>
           )}
 
-          {/* 6. SHORT FADE */}
           {hairStyle === 'short' && (
             <g>
               <path d="M 31 29 Q 32 18 50 18 Q 68 18 69 29 Q 60 24 50 24 Q 40 24 31 29 Z" />
             </g>
           )}
 
-          {/* 7. TOP BUN */}
           {hairStyle === 'explorer-bun' && (
             <g>
               <circle cx="50" cy="9" r="8" />
@@ -293,7 +305,7 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
           </g>
         )}
 
-        {/* --- PETS (Turtle, Dragon, Golden Eagle, Starlight Owl, Fox, Bunny) --- */}
+        {/* --- COMPANION PETS --- */}
         {showPet && (
           <g
             id="companion-pet"
@@ -360,6 +372,8 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
                 <circle cx="14" cy="9" r="4.5" fill="#ea580c" />
                 <polygon points="10,6 9,2 12,5" fill="#ea580c" />
                 <polygon points="18,6 19,2 16,5" fill="#ea580c" />
+                <polygon points="10,5 9.5,3 11.5,4.5" fill="#fecdd3" />
+                <polygon points="18,5 18.5,3 16.5,4.5" fill="#fecdd3" />
                 <circle cx="12" cy="9" r="1" fill="#0f172a" />
                 <circle cx="16" cy="9" r="1" fill="#0f172a" />
                 <circle cx="14" cy="11.5" r="0.8" fill="#0f172a" />
@@ -374,6 +388,8 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
                 <circle cx="14" cy="10" r="4" fill="#f8fafc" />
                 <ellipse cx="11.5" cy="4" rx="1.5" ry="4" fill="#f8fafc" />
                 <ellipse cx="16.5" cy="4" rx="1.5" ry="4" fill="#f8fafc" />
+                <ellipse cx="11.5" cy="4" rx="0.8" ry="3" fill="#f472b6" />
+                <ellipse cx="16.5" cy="4" rx="0.8" ry="3" fill="#f472b6" />
                 <circle cx="12.5" cy="10" r="0.9" fill="#0f172a" />
                 <circle cx="15.5" cy="10" r="0.9" fill="#0f172a" />
                 <polygon points="13.5,11.5 14.5,11.5 14,12.2" fill="#f472b6" />

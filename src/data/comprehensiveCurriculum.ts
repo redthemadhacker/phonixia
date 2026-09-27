@@ -788,13 +788,14 @@ const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
   const targetLetters = item.word.toUpperCase().split('');
   const uniqueTargetLetters = Array.from(new Set(targetLetters));
 
-  // 100% guarantee all target letters are in the choices pool
+  // 100% Guaranteed inclusion of all target letters
   const pool = [...uniqueTargetLetters];
 
   for (const d of item.distractors) {
     if (pool.length >= 8) break;
-    if (!pool.includes(d.toUpperCase())) {
-      pool.push(d.toUpperCase());
+    const cleanD = d.toUpperCase();
+    if (!pool.includes(cleanD)) {
+      pool.push(cleanD);
     }
   }
 
@@ -803,6 +804,13 @@ const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
     if (pool.length >= 8) break;
     if (!pool.includes(e)) {
       pool.push(e);
+    }
+  }
+
+  // Ensure every required letter exists in the final choices
+  for (const letter of uniqueTargetLetters) {
+    if (!pool.includes(letter)) {
+      pool.unshift(letter);
     }
   }
 
@@ -1200,7 +1208,7 @@ const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
       targetSound: 'THOUGHT',
       soundCue: 'thought',
       choices: ['THOUGHT', 'THROUGH', 'TAUGHT', 'TOUGH'],
-      correct: 'THROUGH',
+      correct: 'THOUGHT',
       explanation: 'THOUGHT has OUGHT making the /awt/ sound!'
     }
   ],
@@ -2142,7 +2150,7 @@ const LEXICON_EMPIRE_STAGES: Record<number, StageChallenge[]> = {
 };
 
 // -------------------------------------------------------------
-// UNIFIED GETTER: Returns an accurate, randomized challenge
+// UNIFIED GETTER: Returns an accurate, verified challenge
 // -------------------------------------------------------------
 export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: number): StageChallenge => {
   const normalizedStage = Math.max(1, Math.min(50, stageNumber));

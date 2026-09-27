@@ -4,7 +4,7 @@ import { sounds } from '../utils/audio';
 import { validatePassword } from '../utils/security';
 import { 
   User, KeyRound, ArrowRight, UserPlus, Sparkles, Star, Heart, 
-  Compass, ShieldCheck, Check, Wifi, GraduationCap
+  Compass, ShieldCheck, Check, Wifi, GraduationCap, Eye, EyeOff, HelpCircle, Calculator
 } from 'lucide-react';
 import { AvatarRenderer } from './AvatarRenderer';
 
@@ -18,7 +18,33 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Forgot Password Modal State
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [forgotRecoveryMethod, setForgotRecoveryMethod] = useState<'pin' | 'math'>('math');
+  const [forgotUsernameInput, setForgotUsernameInput] = useState('');
+  const [forgotPinInput, setForgotPinInput] = useState('');
+  const [forgotMathAnswer, setForgotMathAnswer] = useState('');
+  const [isVerifiedForReset, setIsVerifiedForReset] = useState(false);
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+
+  // Adult Math Challenge Generator (Randomized)
+  const [mathProblem, setMathProblem] = useState<{ q: string; a: number }>(() => {
+    const num1 = Math.floor(Math.random() * 12) + 12; // 12-24
+    const num2 = Math.floor(Math.random() * 8) + 3;   // 3-10
+    return { q: `${num1} × ${num2}`, a: num1 * num2 };
+  });
+
+  const resetMathProblem = () => {
+    const num1 = Math.floor(Math.random() * 14) + 12;
+    const num2 = Math.floor(Math.random() * 8) + 4;
+    setMathProblem({ q: `${num1} × ${num2}`, a: num1 * num2 });
+  };
 
   // Registration & Character Creation state
   const [characterName, setCharacterName] = useState('');
@@ -26,9 +52,11 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
   const [regFamilyName, setRegFamilyName] = useState('');
   const [regUsername, setRegUsername] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [regShowPassword, setRegShowPassword] = useState(false);
   const [regRole, setRegRole] = useState<'parent' | 'teacher'>('parent');
 
   const pwCheckResult = validatePassword(regPassword);
+  const newPwCheckResult = validatePassword(newPasswordInput);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +78,29 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!regUsername.trim() || !regPassword.trim() || !characterName.trim()) {
+    const cleanUser = regUsername.trim().toLowerCase();
+
+    if (!cleanUser || !regPassword.trim() || !characterName.trim()) {
       setErrorMsg('Please enter your character name, username, and password.');
+      return;
+    }
+
+    // UNIQUE USERNAME CHECK: No fallbacks or duplicate collisions
+    const existingPassword = localStorage.getItem(`phonixia_pw_${cleanUser}`);
+    let accountExists = false;
+    try {
+      const savedAccounts = localStorage.getItem('phonixia_account_v2');
+      if (savedAccounts) {
+        const parsed = JSON.parse(savedAccounts);
+        if (parsed.username?.toLowerCase() === cleanUser) {
+          accountExists = true;
+        }
+      }
+    } catch {}
+
+    if (existingPassword || accountExists) {
+      sounds.playError();
+      setErrorMsg('That username is already taken. Please choose another username.');
       return;
     }
 
@@ -65,7 +114,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
     const companionName = characterGender === 'boy' ? 'Kam' : 'Celine';
 
     registerAccount({
-      username: regUsername.trim().toLowerCase(),
+      username: cleanUser,
       password: regPassword,
       familyName: regFamilyName.trim() || (regRole === 'teacher' ? `${characterName}'s Classroom` : `${characterName}'s Family`),
       role: regRole,
@@ -80,6 +129,96 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
     onAuthenticated();
   };
 
+  const handleVerifyIdentity = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+
+    const cleanUser = forgotUsernameInput.trim().toLowerCase();
+    if (!cleanUser) {
+      setForgotError('Please enter your account username.');
+      return;
+    }
+
+    // Verify account existence strictly without default shortcuts
+    const savedPw = localStorage.getItem(`phonixia_pw_${cleanUser}`);
+    let accountFound = false;
+    try {
+      const savedAccounts = localStorage.getItem('phonixia_account_v2');
+      if (savedAccounts) {
+        const parsed = JSON.parse(savedAccounts);
+        if (parsed.username?.toLowerCase() === cleanUser) {
+          accountFound = true;
+        }
+      }
+    } catch {}
+
+    if (!savedPw && !accountFound) {
+      sounds.playError();
+      setForgotError(`No registered account found with username: "${forgotUsernameInput}".`);
+      return;
+    }
+
+    // Check Verification Method without default PIN
+    if (forgotRecoveryMethod === 'math') {
+      if (parseInt(forgotMathAnswer.trim(), 10) !== mathProblem.a) {
+        sounds.playError();
+        setForgotError('Incorrect math answer. Only adults may verify recovery.');
+        resetMathProblem();
+        return;
+      }
+    } else {
+      const configuredPin = localStorage.getItem('phonixia_parent_pin');
+      if (!configuredPin) {
+        sounds.playError();
+        setForgotError('No Parent PIN has been set up yet. Please select the Adult Math Question method.');
+        return;
+      }
+      if (forgotPinInput.trim() !== configuredPin) {
+        sounds.playError();
+        setForgotError('Incorrect 4-digit Parent PIN.');
+        return;
+      }
+    }
+
+    sounds.playSuccess();
+    setIsVerifiedForReset(true);
+  };
+
+  const handleSaveNewPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+
+    if (!newPwCheckResult.isValid) {
+      sounds.playError();
+      setForgotError(newPwCheckResult.errorMessage || 'Please fulfill all password parameters.');
+      return;
+    }
+
+    const cleanUser = forgotUsernameInput.trim().toLowerCase();
+    localStorage.setItem(`phonixia_pw_${cleanUser}`, newPasswordInput);
+
+    try {
+      const savedAccounts = localStorage.getItem('phonixia_account_v2');
+      if (savedAccounts) {
+        const parsed = JSON.parse(savedAccounts);
+        if (parsed.username?.toLowerCase() === cleanUser) {
+          localStorage.setItem('phonixia_account_v2', JSON.stringify(parsed));
+        }
+      }
+    } catch {}
+
+    sounds.playFanfare();
+    setResetSuccessMessage('Password successfully updated! You can now sign in.');
+    setTimeout(() => {
+      setPassword(newPasswordInput);
+      setUsername(cleanUser);
+      setIsForgotModalOpen(false);
+      setIsVerifiedForReset(false);
+      setResetSuccessMessage(null);
+      setNewPasswordInput('');
+    }, 2000);
+  };
+
   return (
     <div 
       style={{
@@ -90,14 +229,13 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
       }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-md select-none overflow-y-auto"
     >
-      {/* Golden Ambient Aura */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
         <div className="w-[520px] h-[520px] bg-amber-500/10 rounded-full blur-[100px] animate-pulse" />
       </div>
 
       <div className="relative w-full max-w-lg bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-3 sm:border-4 border-amber-400 rounded-3xl p-4 sm:p-7 shadow-[0_0_60px_rgba(245,158,11,0.35)] space-y-4 my-auto max-h-[calc(100dvh-24px)] overflow-y-auto">
         
-        {/* Golden Cute Header with Video Game Quest Lore */}
+        {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-amber-500/20 border border-amber-400/80 text-amber-300 text-xs font-black tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-pulse">
             <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
@@ -112,15 +250,10 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
           <p className="text-xs sm:text-sm text-amber-200 font-bold max-w-md mx-auto leading-snug">
             Travel across 5 magical realms to defeat the Shadow King, rescue the Golden Phonix, and earn your place among the Eternal Flamekeepers.
           </p>
-
-          <p className="text-[11px] sm:text-xs text-amber-400/90 font-medium">
-            Create account or login to explore
-          </p>
         </div>
 
-        {/* Adventure Companions: Kam & Celine */}
+        {/* Adventure Companions */}
         <div className="p-3 rounded-2xl bg-amber-950/20 border border-amber-500/30 shadow-inner flex items-center justify-around gap-2 text-center">
-          {/* Kam Guide Card */}
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-blue-950/90 border border-blue-400/60 flex items-center justify-center overflow-hidden p-0.5 shadow">
               <AvatarRenderer customization={KAM_GUIDE.customization} size={36} />
@@ -136,7 +269,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
 
           <div className="h-8 w-px bg-amber-500/30" />
 
-          {/* Celine Guide Card */}
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-pink-950/90 border border-pink-400/60 flex items-center justify-center overflow-hidden p-0.5 shadow">
               <AvatarRenderer customization={CELINE_GUIDE.customization} size={36} />
@@ -151,7 +283,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
           </div>
         </div>
 
-        {/* Tab Switcher: Golden Styled */}
+        {/* Tab Switcher */}
         <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-2xl border-2 border-amber-500/40 text-xs font-black">
           <button
             type="button"
@@ -213,21 +345,57 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-black text-amber-300 uppercase tracking-wider block">
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-black text-amber-300 uppercase tracking-wider">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotError(null);
+                    setIsVerifiedForReset(false);
+                    setResetSuccessMessage(null);
+                    setForgotUsernameInput(username);
+                    setNewPasswordInput('');
+                    resetMathProblem();
+                    setIsForgotModalOpen(true);
+                  }}
+                  className="text-[11px] text-amber-400 hover:text-amber-300 underline font-semibold cursor-pointer"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
               <div className="relative flex items-center">
                 <KeyRound className="absolute left-3 w-4 h-4 text-amber-400/80" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-950 border border-amber-500/40 text-slate-100 text-[16px] sm:text-xs focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-950 border border-amber-500/40 text-slate-100 text-[16px] sm:text-xs focus:outline-none focus:border-amber-400 font-mono"
                   placeholder="Enter password"
                   autoComplete="current-password"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 text-slate-400 hover:text-amber-300 cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+
+              <label className="flex items-center gap-2 pt-1 cursor-pointer select-none text-[11px] text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={(e) => setShowPassword(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded bg-slate-950 border-amber-500/60 text-amber-500 focus:ring-amber-400"
+                />
+                <span>Show Password</span>
+              </label>
             </div>
 
             <button
@@ -243,8 +411,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
         {/* REGISTER & CREATE CHARACTER FORM */}
         {mode === 'register' && (
           <form onSubmit={handleRegister} className="space-y-3.5 max-h-[50vh] overflow-y-auto pr-1">
-            
-            {/* Account Role Dropdown: Parent vs Teacher/Educator */}
             <div className="space-y-1">
               <label className="text-[10px] font-black text-amber-300 uppercase tracking-wider flex items-center gap-1">
                 <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
@@ -260,7 +426,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
               </select>
             </div>
 
-            {/* Create Your Own Character */}
             <div className="p-3 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-2.5">
               <span className="text-[11px] font-black text-amber-300 uppercase tracking-wider flex items-center gap-1">
                 <Compass className="w-3.5 h-3.5 text-amber-400" />
@@ -281,10 +446,9 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
                 />
               </div>
 
-              {/* Character Gender & Companion Guide */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Character Gender &amp; Traveling Companion
+                  Character Gender &amp; Companion
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -322,11 +486,10 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
               </div>
             </div>
 
-            {/* Account Credentials */}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-amber-300 uppercase tracking-wider block">
-                  Username
+                  Unique Username
                 </label>
                 <input
                   type="text"
@@ -343,24 +506,33 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
                 <label className="text-[10px] font-black text-amber-300 uppercase tracking-wider block">
                   Password
                 </label>
-                <input
-                  type="password"
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  placeholder="Enter password"
-                  autoComplete="new-password"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-amber-500/40 text-slate-100 text-xs focus:outline-none focus:border-amber-400 font-mono"
-                  required
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={regShowPassword ? 'text' : 'password'}
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    placeholder="Enter password"
+                    autoComplete="new-password"
+                    className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-950 border border-amber-500/40 text-slate-100 text-xs focus:outline-none focus:border-amber-400 font-mono"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setRegShowPassword(!regShowPassword)}
+                    className="absolute right-2.5 text-slate-400 hover:text-amber-300 cursor-pointer"
+                    tabIndex={-1}
+                  >
+                    {regShowPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Standard Password Security Parameters Checklist */}
             <div className="p-3 rounded-2xl bg-slate-950/90 border border-amber-500/30 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black text-amber-300 uppercase tracking-wider flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Standard Security Parameters</span>
+                  <span>Security Parameters</span>
                 </span>
                 <span className={`text-[9px] font-bold font-mono px-1.5 py-0.2 rounded-full ${
                   pwCheckResult.isValid ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/50' : 'bg-slate-800 text-slate-400'
@@ -401,15 +573,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
               />
             </div>
 
-            {/* Parents Wi-Fi & Network Cybersecurity Shield Info */}
-            <div className="p-2.5 rounded-xl bg-slate-950 border border-emerald-500/30 flex items-start gap-2 text-[10px] text-slate-300">
-              <Wifi className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <b className="text-emerald-400 block font-black">Home Wi-Fi &amp; Network Protected</b>
-                <span>Phonixia features backend network isolation, brute-force rate-limiting, and encrypted cloud storage. Your family router and Wi-Fi cannot be accessed or compromised through gameplay.</span>
-              </div>
-            </div>
-
             <button
               type="submit"
               className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.4)] cursor-pointer flex items-center justify-center gap-1.5 transition-transform hover:scale-102 active:scale-98 border border-amber-300"
@@ -420,6 +583,182 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
           </form>
         )}
       </div>
+
+      {/* SECURE PASSWORD RESET GATE MODAL (NO DEFAULTS) */}
+      {isForgotModalOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-3 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md bg-slate-900 border-2 border-amber-400 rounded-3xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-400/40">
+                  <HelpCircle className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-sm font-black text-amber-300 uppercase tracking-wide">
+                    Reset Account Password
+                  </h3>
+                  <p className="text-[11px] text-slate-400">Adult Parent or Educator Gate</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsForgotModalOpen(false);
+                  setIsVerifiedForReset(false);
+                }}
+                className="text-slate-400 hover:text-white text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {forgotError && (
+              <div className="p-2.5 rounded-xl bg-rose-950/80 border border-rose-500 text-rose-200 text-xs font-bold text-center">
+                {forgotError}
+              </div>
+            )}
+
+            {resetSuccessMessage ? (
+              <div className="p-4 rounded-2xl bg-emerald-950/80 border-2 border-emerald-400 text-center space-y-2 animate-scale-up">
+                <Check className="w-8 h-8 text-emerald-400 mx-auto" />
+                <div className="text-xs font-bold text-emerald-200">
+                  {resetSuccessMessage}
+                </div>
+              </div>
+            ) : isVerifiedForReset ? (
+              /* Step 2: Set New Password */
+              <form onSubmit={handleSaveNewPassword} className="space-y-3.5 animate-scale-up">
+                <div className="text-xs text-emerald-300 font-bold text-center">
+                  Identity Verified! Set a new password for @{forgotUsernameInput}:
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-300 block">New Password</label>
+                  <div className="relative flex items-center">
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={newPasswordInput}
+                      onChange={(e) => setNewPasswordInput(e.target.value)}
+                      placeholder="Enter new password"
+                      className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-950 border border-amber-500/40 text-white text-xs font-mono focus:outline-none focus:border-amber-400"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-2.5 text-slate-400 hover:text-amber-300 cursor-pointer"
+                      tabIndex={-1}
+                    >
+                      {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Password Quality Breakdown */}
+                <div className="p-2.5 rounded-xl bg-slate-950 border border-amber-500/30 text-[10px] space-y-1">
+                  <div className="text-amber-300 font-bold">New Password Parameters:</div>
+                  <div className="grid grid-cols-2 gap-1 text-slate-300">
+                    {newPwCheckResult.checks.map(c => (
+                      <span key={c.id} className={c.passed ? 'text-emerald-400 font-bold' : 'text-slate-500'}>
+                        {c.passed ? '✓' : '•'} {c.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer shadow transition-all active:scale-95"
+                >
+                  Save New Password &amp; Sign In
+                </button>
+              </form>
+            ) : (
+              /* Step 1: Adult Verification Challenge */
+              <form onSubmit={handleVerifyIdentity} className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-300 block">Account Username</label>
+                  <input
+                    type="text"
+                    value={forgotUsernameInput}
+                    onChange={(e) => setForgotUsernameInput(e.target.value)}
+                    placeholder="Enter account username"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-300 block">Verification Challenge</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setForgotRecoveryMethod('math')}
+                      className={`p-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
+                        forgotRecoveryMethod === 'math'
+                          ? 'bg-amber-500 text-slate-950 border-amber-400'
+                          : 'bg-slate-950 text-slate-300 border-slate-800'
+                      }`}
+                    >
+                      <Calculator className="w-3.5 h-3.5" />
+                      <span>Adult Math Question</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForgotRecoveryMethod('pin')}
+                      className={`p-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
+                        forgotRecoveryMethod === 'pin'
+                          ? 'bg-amber-500 text-slate-950 border-amber-400'
+                          : 'bg-slate-950 text-slate-300 border-slate-800'
+                      }`}
+                    >
+                      <KeyRound className="w-3.5 h-3.5" />
+                      <span>Custom Parent PIN</span>
+                    </button>
+                  </div>
+                </div>
+
+                {forgotRecoveryMethod === 'math' ? (
+                  <div className="p-3 bg-slate-950 rounded-xl border border-amber-500/40 space-y-1.5 text-center">
+                    <span className="text-[11px] text-slate-400 block font-medium">Please solve this adult question:</span>
+                    <div className="text-lg font-black text-amber-300 font-mono tracking-widest">
+                      {mathProblem.q} = ?
+                    </div>
+                    <input
+                      type="number"
+                      value={forgotMathAnswer}
+                      onChange={(e) => setForgotMathAnswer(e.target.value)}
+                      placeholder="Enter answer"
+                      className="w-32 mx-auto px-3 py-1.5 text-center font-mono font-bold bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-amber-400"
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div className="p-3 bg-slate-950 rounded-xl border border-amber-500/40 space-y-1.5 text-center">
+                    <span className="text-[11px] text-slate-400 block font-medium">Enter your configured 4-digit Parent PIN:</span>
+                    <input
+                      type="password"
+                      maxLength={4}
+                      pattern="\d{4}"
+                      value={forgotPinInput}
+                      onChange={(e) => setForgotPinInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      placeholder="••••"
+                      className="w-32 mx-auto px-3 py-1.5 text-center font-mono font-bold tracking-widest bg-slate-900 border border-slate-700 rounded-lg text-white text-base focus:outline-none focus:border-amber-400"
+                      required
+                    />
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider cursor-pointer shadow transition-all active:scale-95"
+                >
+                  Verify &amp; Continue to Reset
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -217,7 +217,11 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
             <span className="animate-pulse">⚡</span>
           </div>
           <h1 className="text-sm sm:text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-pink-300 to-cyan-300 font-display">
+<<<<<<< HEAD
             Grand Arcade · 25 High-Score Mini-Cabinets
+=======
+            Middle & High School Greek & Latin Roots · Etymology Vault
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
           </h1>
         </div>
 
@@ -352,7 +356,11 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                     {activeGame.name}
                   </h2>
                   <p className="text-xs text-cyan-300 font-medium">
+<<<<<<< HEAD
                     Cabinet #{activeGame.gameNum} · {activeGame.skillCategory}
+=======
+                    {activeGame.skillCategory} · {activeGame.gradeLevel}
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
                   </p>
                 </div>
               </div>
@@ -401,10 +409,17 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                       onClick={() => executeArcadeAction(idx)}
                       className={`flex-1 p-2 sm:p-3 rounded-2xl border-2 text-center transition-all cursor-pointer flex flex-col items-center justify-between relative ${
                         isAnswered
+<<<<<<< HEAD
                           ? isCorrect && isCorrectChoice
                             ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
                             : isSelected && !isCorrect
                             ? 'bg-rose-900/90 border-rose-400 text-rose-200 animate-shake'
+=======
+                          ? isCorrectChoice
+                            ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
+                            : isSelected
+                            ? 'bg-rose-900/90 border-rose-400 text-rose-200'
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
                             : 'bg-slate-950/70 border-slate-800 text-slate-600 opacity-40'
                           : isPlayerStandingHere
                           ? 'bg-fuchsia-950/90 border-cyan-300 ring-2 ring-cyan-400 shadow-[0_0_25px_rgba(6,182,212,0.8)] scale-105'
@@ -483,6 +498,7 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                 <ArrowLeft className="w-4 h-4" />
                 <span>Move Left</span>
               </button>
+<<<<<<< HEAD
 
               <button
                 type="button"
@@ -529,6 +545,48 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                   </p>
                 )}
 
+=======
+
+              <button
+                type="button"
+                onClick={() => executeArcadeAction(playerCol)}
+                className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(217,70,239,0.7)] cursor-pointer active:scale-95 hover:brightness-110"
+              >
+                <span>
+                  {activeGame.mechanicType === 'whack'
+                    ? '🔨 SMASH TARGET (SPACE)'
+                    : activeGame.mechanicType === 'basket-catch'
+                    ? '🕸️ CAPTURE TARGET (SPACE)'
+                    : '⚡ ARCADE BLAST (SPACE)'}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPlayerCol(c => Math.min(activeGame.options.length - 1, c + 1));
+                  sounds.playStep();
+                }}
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+              >
+                <span>Move Right</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Result banner */}
+            {isAnswered && (
+              <div className={`p-4 rounded-2xl border text-center space-y-2 animate-scale-up ${
+                isCorrect ? 'bg-emerald-950/95 border-emerald-400 text-emerald-200' : 'bg-rose-950/95 border-rose-400 text-rose-200'
+              }`}>
+                <div className="text-sm sm:text-base font-black uppercase">
+                  {isCorrect ? '⭐ Correct Etymology Synthesis!' : '❌ Incorrect Selection!'}
+                </div>
+                <p className="text-xs sm:text-sm font-medium text-slate-200">
+                  {activeGame.explanation}
+                </p>
+
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
                 <div className="flex items-center justify-center gap-3 pt-1">
                   {!isCorrect ? (
                     <button

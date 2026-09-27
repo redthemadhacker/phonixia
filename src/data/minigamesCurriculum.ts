@@ -3,7 +3,11 @@ export interface MinigameDefinition {
   gameNum: number;
   name: string;
   hub: 'isles-of-play' | 'shellshore-arcade';
+<<<<<<< HEAD
   gradeLevel: 'Voyage Challenge' | 'Arcade Challenge';
+=======
+  gradeLevel: 'Preschool - Late Elementary' | 'Early Middle - Early High School';
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
   themeIcon: string;
   skillCategory: string;
   mechanicType: 'slingshot' | 'whack' | 'bubble-pop' | 'basket-catch' | 'conveyor' | 'target-blast';
@@ -29,13 +33,21 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 1,
     name: 'Dolphin Pearl Dive',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🐬',
     skillCategory: 'Short /a/ CVC Practice',
     mechanicType: 'bubble-pop',
     howToPlay: 'Dive with the dolphin and pop the pearl containing the short /a/ vowel sound!',
     targetSoundOrWord: 'Short /a/ as in map',
+<<<<<<< HEAD
     spokenAudioCue: 'Pop the bubble containing the short a sound!',
+=======
+    spokenAudioCue: 'Pop the bubble with short a, like in map!',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     options: ['MAP', 'MOP', 'MUD', 'MEN'],
     correctAnswer: 'MAP',
     explanation: 'M-A-P has the bright short a sound in the middle!'
@@ -45,7 +57,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 2,
     name: 'Coconut Cannon Slingshot',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🥥',
     skillCategory: 'Initial Stop /b/',
     mechanicType: 'slingshot',
@@ -61,7 +77,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 3,
     name: 'Parrot Island Rhyme Whack',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🦜',
     skillCategory: 'Rhyme Chunk -OP',
     mechanicType: 'whack',
@@ -77,7 +97,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 4,
     name: 'Jungle Bamboo Drum Beat',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🥁',
     skillCategory: 'Syllable Counting',
     mechanicType: 'target-blast',
@@ -93,7 +117,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 5,
     name: 'Froggy Lilypad Leap',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🐸',
     skillCategory: 'Short /i/ Vowel Sound',
     mechanicType: 'slingshot',
@@ -109,7 +137,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 6,
     name: 'Sandcastle Conveyor Sorter',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🏰',
     skillCategory: 'Ending Stop /g/',
     mechanicType: 'conveyor',
@@ -125,7 +157,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 7,
     name: 'Tropical Fruit Catch',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🥭',
     skillCategory: 'Ending Digraph -CK',
     mechanicType: 'basket-catch',
@@ -141,7 +177,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 8,
     name: 'Lighthouse Beacon Spin',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🚨',
     skillCategory: 'Hushed Digraph /sh/',
     mechanicType: 'target-blast',
@@ -157,7 +197,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 9,
     name: 'Volcano Bubble Burst',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🌋',
     skillCategory: 'Short /e/ Vowel Sound',
     mechanicType: 'bubble-pop',
@@ -173,7 +217,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 10,
     name: 'Hermit Crab Beach Whack',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🦀',
     skillCategory: 'Digraph /ch/',
     mechanicType: 'whack',
@@ -189,7 +237,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 11,
     name: 'Sea Turtle Net Catch',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🐢',
     skillCategory: 'Short /u/ Vowel Sound',
     mechanicType: 'basket-catch',
@@ -205,7 +257,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 12,
     name: 'Pelican Air Drop',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🦤',
     skillCategory: 'Digraph /th/',
     mechanicType: 'slingshot',
@@ -221,7 +277,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 13,
     name: 'Coral Cannon Blast',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🪸',
     skillCategory: 'L-Blend /cl/',
     mechanicType: 'target-blast',
@@ -237,7 +297,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 14,
     name: 'Seagull Fish Plunge',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🦅',
     skillCategory: 'R-Blend /fr/',
     mechanicType: 'slingshot',
@@ -253,7 +317,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 15,
     name: 'Starfish Lagoon Slingshot',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '⭐',
     skillCategory: 'S-Blend /sp/',
     mechanicType: 'slingshot',
@@ -269,7 +337,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 16,
     name: 'Tiki Mask Chime',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🗿',
     skillCategory: 'Magic Silent E (a_e)',
     mechanicType: 'target-blast',
@@ -285,7 +357,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 17,
     name: 'Lagoon Rowboat Race',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🚣',
     skillCategory: 'Magic Silent E (i_e)',
     mechanicType: 'conveyor',
@@ -301,7 +377,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 18,
     name: 'Waterfall Raft Guide',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🌊',
     skillCategory: 'Magic Silent E (o_e)',
     mechanicType: 'basket-catch',
@@ -317,7 +397,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 19,
     name: 'Windmill Cloud Float',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '☁️',
     skillCategory: 'Vowel Team EE',
     mechanicType: 'bubble-pop',
@@ -333,7 +417,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 20,
     name: 'Clam Pearl Harvest',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🦪',
     skillCategory: 'Vowel Team EA',
     mechanicType: 'whack',
@@ -349,7 +437,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 21,
     name: 'Anchor Winch Pull',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '⚓',
     skillCategory: 'Vowel Team OA',
     mechanicType: 'conveyor',
@@ -365,7 +457,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 22,
     name: 'Shipwreck Treasure Dive',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '💎',
     skillCategory: 'Vowel Team AI',
     mechanicType: 'bubble-pop',
@@ -381,7 +477,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 23,
     name: 'Sunset Beach Firefly Net',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '✨',
     skillCategory: 'Bossy R (/ar/)',
     mechanicType: 'basket-catch',
@@ -397,7 +497,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 24,
     name: 'Compass Rose Wheel',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🧭',
     skillCategory: 'Bossy R (/or/)',
     mechanicType: 'target-blast',
@@ -413,7 +517,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 25,
     name: 'Golden Atoll Grand Totem',
     hub: 'isles-of-play',
+<<<<<<< HEAD
     gradeLevel: 'Voyage Challenge',
+=======
+    gradeLevel: 'Preschool - Late Elementary',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '👑',
     skillCategory: 'Bossy R Triplets (er, ir, ur)',
     mechanicType: 'target-blast',
@@ -433,7 +541,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 26,
     name: 'Submarine Sonar Ping',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '📡',
     skillCategory: 'Greek Root: CHRON (Time)',
     mechanicType: 'target-blast',
@@ -449,7 +561,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 27,
     name: 'Depth Charge Cannon',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '💣',
     skillCategory: 'Greek Root: BIO (Life)',
     mechanicType: 'slingshot',
@@ -465,7 +581,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 28,
     name: 'Laser Claw Crane',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🏗️',
     skillCategory: 'Greek Root: GEO (Earth)',
     mechanicType: 'whack',
@@ -481,7 +601,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 29,
     name: 'Cyber Shark Whack',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🦈',
     skillCategory: 'Greek Root: TELE (Distant / Far)',
     mechanicType: 'whack',
@@ -497,7 +621,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 30,
     name: 'Pinball Vector Slingshot',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🎯',
     skillCategory: 'Greek Root: PHON (Sound / Voice)',
     mechanicType: 'slingshot',
@@ -513,7 +641,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 31,
     name: 'Hydro Turbine Conveyor',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '⚙️',
     skillCategory: 'Latin Root: SPEC / SPIC (To Look / See)',
     mechanicType: 'conveyor',
@@ -529,7 +661,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 32,
     name: 'Neon Kraken Tentacle',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🦑',
     skillCategory: 'Latin Root: PORT (To Carry)',
     mechanicType: 'target-blast',
@@ -545,7 +681,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 33,
     name: 'Steam Pressure Gauge',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🌡️',
     skillCategory: 'Latin Root: DICT (To Speak / Say)',
     mechanicType: 'whack',
@@ -561,7 +701,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 34,
     name: 'Abyssal Vault Sorter',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '📦',
     skillCategory: 'Latin Root: TRACT (To Pull / Draw)',
     mechanicType: 'conveyor',
@@ -577,7 +721,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 35,
     name: 'Cyberpunk Pinball Drop',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🕹️',
     skillCategory: 'Latin Root: STRUCT (To Build)',
     mechanicType: 'basket-catch',
@@ -593,7 +741,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 36,
     name: 'Pulse Laser Target',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '⚡',
     skillCategory: 'Negative Prefix: UN- / DIS- / NON-',
     mechanicType: 'slingshot',
@@ -609,7 +761,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 37,
     name: 'Radar Jammer Whack',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '📻',
     skillCategory: 'Temporal Prefix: PRE- / POST-',
     mechanicType: 'whack',
@@ -625,7 +781,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 38,
     name: 'Hologram Matrix Sorter',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🧬',
     skillCategory: 'Spatial Prefix: TRANS- (Across / Beyond)',
     mechanicType: 'conveyor',
@@ -641,7 +801,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 39,
     name: 'Retro Arcade Blaster',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '👾',
     skillCategory: 'Noun Suffix: -TION / -SION (State / Action)',
     mechanicType: 'target-blast',
@@ -657,7 +821,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 40,
     name: 'Space Invader Basket',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🚀',
     skillCategory: 'Adjective Suffix: -ABLE / -IBLE (Capable of)',
     mechanicType: 'basket-catch',
@@ -673,7 +841,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 41,
     name: 'Neon Whack-A-Droid',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🤖',
     skillCategory: 'Agent Suffix: -IST (Person who practices)',
     mechanicType: 'whack',
@@ -689,7 +861,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 42,
     name: 'Quantum Conveyor Belt',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '💡',
     skillCategory: 'Latin Cognate & Etymology: AQUA (Water)',
     mechanicType: 'conveyor',
@@ -705,7 +881,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 43,
     name: 'Vector Grid Slingshot',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '📐',
     skillCategory: 'Advanced Homophones: Stationary vs Stationery',
     mechanicType: 'slingshot',
@@ -721,7 +901,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 44,
     name: 'Cybernetic Claw Machine',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🕹️',
     skillCategory: 'Silent Letters: B, K, P',
     mechanicType: 'whack',
@@ -737,7 +921,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 45,
     name: 'Neon Tidal Wave Pop',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🌊',
     skillCategory: 'Morphological Shift (Vowel Alternation)',
     mechanicType: 'bubble-pop',
@@ -753,7 +941,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 46,
     name: 'Plasma Cannon Target',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🎯',
     skillCategory: 'Context Clues & Vocabulary Synthesis',
     mechanicType: 'target-blast',
@@ -769,7 +961,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 47,
     name: 'Retro Arcade Whack',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🔨',
     skillCategory: 'Figurative Language: Idiom Decryption',
     mechanicType: 'whack',
@@ -785,7 +981,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 48,
     name: 'Cybernetic Vault Decrypter',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🔐',
     skillCategory: 'Latin Root: MIT / MISS (To Send)',
     mechanicType: 'target-blast',
@@ -801,7 +1001,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 49,
     name: 'Quantum Vortex Sorter',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '🌀',
     skillCategory: 'Greek Root: PATH (Feeling / Disease)',
     mechanicType: 'conveyor',
@@ -817,7 +1021,11 @@ export const ALL_50_MINIGAMES: MinigameDefinition[] = [
     gameNum: 50,
     name: 'Golden Master Citadel Gauntlet',
     hub: 'shellshore-arcade',
+<<<<<<< HEAD
     gradeLevel: 'Arcade Challenge',
+=======
+    gradeLevel: 'Early Middle - Early High School',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     themeIcon: '👑',
     skillCategory: 'Advanced Etymology Synthesis',
     mechanicType: 'target-blast',

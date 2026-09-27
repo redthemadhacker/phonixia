@@ -186,8 +186,13 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 10,
       skillTitle: 'Letter Sounds: /j/ & /k/',
+<<<<<<< HEAD
       instruction: 'Listen: juh! Which letter makes this sound?',
       spokenPrompt: 'Listen closely. Which letter makes the sound, juh?',
+=======
+      instruction: 'Listen: juh! Which letter makes the /j/ sound like jam?',
+      spokenPrompt: 'Listen! Which letter makes the jumping sound, juh?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'J /dʒ/',
       soundCue: 'juh as in jam',
       choices: ['J', 'G', 'Y', 'Z'],
@@ -199,8 +204,13 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 11,
       skillTitle: 'Letter Sounds: /l/ & /m/',
+<<<<<<< HEAD
       instruction: 'Listen: mmm! Which letter makes this sound?',
       spokenPrompt: 'Listen: mmm. Which letter makes this sound?',
+=======
+      instruction: 'Hum with your lips closed: mmm! Which letter is this?',
+      spokenPrompt: 'Listen to the humming sound: mmm. Which letter is it?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'M /m/',
       soundCue: 'mmm as in moon',
       choices: ['M', 'N', 'W', 'V'],
@@ -212,8 +222,13 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 12,
       skillTitle: 'Letter Sounds: /n/ & /o/',
+<<<<<<< HEAD
       instruction: 'Listen: ah! Which vowel makes this sound?',
       spokenPrompt: 'Listen: ah. Which vowel makes this sound?',
+=======
+      instruction: 'Open your mouth wide like a circle: ah! Which vowel is this?',
+      spokenPrompt: 'Open wide. Ah! Which vowel is shaped like an open circle?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'O /ɒ/',
       soundCue: 'ah as in octopus',
       choices: ['O', 'U', 'A', 'C'],
@@ -422,7 +437,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 27,
       skillTitle: 'CVC Short A: -AN Family',
+<<<<<<< HEAD
       instruction: 'Listen: f - ah - nnn. Which word does this spell?',
+=======
+      instruction: 'Listen: f - ah - nnn. Which word has a spinning fan?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: f - ah - nnn. Spell the word!',
       targetSound: 'FAN',
       soundCue: 'f - ah - nnn',
@@ -435,7 +454,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 28,
       skillTitle: 'CVC Short A: -AP Family',
+<<<<<<< HEAD
       instruction: 'Listen: m - ah - puh. Which word does this spell?',
+=======
+      instruction: 'Listen: m - ah - puh. What word guides us on our adventure?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: m - ah - puh. What word is it?',
       targetSound: 'MAP',
       soundCue: 'm - ah - puh',
@@ -448,7 +471,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 29,
       skillTitle: 'CVC Short A: -AG Family',
+<<<<<<< HEAD
       instruction: 'Listen: b - ah - guh. Which word does this spell?',
+=======
+      instruction: 'Listen: b - ah - guh. What holds all your treasure?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: b - ah - guh. What word is it?',
       targetSound: 'BAG',
       soundCue: 'b - ah - guh',
@@ -474,7 +501,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 31,
       skillTitle: 'CVC Short E: -ED Family',
+<<<<<<< HEAD
       instruction: 'Listen: b - eh - d. Which word does this spell?',
+=======
+      instruction: 'Listen: b - eh - d. Where do you sleep at night?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: b - eh - d. Spell the word!',
       targetSound: 'BED',
       soundCue: 'b - eh - d',
@@ -487,7 +518,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 32,
       skillTitle: 'CVC Short E: -ED Color',
+<<<<<<< HEAD
       instruction: 'Listen: r - eh - d. Which word does this spell?',
+=======
+      instruction: 'Listen: r - eh - d. What vibrant color is this?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: r - eh - d. What color is it?',
       targetSound: 'RED',
       soundCue: 'r - eh - d',
@@ -500,7 +535,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 33,
       skillTitle: 'CVC Short E: -ET Family',
+<<<<<<< HEAD
       instruction: 'Listen: n - eh - t. Which word does this spell?',
+=======
+      instruction: 'Listen: n - eh - t. What catches seashells in the water?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: n - eh - t. What word is it?',
       targetSound: 'NET',
       soundCue: 'n - eh - t',
@@ -513,7 +552,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 34,
       skillTitle: 'CVC Short E: -EN Family',
+<<<<<<< HEAD
       instruction: 'Listen: h - eh - nnn. Which word does this spell?',
+=======
+      instruction: 'Listen: h - eh - nnn. Which bird pecks on the farm?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: h - eh - nnn. Spell the word!',
       targetSound: 'HEN',
       soundCue: 'h - eh - nnn',
@@ -526,8 +569,13 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 35,
       skillTitle: 'CVC Short E: Rhyme Time',
+<<<<<<< HEAD
       instruction: 'Listen closely! What rhymes with NET?',
       spokenPrompt: 'What rhymes with net? Select the rhyming word!',
+=======
+      instruction: 'What rhymes with NET and gets soaked in water?',
+      spokenPrompt: 'What rhymes with net? Listen for the et sound!',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: '-ET Rhyme',
       soundCue: 'rhymes with net',
       choices: ['WET', 'WIN', 'WEB', 'WAG'],
@@ -539,7 +587,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 36,
       skillTitle: 'CVC Short I: -IG Family',
+<<<<<<< HEAD
       instruction: 'Listen: p - ih - guh. Which word does this spell?',
+=======
+      instruction: 'Listen: p - ih - guh. Which animal says oink?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: p - ih - guh. Spell the word!',
       targetSound: 'PIG',
       soundCue: 'p - ih - guh',
@@ -552,7 +604,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 37,
       skillTitle: 'CVC Short I: -IN Family',
+<<<<<<< HEAD
       instruction: 'Listen: f - ih - nnn. Which word does this spell?',
+=======
+      instruction: 'Listen: f - ih - nnn. What helps a dolphin swim fast?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: f - ih - nnn. Spell the word!',
       targetSound: 'FIN',
       soundCue: 'f - ih - nnn',
@@ -565,7 +621,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 38,
       skillTitle: 'CVC Short I: -IP Family',
+<<<<<<< HEAD
       instruction: 'Listen: z - ih - puh. Which word does this spell?',
+=======
+      instruction: 'Listen: z - ih - puh. Fasten your jacket with a zip!',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: z - ih - puh. Spell the word!',
       targetSound: 'ZIP',
       soundCue: 'z - ih - puh',
@@ -578,7 +638,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 39,
       skillTitle: 'CVC Short I: -IT Family',
+<<<<<<< HEAD
       instruction: 'Listen: s - ih - t. Which word does this spell?',
+=======
+      instruction: 'Listen: s - ih - t. Rest in a chair and sit down!',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: s - ih - t. What word is it?',
       targetSound: 'SIT',
       soundCue: 's - ih - t',
@@ -604,7 +668,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 41,
       skillTitle: 'CVC Short O: -OG Family',
+<<<<<<< HEAD
       instruction: 'Listen: d - ah - guh. Which word does this spell?',
+=======
+      instruction: 'Listen: d - ah - guh. Who is a loyal barking friend?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: d - ah - guh. Spell the word!',
       targetSound: 'DOG',
       soundCue: 'd - ah - guh',
@@ -617,7 +685,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 42,
       skillTitle: 'CVC Short O: -OX Family',
+<<<<<<< HEAD
       instruction: 'Listen: f - ah - ksss. Which word does this spell?',
+=======
+      instruction: 'Listen: f - ah - ksss. Which clever animal lives in the woods?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: f - ah - ksss. Spell the word!',
       targetSound: 'FOX',
       soundCue: 'fff - ah - ksss',
@@ -630,7 +702,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 43,
       skillTitle: 'CVC Short O: -OP Family',
+<<<<<<< HEAD
       instruction: 'Listen: t - ah - puh. Which word does this spell?',
+=======
+      instruction: 'Listen: t - ah - puh. What spins around on the table?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: t - ah - puh. Spell the word!',
       targetSound: 'TOP',
       soundCue: 't - ah - puh',
@@ -643,7 +719,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 44,
       skillTitle: 'CVC Short O: -OT Family',
+<<<<<<< HEAD
       instruction: 'Listen: p - ah - t. Which word does this spell?',
+=======
+      instruction: 'Listen: p - ah - t. What cooks warm soup on the stove?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: p - ah - t. Spell the word!',
       targetSound: 'POT',
       soundCue: 'p - ah - t',
@@ -669,7 +749,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 46,
       skillTitle: 'CVC Short U: -UN Family',
+<<<<<<< HEAD
       instruction: 'Listen: s - uh - nnn. Which word does this spell?',
+=======
+      instruction: 'Listen: s - uh - nnn. What shines bright in the day sky?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: s - uh - nnn. Spell the word!',
       targetSound: 'SUN',
       soundCue: 'sss - uh - nnn',
@@ -682,7 +766,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 47,
       skillTitle: 'CVC Short U: -UP Family',
+<<<<<<< HEAD
       instruction: 'Listen: k - uh - puh. Which word does this spell?',
+=======
+      instruction: 'Listen: k - uh - puh. What do you drink warm cocoa from?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: k - uh - puh. Spell the word!',
       targetSound: 'CUP',
       soundCue: 'k - uh - puh',
@@ -695,7 +783,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 48,
       skillTitle: 'CVC Short U: -UG Family',
+<<<<<<< HEAD
       instruction: 'Listen: b - uh - guh. Which word does this spell?',
+=======
+      instruction: 'Listen: b - uh - guh. What small insect crawls on a leaf?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: b - uh - guh. Spell the word!',
       targetSound: 'BUG',
       soundCue: 'b - uh - guh',
@@ -708,7 +800,11 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 49,
       skillTitle: 'CVC Short U: -UT Family',
+<<<<<<< HEAD
       instruction: 'Listen: n - uh - t. Which word does this spell?',
+=======
+      instruction: 'Listen: n - uh - t. What crunchy treat does a squirrel hide?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       spokenPrompt: 'Listen: n - uh - t. Spell the word!',
       targetSound: 'NUT',
       soundCue: 'n - uh - t',
@@ -1307,7 +1403,11 @@ const TRICKY_TRAILS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 35,
       skillTitle: 'Diphthong: AW (Hawk)',
       instruction: 'Which soaring bird word uses the /aw/ sound spelled AW?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen! Which word has the aw sound?',
+=======
+      spokenPrompt: 'Listen! Which bird word has the aw sound spelled A-W?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'HAWK',
       soundCue: 'h - aw - k',
       choices: ['HAWK', 'HOOK', 'HORN', 'HIKE'],
@@ -1554,7 +1654,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 3,
       skillTitle: 'Vowel Team: OA',
       instruction: 'Which sailing watercraft uses vowel team OA in BOAT?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: b - oh - t. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: b - oh - t. Which word uses vowel team O-A?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'BOAT',
       soundCue: 'b - oh - t',
       choices: ['BOAT', 'BOOT', 'BITE', 'BAT'],
@@ -1567,7 +1671,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 4,
       skillTitle: 'Vowel Team: AI',
       instruction: 'Which word uses vowel team AI for the falling drops in RAIN?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: r - ay - n. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: r - ay - n. Which word has vowel team A-I?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'RAIN',
       soundCue: 'r - ay - n',
       choices: ['RAIN', 'RUN', 'RUG', 'RING'],
@@ -1580,7 +1688,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 5,
       skillTitle: 'Vowel Team: AY',
       instruction: 'Which word uses vowel team AY at the end of PLAY?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: p - l - ay. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: p - l - ay. Which word ends with A-Y?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'PLAY',
       soundCue: 'p - l - ay',
       choices: ['PLAY', 'PLOW', 'PLOT', 'PLUM'],
@@ -1593,7 +1705,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 6,
       skillTitle: 'Vowel Team: OO (Moon)',
       instruction: 'Which celestial word uses double O for the /oo/ sound in MOON?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: m - oo - n. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: m - oo - n. Which word has double O?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'MOON',
       soundCue: 'm - oo - n',
       choices: ['MOON', 'MAN', 'MEN', 'MOP'],
@@ -1606,7 +1722,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 7,
       skillTitle: 'Vowel Team: EW',
       instruction: 'Which word uses EW to make the /oo/ sound in FLEW?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: f - l - oo. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: f - l - oo. Which word uses E-W in flew?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'FLEW',
       soundCue: 'f - l - oo',
       choices: ['FLEW', 'FLOW', 'FLAW', 'FLAT'],
@@ -1619,7 +1739,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 8,
       skillTitle: 'Vowel Team: OE',
       instruction: 'Which body part uses vowel team OE in TOE?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: t - oh. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: t - oh. Which word uses O-E in toe?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'TOE',
       soundCue: 't - oh',
       choices: ['TOE', 'TOO', 'TOP', 'TIE'],
@@ -1632,7 +1756,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 9,
       skillTitle: 'Vowel Team: UE',
       instruction: 'Which vibrant sky color uses vowel team UE in BLUE?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: b - l - oo. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: b - l - oo. Which word uses U-E in blue?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'BLUE',
       soundCue: 'b - l - oo',
       choices: ['BLUE', 'BLOW', 'BLOT', 'BALL'],
@@ -1673,7 +1801,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 17,
       skillTitle: 'Bossy R: OR',
       instruction: 'Which weather word uses the bossy R sound /or/ in STORM?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: s - t - or - m. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: s - t - or - m. Which word has O-R in storm?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'STORM',
       soundCue: 's - t - or - m',
       choices: ['STORM', 'STAR', 'STEM', 'STREAM'],
@@ -1686,7 +1818,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 18,
       skillTitle: 'Bossy R: IR',
       instruction: 'Which feathered creature uses the bossy R sound /er/ in BIRD?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: b - er - d. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: b - er - d. Which word has I-R in bird?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'BIRD',
       soundCue: 'b - er - d',
       choices: ['BIRD', 'BARD', 'BEARD', 'BREAD'],
@@ -1699,7 +1835,11 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
       stageNumber: 19,
       skillTitle: 'Bossy R: UR',
       instruction: 'Which ocean swimmer uses the bossy R sound /er/ in TURTLE?',
+<<<<<<< HEAD
       spokenPrompt: 'Listen: t - er - t - l. Spell the word you hear!',
+=======
+      spokenPrompt: 'Listen: t - er - t - l. Which word has U-R in turtle?',
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
       targetSound: 'TURTLE',
       soundCue: 't - er - t - l',
       choices: ['TURTLE', 'TITLE', 'TOTAL', 'TINT'],
@@ -2187,7 +2327,11 @@ const LEXICON_EMPIRE_STAGES: Record<number, StageChallenge[]> = {
       soundCue: 'wild uproar and chaotic confusion',
       choices: ['Wild uproar and chaotic confusion', 'Peaceful quiet sanctuary', 'Royal golden banquet', 'Sunlit oceanic voyage'],
       correct: 'Wild uproar and chaotic confusion',
+<<<<<<< HEAD
       explanation: 'Pan (all) + Daimon (spirit) = Wild uproar! Great knowledge unlocked!'
+=======
+      explanation: 'Pan (all) + Daimon (spirit) = Wild uproar! The Shadow King is defeated and the Golden Phonix is free!'
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     }
   ]
 };
@@ -2286,82 +2430,148 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
     const peaksDualList = [
       {
         word: 'BLIZZARD',
+<<<<<<< HEAD
         part1: 'BL',
         part2: 'ARD',
         choices1: ['BL', 'CL', 'FL', 'GL'],
         choices2: ['ARD', 'ORD', 'ERD', 'URD'],
+=======
+        part1: 'I',
+        part2: 'AR',
+        choices1: ['I', 'E', 'O', 'A'],
+        choices2: ['AR', 'OR', 'ER', 'UR'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         cue: 'b - l - ih - z - ar - d'
       },
       {
         word: 'WINTER',
+<<<<<<< HEAD
         part1: 'W',
         part2: 'ER',
         choices1: ['W', 'V', 'R', 'Y'],
+=======
+        part1: 'IN',
+        part2: 'ER',
+        choices1: ['IN', 'AN', 'ON', 'UN'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         choices2: ['ER', 'AR', 'OR', 'UR'],
         cue: 'w - in - t - er'
       },
       {
         word: 'THUNDER',
+<<<<<<< HEAD
         part1: 'TH',
         part2: 'ER',
         choices1: ['TH', 'CH', 'SH', 'WH'],
+=======
+        part1: 'UN',
+        part2: 'ER',
+        choices1: ['UN', 'AN', 'EN', 'IN'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         choices2: ['ER', 'OR', 'AR', 'UR'],
         cue: 'th - un - d - er'
       },
       {
         word: 'GLACIER',
+<<<<<<< HEAD
         part1: 'GL',
         part2: 'ER',
         choices1: ['GL', 'CL', 'BL', 'FL'],
+=======
+        part1: 'AY',
+        part2: 'ER',
+        choices1: ['AY', 'EE', 'OH', 'IGH'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         choices2: ['ER', 'AR', 'OR', 'UR'],
         cue: 'g - l - ay - sh - er'
       },
       {
         word: 'HARBOR',
+<<<<<<< HEAD
         part1: 'H',
         part2: 'AR',
         choices1: ['H', 'W', 'B', 'P'],
         choices2: ['AR', 'ER', 'OR', 'UR'],
+=======
+        part1: 'AR',
+        part2: 'OR',
+        choices1: ['AR', 'ER', 'IR', 'UR'],
+        choices2: ['OR', 'AR', 'ER', 'UR'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         cue: 'h - ar - b - or'
       },
       {
         word: 'FREEZING',
+<<<<<<< HEAD
         part1: 'FR',
         part2: 'ING',
         choices1: ['FR', 'BR', 'CR', 'GR'],
+=======
+        part1: 'EE',
+        part2: 'ING',
+        choices1: ['EE', 'EA', 'AI', 'OA'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         choices2: ['ING', 'ED', 'LY', 'ER'],
         cue: 'f - r - ee - z - ing'
       },
       {
         word: 'SNOWMAN',
+<<<<<<< HEAD
         part1: 'SN',
         part2: 'OW',
         choices1: ['SN', 'SM', 'ST', 'SP'],
         choices2: ['OW', 'OA', 'OU', 'OO'],
+=======
+        part1: 'OW',
+        part2: 'AN',
+        choices1: ['OW', 'OA', 'OU', 'OO'],
+        choices2: ['AN', 'EN', 'IN', 'ON'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         cue: 's - n - ow - m - an'
       },
       {
         word: 'MOUNTAIN',
+<<<<<<< HEAD
         part1: 'M',
         part2: 'OU',
         choices1: ['M', 'N', 'W', 'B'],
         choices2: ['OU', 'OW', 'OI', 'OY'],
+=======
+        part1: 'OU',
+        part2: 'AIN',
+        choices1: ['OU', 'OW', 'OI', 'OY'],
+        choices2: ['AIN', 'EAM', 'OOT', 'AIL'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         cue: 'm - ou - n - t - ain'
       },
       {
         word: 'STARLIGHT',
+<<<<<<< HEAD
         part1: 'ST',
         part2: 'AR',
         choices1: ['ST', 'SP', 'SK', 'SL'],
         choices2: ['AR', 'OR', 'ER', 'UR'],
+=======
+        part1: 'AR',
+        part2: 'IGH',
+        choices1: ['AR', 'OR', 'ER', 'UR'],
+        choices2: ['IGH', 'EE', 'AY', 'OW'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         cue: 's - t - ar - l - igh - t'
       },
       {
         word: 'FORTRESS',
+<<<<<<< HEAD
         part1: 'F',
         part2: 'OR',
         choices1: ['F', 'P', 'B', 'V'],
         choices2: ['OR', 'AR', 'ER', 'UR'],
+=======
+        part1: 'OR',
+        part2: 'ESS',
+        choices1: ['OR', 'AR', 'ER', 'UR'],
+        choices2: ['ESS', 'ABLE', 'FUL', 'LESS'],
+>>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
         cue: 'f - or - t - r - ess'
       }
     ];

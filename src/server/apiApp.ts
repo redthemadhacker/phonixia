@@ -293,7 +293,7 @@ export function initAccountsFile() {
   };
 
   saveAccounts(accounts);
-}
+
 
 initAccountsFile();
 

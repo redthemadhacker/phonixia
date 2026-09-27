@@ -185,7 +185,6 @@ class SoundManager {
     text = text.replace(/\bzzz\b/gi, 'z');
 
     return text;
-<<<<<<< HEAD
 =======
   }
 
@@ -206,7 +205,6 @@ class SoundManager {
   public speak(text: string, customRate?: number, customPitch?: number) {
     if (!this.speechEnabled || typeof window === 'undefined') return;
 
-<<<<<<< HEAD
     const spokenText = this.cleanPhonicsForSpeech(text);
     if (!spokenText) return;
 
@@ -223,7 +221,6 @@ class SoundManager {
     const persona = VOICE_PERSONAS.find((p) => p.id === this.activePersonaId) || VOICE_PERSONAS[0];
 
     // Priority: Clean, direct Web Speech Synthesis with warm persona voice
-=======
     this.stopSpeech();
 
     const spokenText = this.cleanPhonicsForSpeech(text);
@@ -251,7 +248,6 @@ class SoundManager {
     }
 
     // Priority 2: Web Speech Synthesis API fallback
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
     this.fallbackSpeechSynthesis(spokenText, customRate, customPitch, persona);
   }
 

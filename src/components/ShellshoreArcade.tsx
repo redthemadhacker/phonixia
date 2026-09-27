@@ -397,7 +397,7 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                   const isSelected = selectedOption === option;
                   const isCorrectChoice = isAnswered && option.trim().toLowerCase() === activeGame.correctAnswer.trim().toLowerCase();
 
-                  return (
+  return (
                     <div
                       key={idx}
                       onClick={() => executeArcadeAction(idx)}
@@ -407,7 +407,7 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                             ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
                             : isSelected && !isCorrect
                             ? 'bg-rose-900/90 border-rose-400 text-rose-200 animate-shake'
-                          ? isCorrectChoice
+                            : isCorrectChoice
                             ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
                             : isSelected
                             ? 'bg-rose-900/90 border-rose-400 text-rose-200'

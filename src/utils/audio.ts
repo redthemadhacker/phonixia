@@ -185,13 +185,11 @@ class SoundManager {
     text = text.replace(/\bzzz\b/gi, 'z');
 
     return text;
-=======
   }
 
   public speakPhonicsSlow(text: string) {
     if (!this.speechEnabled) return;
     this.speak(text, 0.75, 1.2);
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
   }
 
   public speakPhonicsSlow(text: string) {

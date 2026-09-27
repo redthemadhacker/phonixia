@@ -192,11 +192,6 @@ class SoundManager {
     this.speak(text, 0.75, 1.2);
   }
 
-  public speakPhonicsSlow(text: string) {
-    if (!this.speechEnabled) return;
-    this.speak(text, 0.75, 1.2);
-  }
-
   private lastSpokenText: string = '';
   private lastSpokenTime: number = 0;
 
@@ -218,25 +213,15 @@ class SoundManager {
 
     const persona = VOICE_PERSONAS.find((p) => p.id === this.activePersonaId) || VOICE_PERSONAS[0];
 
-    // Priority: Clean, direct Web Speech Synthesis with warm persona voice
-    this.stopSpeech();
-
-    const spokenText = this.cleanPhonicsForSpeech(text);
-    if (!spokenText) return;
-
-    const persona = VOICE_PERSONAS.find((p) => p.id === this.activePersonaId) || VOICE_PERSONAS[0];
-
     // Priority 1: High-Fidelity Studio Natural Human Speech Proxy
     if (typeof Audio !== 'undefined' && (!this.selectedVoiceName || this.activePersonaId === 'ms-rachel')) {
       try {
         const audioUrl = `/api/tts?text=${encodeURIComponent(spokenText)}`;
         const audio = new Audio(audioUrl);
-        // Bright pitch and clear cadence for kid friendliness
         audio.playbackRate = customRate ?? (persona.id === 'ms-rachel' ? 1.0 : persona.rate);
         this.currentAudio = audio;
 
         audio.play().catch(() => {
-          // If browser autoplay policies or offline, fallback to Web Speech
           this.fallbackSpeechSynthesis(spokenText, customRate, customPitch, persona);
         });
         return;
@@ -409,7 +394,6 @@ class SoundManager {
     });
   }
 
-  // Water splash & bubble pop sound for Sound Shallows swimming
   public playSplash() {
     if (!this.soundEnabled) return;
     this.initCtx();
@@ -431,7 +415,6 @@ class SoundManager {
     osc.stop(now + 0.18);
   }
 
-  // Heavy stone masonry hammer & hoist drop sound for Builders Guild
   public playHammer() {
     if (!this.soundEnabled) return;
     this.initCtx();
@@ -453,7 +436,6 @@ class SoundManager {
     osc.stop(now + 0.16);
   }
 
-  // Rapid rail wheel click-clack & switch sparks for Tricky Trails minecart
   public playMinecart() {
     if (!this.soundEnabled) return;
     this.initCtx();
@@ -474,7 +456,6 @@ class SoundManager {
     });
   }
 
-  // Wind thermal whoosh for Whispering Peaks sky glider
   public playWhoosh() {
     if (!this.soundEnabled) return;
     this.initCtx();
@@ -496,7 +477,6 @@ class SoundManager {
     osc.stop(now + 0.28);
   }
 
-  // Golden Sun-Scepter laser beam blast for Lexicon Empire
   public playLaser() {
     if (!this.soundEnabled) return;
     this.initCtx();
@@ -561,7 +541,6 @@ class SoundManager {
     osc.stop(now + 0.2);
   }
 
-  // Mario-style heart loss / hit damage sound
   public playDamage() {
     if (!this.soundEnabled) return;
     this.initCtx();
@@ -583,14 +562,12 @@ class SoundManager {
     osc.stop(now + 0.25);
   }
 
-  // Retro Mario Game Over descending melody
   public playGameOver() {
     if (!this.soundEnabled) return;
     this.initCtx();
     if (!this.audioCtx) return;
 
     const now = this.audioCtx.currentTime;
-    // B4, F4, F4, F4, E4, D4, C4
     const notes = [
       { f: 493.88, t: 0.0, d: 0.18 },
       { f: 349.23, t: 0.2, d: 0.18 },

@@ -88,6 +88,24 @@ export function saveAccounts(accounts: Record<string, StoredAccountRecord>) {
 export function initAccountsFile() {
   const accounts = loadAccounts();
 
+  // ONLY seed if the accounts don't already exist!
+  if (!accounts['readingheroes']) {
+    const saltReading = 'edea1da3976daae316c4f23cf622edf9';
+    accounts['readingheroes'] = {
+      // ... readingheroes seed
+    };
+  }
+
+  if (!accounts['phonixiatest']) {
+    const saltTest = 'a9f8e7d6c5b4a3210123456789abcdef';
+    accounts['phonixiatest'] = {
+      // ... phonixiatest seed with Amari, Landry, Joleigh, Zuri
+    };
+  }
+
+  saveAccounts(accounts);
+}
+
   // 1. Account: readingheroes with Kam (Level 1) and Lani (Fully Finished Level 50)
   const saltReading = accounts['readingheroes']?.salt || 'edea1da3976daae316c4f23cf622edf9';
   accounts['readingheroes'] = {
@@ -538,7 +556,7 @@ apiApp.post('/api/account/save', (req: Request, res: Response) => {
     id: accountData.id || `acc-${Date.now()}`,
     username: cleanUser,
     salt,
-    passwordHash: hashPassword('Phonics123!', salt),
+    passwordHash: hashPassword('Cousins2026!', salt),
     accountData,
     updatedAt: new Date().toISOString()
   };

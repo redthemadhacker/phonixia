@@ -245,24 +245,36 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Helper to sync account to cloud and local storage
   const syncAccountData = useCallback((acc: Account) => {
     if (!acc || !acc.username) return;
+    const userKey = acc.username.toLowerCase();
+
     try {
       localStorage.setItem('phonixia_account_v2', JSON.stringify(acc));
-      localStorage.setItem('phonixia_active_user', acc.username.toLowerCase());
+      localStorage.setItem('phonixia_active_user', userKey);
       const all = JSON.parse(localStorage.getItem('phonixia_all_accounts_cache') || '{}');
-      all[acc.username.toLowerCase()] = acc;
+      all[userKey] = acc;
       localStorage.setItem('phonixia_all_accounts_cache', JSON.stringify(all));
-    } catch {}
+    } catch (err) {
+      console.warn('LocalStorage sync error:', err);
+    }
 
     fetch('/api/account/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: acc.username, accountData: acc })
-    }).catch(() => {});
+      body: JSON.stringify({ username: userKey, accountData: acc })
+    }).catch((err) => console.warn('Cloud sync error:', err));
   }, []);
 
   // Initial cloud fetch on startup
   useEffect(() => {
     const savedUser = localStorage.getItem('phonixia_active_user') || 'readingheroes';
+    
+    // First check local cache
+    let localAccount: Account | null = null;
+    try {
+      const cached = localStorage.getItem('phonixia_account_v2');
+      if (cached) localAccount = JSON.parse(cached);
+    } catch {}
+
     fetch(`/api/account/${savedUser}`)
       .then((res) => {
         if (!res.ok) throw new Error('Account not found');
@@ -270,20 +282,27 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       .then((data) => {
         if (data && data.account) {
-          setAccount(data.account);
-          if (data.account.explorers && data.account.explorers.length > 0) {
-            const savedActiveId = localStorage.getItem('phonixia_active_id_v2');
-            const exists = data.account.explorers.some((e: any) => e.id === savedActiveId);
-            setActiveExplorerId(exists ? savedActiveId! : data.account.explorers[0].id);
+          // Only overwrite local state if remote has higher total stars or more completed games
+          const getSumStars = (acc: Account) =>
+            acc?.explorers?.reduce((sum, e) => sum + (e.totalStars || 0), 0) || 0;
+
+          const remoteStars = getSumStars(data.account);
+          const localStars = localAccount ? getSumStars(localAccount) : 0;
+
+          if (remoteStars >= localStars) {
+            setAccount(data.account);
+            localStorage.setItem('phonixia_account_v2', JSON.stringify(data.account));
+          } else if (localAccount) {
+            // Push local account up to cloud since local is ahead!
+            syncAccountData(localAccount);
           }
-          localStorage.setItem('phonixia_account_v2', JSON.stringify(data.account));
         }
       })
       .catch(() => {})
       .finally(() => {
         setIsCloudLoaded(true);
       });
-  }, []);
+  }, [syncAccountData]);
 
   // Save changes to cloud whenever account updates (after initial load)
   useEffect(() => {

@@ -3,10 +3,25 @@ import { useGame } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
 import { PHONIXIA_LANDS } from '../data/curriculumData';
-import { 
-  X, Users, Palette, BarChart3, Settings, Star, Crown, 
-  UserPlus, RefreshCw, LogOut, Edit3, Check, Shirt, GraduationCap, 
-  Trash2, Camera, AlertTriangle, Scroll
+import {
+  X,
+  Users,
+  Palette,
+  BarChart3,
+  Settings,
+  Star,
+  Crown,
+  UserPlus,
+  RefreshCw,
+  LogOut,
+  Edit3,
+  Check,
+  Shirt,
+  GraduationCap,
+  Trash2,
+  Camera,
+  AlertTriangle,
+  Scroll,
 } from 'lucide-react';
 
 interface HomeHutModalProps {
@@ -15,7 +30,11 @@ interface HomeHutModalProps {
   onOpenParentPortal?: () => void;
 }
 
-export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCelebration, onOpenParentPortal }) => {
+export const HomeHutModal: React.FC<HomeHutModalProps> = ({
+  onClose,
+  onOpenCelebration,
+  onOpenParentPortal,
+}) => {
   const {
     account,
     activeExplorer,
@@ -28,13 +47,17 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     resetExplorerProgress,
     resetClassroomAndGameData,
     deleteAccount,
-    logout
+    logout,
   } = useGame();
 
-  const [activeTab, setActiveTab] = useState<'explorers' | 'customizer' | 'progress' | 'halloffame' | 'settings'>('customizer');
+  const [activeTab, setActiveTab] = useState<
+    'explorers' | 'customizer' | 'progress' | 'halloffame' | 'settings'
+  >('customizer');
   const [newExplorerName, setNewExplorerName] = useState('');
   const [newExplorerGender, setNewExplorerGender] = useState<'boy' | 'girl'>('boy');
-  const [newExplorerTier, setNewExplorerTier] = useState<'preschool' | 'kindergarten' | 'early-elementary' | 'late-elementary' | 'middle-high'>('preschool');
+  const [newExplorerTier, setNewExplorerTier] = useState<
+    'preschool' | 'kindergarten' | 'early-elementary' | 'late-elementary' | 'middle-high'
+  >('preschool');
   const [isCreating, setIsCreating] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
@@ -47,14 +70,14 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
   const [draftName, setDraftName] = useState(activeExplorer.name);
   const [draftGender, setDraftGender] = useState<'boy' | 'girl'>(activeExplorer.gender || 'boy');
   const [isEditingName, setIsEditingName] = useState(false);
-  const [draftCustomization, setDraftCustomization] = useState({ 
+  const [draftCustomization, setDraftCustomization] = useState({
     ...activeExplorer.customization,
-    outfitStyle: activeExplorer.customization.outfitStyle || 'ranger'
+    outfitStyle: activeExplorer.customization.outfitStyle || 'ranger',
   });
 
   // Customization Palettes
   const SKIN_TONES = ['#ffd1a4', '#fcd5b5', '#d99058', '#b0703c', '#8a4b1e', '#5c3818'];
-  
+
   const OUTFIT_STYLES = [
     { id: 'ranger', label: 'Ranger Suit', icon: '🏹', desc: 'Forest tracker gear' },
     { id: 'scholar', label: 'Scholar Robes', icon: '📜', desc: 'Citadel academic wear' },
@@ -62,12 +85,19 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     { id: 'knight', label: 'Knight Armor', icon: '🛡️', desc: 'Shining plate cuirass' },
     { id: 'ninja', label: 'Ninja Gi', icon: '🥷', desc: 'Silent stealth shroud' },
     { id: 'adventurer', label: 'Adventurer Vest', icon: '🧭', desc: 'Trail blazer jacket' },
-    { id: 'classic', label: 'Classic Tunic', icon: '👕', desc: 'Comfortable explorer tee' }
+    { id: 'classic', label: 'Classic Tunic', icon: '👕', desc: 'Comfortable explorer tee' },
   ];
 
   const OUTFIT_COLORS = [
-    '#3b82f6', '#22c55e', '#a855f7', '#f97316', '#ef4444', 
-    '#06b6d4', '#eab308', '#64748b', '#1e293b'
+    '#3b82f6',
+    '#22c55e',
+    '#a855f7',
+    '#f97316',
+    '#ef4444',
+    '#06b6d4',
+    '#eab308',
+    '#64748b',
+    '#1e293b',
   ];
 
   const HAIR_STYLES = [
@@ -77,12 +107,20 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     { id: 'short', label: 'Short' },
     { id: 'spiky', label: 'Spiky' },
     { id: 'wavy', label: 'Wavy' },
-    { id: 'straight', label: 'Straight' }
+    { id: 'straight', label: 'Straight' },
   ];
 
   const HAIR_COLORS = [
-    '#1e1b18', '#3d2314', '#5c3818', '#b45309', '#d97706', 
-    '#dc2626', '#ec4899', '#8b5cf6', '#3b82f6', '#e0e7ff'
+    '#1e1b18',
+    '#3d2314',
+    '#5c3818',
+    '#b45309',
+    '#d97706',
+    '#dc2626',
+    '#ec4899',
+    '#8b5cf6',
+    '#3b82f6',
+    '#e0e7ff',
   ];
 
   const ACCESSORIES = [
@@ -91,34 +129,34 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     { id: 'sparkles', label: 'Magic Sparkles ✨' },
     { id: 'crown', label: 'Royal Crown 👑' },
     { id: 'bandana', label: 'Explorer Bandana 🧣' },
-    { id: 'headband', label: 'Sport Headband ⚡' }
+    { id: 'headband', label: 'Sport Headband ⚡' },
   ];
 
   const COMPANIONS = [
     { id: 'golden-eagle', name: 'Golden Eagle', icon: '🦅', desc: 'Majestic Golden Sky Companion' },
-    { id: 'baby-dragon', name: 'Baby Dragon', icon: '🐲', desc: 'Kam’s Dragon Companion' },
-    { id: 'feather-owl', name: 'Starlight Owl', icon: '🦉', desc: 'Celine’s Owl Companion' },
+    { id: 'baby-dragon', name: 'Baby Dragon', icon: '🐲', desc: "Kam's Dragon Companion" },
+    { id: 'feather-owl', name: 'Starlight Owl', icon: '🦉', desc: "Celine's Owl Companion" },
     { id: 'woodland-fox', name: 'Curious Fox', icon: '🦊', desc: 'Clever & Quick' },
     { id: 'sea-turtle', name: 'Wise Turtle', icon: '🐢', desc: 'Patient & Steady' },
-    { id: 'bunny', name: 'Brisk Bunny', icon: '🐰', desc: 'Speedy Reader' }
+    { id: 'bunny', name: 'Brisk Bunny', icon: '🐰', desc: 'Speedy Reader' },
   ];
 
   const handleGenderToggle = (gender: 'boy' | 'girl') => {
     setDraftGender(gender);
     sounds.playStep();
     if (gender === 'boy') {
-      setDraftCustomization(prev => ({
+      setDraftCustomization((prev) => ({
         ...prev,
         companionPet: 'baby-dragon',
         title: 'Adventurer with Kam',
-        outfitColor: prev.outfitColor === '#ec4899' ? '#3b82f6' : prev.outfitColor
+        outfitColor: prev.outfitColor === '#ec4899' ? '#3b82f6' : prev.outfitColor,
       }));
     } else {
-      setDraftCustomization(prev => ({
+      setDraftCustomization((prev) => ({
         ...prev,
         companionPet: 'feather-owl',
         title: 'Adventurer with Celine',
-        outfitColor: prev.outfitColor === '#3b82f6' ? '#ec4899' : prev.outfitColor
+        outfitColor: prev.outfitColor === '#3b82f6' ? '#ec4899' : prev.outfitColor,
       }));
     }
   };
@@ -130,23 +168,32 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     setNewExplorerName('');
     setIsCreating(false);
     sounds.playFanfare();
-    sounds.speak(`Welcome to Phonixia, ${newExplorerName}! Traveling with ${newExplorerGender === 'boy' ? 'Kam' : 'Celine'}!`);
+    sounds.speak(
+      `Welcome to Phonixia, ${newExplorerName}! Traveling with ${newExplorerGender === 'boy' ? 'Kam' : 'Celine'}!`
+    );
   };
 
-  const handleDeleteChildExplorer = (e: React.MouseEvent, explorerId: string, explorerName: string) => {
+  const handleDeleteChildExplorer = (
+    e: React.MouseEvent,
+    explorerId: string,
+    explorerName: string
+  ) => {
     e.stopPropagation();
 
     if (account.explorers.length <= 1) {
-      alert("You must keep at least one active explorer profile on the account.");
+      alert('You must keep at least one active explorer profile on the account.');
       return;
     }
 
-    if (confirm(`Are you sure you want to permanently delete explorer ${explorerName}? All stars and progress for this child will be erased.`)) {
+    if (
+      confirm(
+        `Are you sure you want to permanently delete explorer ${explorerName}? All stars and progress for this child will be erased.`
+      )
+    ) {
       if (deleteExplorer) {
         deleteExplorer(explorerId);
       } else {
-        // Fallback context deletion
-        const updatedList = account.explorers.filter(exp => exp.id !== explorerId);
+        const updatedList = account.explorers.filter((exp) => exp.id !== explorerId);
         account.explorers = updatedList;
         localStorage.setItem('phonixia_account_v2', JSON.stringify(account));
         localStorage.removeItem(`phonixia_struggles_${explorerId}`);
@@ -206,12 +253,12 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
   };
 
   return (
-    <div 
+    <div
       style={{
         paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)',
         paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
         paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
-        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)'
+        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)',
       }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md animate-fade-in select-none"
     >
@@ -256,7 +303,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
           <button
             onClick={() => setActiveTab('explorers')}
             className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
-              activeTab === 'explorers' ? 'bg-amber-500 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'explorers'
+                ? 'bg-amber-500 text-slate-950 font-black shadow'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -266,7 +315,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
           <button
             onClick={() => setActiveTab('customizer')}
             className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
-              activeTab === 'customizer' ? 'bg-amber-500 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'customizer'
+                ? 'bg-amber-500 text-slate-950 font-black shadow'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Palette className="w-3.5 h-3.5" />
@@ -276,7 +327,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
           <button
             onClick={() => setActiveTab('progress')}
             className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
-              activeTab === 'progress' ? 'bg-amber-500 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'progress'
+                ? 'bg-amber-500 text-slate-950 font-black shadow'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5" />
@@ -286,11 +339,11 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
           <button
             onClick={() => setActiveTab('halloffame')}
             className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
-              activeTab === 'halloffame' 
-                ? 'bg-amber-500 text-slate-950 font-black shadow' 
+              activeTab === 'halloffame'
+                ? 'bg-amber-500 text-slate-950 font-black shadow'
                 : activeExplorer.isHallOfFameInducted
-                  ? 'text-amber-300 hover:text-amber-200 font-extrabold'
-                  : 'text-slate-400 hover:text-slate-200'
+                ? 'text-amber-300 hover:text-amber-200 font-extrabold'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Crown className="w-3.5 h-3.5 fill-current" />
@@ -300,7 +353,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
           <button
             onClick={() => setActiveTab('settings')}
             className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
-              activeTab === 'settings' ? 'bg-amber-500 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'settings'
+                ? 'bg-amber-500 text-slate-950 font-black shadow'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Settings className="w-3.5 h-3.5" />
@@ -310,7 +365,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
 
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-          {/* TAB 1: EXPLORERS (NO LIMIT ON COUNT + DELETE CHILD EXPLORER) */}
+          {/* TAB 1: EXPLORERS */}
           {activeTab === 'explorers' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
@@ -335,10 +390,17 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
               )}
 
               {isCreating && (
-                <form onSubmit={handleCreateSubmit} className="p-4 rounded-2xl bg-slate-950 border-2 border-amber-500/50 space-y-3.5">
+                <form
+                  onSubmit={handleCreateSubmit}
+                  className="p-4 rounded-2xl bg-slate-950 border-2 border-amber-500/50 space-y-3.5"
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-200">New Explorer Profile</span>
-                    <button type="button" onClick={() => setIsCreating(false)} className="text-slate-400 hover:text-white text-xs cursor-pointer">
+                    <button
+                      type="button"
+                      onClick={() => setIsCreating(false)}
+                      className="text-slate-400 hover:text-white text-xs cursor-pointer"
+                    >
                       Cancel
                     </button>
                   </div>
@@ -392,7 +454,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                         }`}
                       >
                         <div className="text-xs font-black text-amber-200">👦 Boy Explorer</div>
-                        <div className="text-[10px] text-blue-300 font-bold">Kam Travels with You</div>
+                        <div className="text-[10px] text-blue-300 font-bold">
+                          Kam Travels with You
+                        </div>
                       </button>
 
                       <button
@@ -405,14 +469,16 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                         }`}
                       >
                         <div className="text-xs font-black text-amber-200">👧 Girl Explorer</div>
-                        <div className="text-[10px] text-pink-300 font-bold">Celine Travels with You</div>
+                        <div className="text-[10px] text-pink-300 font-bold">
+                          Celine Travels with You
+                        </div>
                       </button>
                     </div>
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer transition-transform hover:scale-102"
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer transition-transform hover:scale-[1.02]"
                   >
                     Create &amp; Switch Explorer
                   </button>
@@ -429,9 +495,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                         switchExplorer(exp.id);
                         setDraftName(exp.name);
                         setDraftGender(exp.gender || 'boy');
-                        setDraftCustomization({ 
+                        setDraftCustomization({
                           ...exp.customization,
-                          outfitStyle: exp.customization.outfitStyle || 'ranger'
+                          outfitStyle: exp.customization.outfitStyle || 'ranger',
                         });
                         sounds.playSuccess();
                         sounds.speak(`Switched to ${exp.name}!`);
@@ -444,7 +510,11 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 rounded-2xl bg-amber-950/80 border border-amber-400/60 flex items-center justify-center overflow-hidden">
-                          <AvatarRenderer customization={exp.customization} size={42} showPet={false} />
+                          <AvatarRenderer
+                            customization={exp.customization}
+                            size={42}
+                            showPet={false}
+                          />
                           {exp.isHallOfFameInducted && (
                             <span className="absolute bottom-0 right-0 text-xs">👑</span>
                           )}
@@ -454,13 +524,14 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm font-black text-slate-100">{exp.name}</span>
                             {isActive && (
-                              <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black uppercase">
+                              <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black uppercase">
                                 Active
                               </span>
                             )}
                           </div>
                           <div className="text-[11px] text-slate-400">
-                            {exp.gender === 'girl' ? '👧 Girl' : '👦 Boy'} · Companion: {exp.gender === 'girl' ? 'Celine' : 'Kam'}
+                            {exp.gender === 'girl' ? '👧 Girl' : '👦 Boy'} · Companion:{' '}
+                            {exp.gender === 'girl' ? 'Celine' : 'Kam'}
                           </div>
                         </div>
                       </div>
@@ -472,11 +543,14 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                             <span>{exp.totalStars}</span>
                           </span>
                           <span className="text-[10px] text-slate-400">
-                            {Object.values(exp.landScores || {}).reduce((s, l: any) => s + (l.completedGamesCount || 0), 0)}/250 Games
+                            {Object.values(exp.landScores || {}).reduce(
+                              (s, l: any) => s + (l.completedGamesCount || 0),
+                              0
+                            )}
+                            /250 Games
                           </span>
                         </div>
 
-                        {/* Delete Single Child Profile Button */}
                         {account.explorers.length > 1 && (
                           <button
                             type="button"
@@ -500,9 +574,13 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
               <div className="flex flex-col items-center justify-center p-5 rounded-3xl bg-slate-950 border-2 border-amber-500/40 shadow-inner space-y-4">
                 <div className="relative w-36 h-36 rounded-full bg-gradient-to-b from-amber-950/80 to-slate-950 border-4 border-amber-400 flex items-center justify-center overflow-visible shadow-[0_0_30px_rgba(245,158,11,0.3)]">
-                  <AvatarRenderer customization={draftCustomization} size={115} showPet={true} />
+                  <AvatarRenderer
+                    customization={draftCustomization}
+                    size={115}
+                    showPet={true}
+                  />
                 </div>
-                
+
                 <div className="w-full text-center space-y-1">
                   {isEditingName ? (
                     <div className="flex items-center justify-center gap-1">
@@ -522,7 +600,10 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center gap-1.5 group cursor-pointer" onClick={() => setIsEditingName(true)}>
+                    <div
+                      className="flex items-center justify-center gap-1.5 group cursor-pointer"
+                      onClick={() => setIsEditingName(true)}
+                    >
                       <span className="text-lg font-black text-amber-300 font-display">
                         {draftName || activeExplorer.name}
                       </span>
@@ -594,7 +675,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <button
                         key={suit.id}
                         type="button"
-                        onClick={() => setDraftCustomization((p) => ({ ...p, outfitStyle: suit.id }))}
+                        onClick={() =>
+                          setDraftCustomization((p) => ({ ...p, outfitStyle: suit.id }))
+                        }
                         className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer ${
                           draftCustomization.outfitStyle === suit.id
                             ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md scale-102 ring-1 ring-amber-400'
@@ -620,10 +703,14 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <button
                         key={color}
                         type="button"
-                        onClick={() => setDraftCustomization((p) => ({ ...p, outfitColor: color }))}
+                        onClick={() =>
+                          setDraftCustomization((p) => ({ ...p, outfitColor: color }))
+                        }
                         style={{ backgroundColor: color }}
                         className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
-                          draftCustomization.outfitColor === color ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50' : 'border-slate-800'
+                          draftCustomization.outfitColor === color
+                            ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50'
+                            : 'border-slate-800'
                         }`}
                       />
                     ))}
@@ -639,7 +726,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <button
                         key={pet.id}
                         type="button"
-                        onClick={() => setDraftCustomization((p) => ({ ...p, companionPet: pet.id }))}
+                        onClick={() =>
+                          setDraftCustomization((p) => ({ ...p, companionPet: pet.id }))
+                        }
                         className={`p-2.5 rounded-xl border flex items-center gap-2.5 text-xs font-bold transition-all cursor-pointer ${
                           draftCustomization.companionPet === pet.id
                             ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md scale-102 ring-1 ring-amber-400'
@@ -665,7 +754,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <button
                         key={style.id}
                         type="button"
-                        onClick={() => setDraftCustomization((p) => ({ ...p, hairStyle: style.id }))}
+                        onClick={() =>
+                          setDraftCustomization((p) => ({ ...p, hairStyle: style.id }))
+                        }
                         className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                           draftCustomization.hairStyle === style.id
                             ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow'
@@ -687,10 +778,14 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <button
                         key={color}
                         type="button"
-                        onClick={() => setDraftCustomization((p) => ({ ...p, hairColor: color }))}
+                        onClick={() =>
+                          setDraftCustomization((p) => ({ ...p, hairColor: color }))
+                        }
                         style={{ backgroundColor: color }}
                         className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
-                          draftCustomization.hairColor === color ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50' : 'border-slate-800'
+                          draftCustomization.hairColor === color
+                            ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50'
+                            : 'border-slate-800'
                         }`}
                       />
                     ))}
@@ -706,10 +801,14 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <button
                         key={color}
                         type="button"
-                        onClick={() => setDraftCustomization((p) => ({ ...p, skinTone: color }))}
+                        onClick={() =>
+                          setDraftCustomization((p) => ({ ...p, skinTone: color }))
+                        }
                         style={{ backgroundColor: color }}
                         className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
-                          draftCustomization.skinTone === color ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50' : 'border-slate-800'
+                          draftCustomization.skinTone === color
+                            ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50'
+                            : 'border-slate-800'
                         }`}
                       />
                     ))}
@@ -725,7 +824,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <button
                         key={acc.id}
                         type="button"
-                        onClick={() => setDraftCustomization((p) => ({ ...p, accessory: acc.id }))}
+                        onClick={() =>
+                          setDraftCustomization((p) => ({ ...p, accessory: acc.id }))
+                        }
                         className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                           draftCustomization.accessory === acc.id
                             ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow'
@@ -755,17 +856,29 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
 
               <div className="space-y-2.5">
                 {PHONIXIA_LANDS.map((land) => {
-                  const score = activeExplorer.landScores?.[land.id] || { completedGamesCount: 0, stars: 0, unlocked: false };
-                  const percent = Math.min(100, Math.round((score.completedGamesCount / 50) * 100));
+                  const score = activeExplorer.landScores?.[land.id] || {
+                    completedGamesCount: 0,
+                    stars: 0,
+                    unlocked: false,
+                  };
+                  const percent = Math.min(
+                    100,
+                    Math.round((score.completedGamesCount / 50) * 100)
+                  );
 
                   return (
-                    <div key={land.id} className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col gap-2">
+                    <div
+                      key={land.id}
+                      className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col gap-2"
+                    >
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-xs font-black text-slate-100 font-display uppercase tracking-wide">
                             {land.name}
                           </div>
-                          <div className="text-[10px] text-amber-400/80 font-mono font-bold">50 Adventure Stages</div>
+                          <div className="text-[10px] text-amber-400/80 font-mono font-bold">
+                            50 Adventure Stages
+                          </div>
                         </div>
 
                         <div className="flex items-center gap-3 text-xs font-mono font-bold">
@@ -796,38 +909,55 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
               {activeExplorer.isHallOfFameInducted ? (
                 <div className="relative p-6 rounded-3xl bg-gradient-to-b from-amber-950/70 via-slate-950 to-slate-950 border-2 border-amber-400 text-center space-y-4 shadow-2xl overflow-hidden">
                   <div className="absolute top-3 right-3 text-3xl opacity-30 select-none">👑</div>
-                  
+
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/80 text-amber-300 font-mono text-[11px] font-black uppercase tracking-widest">
                     <Crown className="w-3.5 h-3.5 fill-current" />
                     <span>Eternal Flamekeeper · Savior of the Golden Phonix</span>
                   </div>
 
                   <div className="relative mx-auto w-24 h-24 rounded-full bg-slate-950 border-4 border-amber-400 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.5)]">
-                    <AvatarRenderer customization={activeExplorer.customization} size={70} showPet={true} />
+                    <AvatarRenderer
+                      customization={activeExplorer.customization}
+                      size={70}
+                      showPet={true}
+                    />
                   </div>
 
                   <div>
                     <h3 className="text-xl font-black text-amber-300 font-display uppercase tracking-wider">
                       {activeExplorer.name}
                     </h3>
-                    <p className="text-xs text-amber-200 font-bold">{activeExplorer.customization.title}</p>
+                    <p className="text-xs text-amber-200 font-bold">
+                      {activeExplorer.customization.title}
+                    </p>
                     <p className="text-[11px] text-slate-300 max-w-md mx-auto pt-2 leading-relaxed">
-                      Legendary savior of the Golden Phonix! Conquered all 5 realms, vanquished the Shadow King, and earned your place on the permanent Wall of Fame!
+                      Legendary savior of the Golden Phonix! Conquered all 5 realms, vanquished the
+                      Shadow King, and earned your place on the permanent Wall of Fame!
                     </p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 max-w-sm mx-auto pt-1 text-center font-mono">
                     <div className="p-2 rounded-xl bg-slate-900 border border-amber-500/30">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Stars</span>
-                      <span className="text-xs font-black text-amber-400">{activeExplorer.totalStars}</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">
+                        Stars
+                      </span>
+                      <span className="text-xs font-black text-amber-400">
+                        {activeExplorer.totalStars}
+                      </span>
                     </div>
                     <div className="p-2 rounded-xl bg-slate-900 border border-amber-500/30">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Stages Won</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">
+                        Stages Won
+                      </span>
                       <span className="text-xs font-black text-teal-300">250 / 250</span>
                     </div>
                     <div className="p-2 rounded-xl bg-slate-900 border border-amber-500/30">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Story Clears</span>
-                      <span className="text-xs font-black text-rose-400">{Math.max(1, activeExplorer.timesStorylineCompleted || 1)}x</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">
+                        Story Clears
+                      </span>
+                      <span className="text-xs font-black text-rose-400">
+                        {Math.max(1, activeExplorer.timesStorylineCompleted || 1)}x
+                      </span>
                     </div>
                   </div>
 
@@ -851,7 +981,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       {activeExplorer.name}'s Rescue Quest in Progress
                     </h3>
                     <p className="text-xs text-slate-400 max-w-sm mx-auto pt-1">
-                      Conquer all 50 challenge stages across all five realms to defeat the Shadow King, rescue the Golden Phonix, and unlock your Coronation Aisle &amp; Wall of Fame picture!
+                      Conquer all 50 challenge stages across all five realms to defeat the Shadow
+                      King, rescue the Golden Phonix, and unlock your Coronation Aisle &amp; Wall of
+                      Fame picture!
                     </p>
                   </div>
                 </div>
@@ -873,11 +1005,17 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       >
                         <div className="flex items-center gap-2.5">
                           <div className="relative w-9 h-9 rounded-xl bg-amber-950/80 border border-amber-400 flex items-center justify-center overflow-hidden">
-                            <AvatarRenderer customization={inductee.customization} size={32} showPet={false} />
+                            <AvatarRenderer
+                              customization={inductee.customization}
+                              size={32}
+                              showPet={false}
+                            />
                           </div>
                           <div>
                             <div className="flex items-center gap-1">
-                              <span className="text-xs font-black text-amber-200">{inductee.name}</span>
+                              <span className="text-xs font-black text-amber-200">
+                                {inductee.name}
+                              </span>
                               <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                             </div>
                             <div className="text-[10px] text-slate-400 font-mono">
@@ -899,7 +1037,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
           {/* TAB 5: SETTINGS & DELETE ACCOUNT */}
           {activeTab === 'settings' && (
             <div className="space-y-4">
-              {/* PARENT & TEACHER ACCESS PORTAL */}
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border-2 border-amber-400 shadow-xl space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -914,7 +1051,8 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                         </span>
                       </div>
                       <p className="text-xs text-slate-300 mt-0.5 max-w-md">
-                        Enter your 4-digit PIN (or account password) to inspect student progress, view pattern detection diagnostics, or print reports.
+                        Enter your 4-digit PIN (or account password) to inspect student progress,
+                        view pattern detection diagnostics, or print reports.
                       </p>
                     </div>
                   </div>
@@ -947,23 +1085,26 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   <div>
                     <div className="text-xs font-black text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
                       <span>Automatic Cloud Game Save</span>
-                      <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono border border-emerald-400/40">
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono border border-emerald-400/40">
                         ACTIVE &amp; ENCRYPTED
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
-                      Your progress, stars, and character customization automatically sync across all your devices.
+                      Your progress, stars, and character customization automatically sync across
+                      all your devices.
                     </p>
                   </div>
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                  <span>Signed in as: <b className="text-amber-400">@{account.username}</b> ({account.role === 'teacher' ? 'Educator' : 'Parent/Family'})</span>
+                  <span>
+                    Signed in as: <b className="text-amber-400">@{account.username}</b> (
+                    {account.role === 'teacher' ? 'Educator' : 'Parent/Family'})
+                  </span>
                   <span className="text-emerald-400 font-bold">● Cloud Connected</span>
                 </div>
               </div>
 
-              {/* TEACHER ONLY: CLASSROOM & LEADERBOARD RESET */}
               {account.role === 'teacher' && (
                 <div className="p-4 rounded-2xl bg-slate-950 border-2 border-rose-500/50 space-y-2">
                   <div className="flex items-center justify-between">
@@ -973,7 +1114,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                         <span>Educator Year-End Reset</span>
                       </div>
                       <p className="text-[11px] text-slate-400 mt-0.5 max-w-md">
-                        Resets all classroom explorer progress to Stage 1 and <b>completely purges the class leaderboard</b> so you can start a fresh cohort of students every school year.
+                        Resets all classroom explorer progress to Stage 1 and{' '}
+                        <b>completely purges the class leaderboard</b> so you can start a fresh
+                        cohort of students every school year.
                       </p>
                     </div>
                     <button
@@ -987,7 +1130,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 </div>
               )}
 
-              {/* Reset Single Explorer Story Progress */}
               <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
                 <div>
                   <div className="text-xs font-black text-rose-400 uppercase tracking-wide">
@@ -1011,7 +1153,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 </button>
               </div>
 
-              {/* DANGER ZONE: DELETE ACCOUNT & ERASE ALL PROGRESS */}
               <div className="p-4 sm:p-5 rounded-2xl bg-rose-950/40 border-2 border-rose-500/60 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -1020,7 +1161,8 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                       <span>Delete Account &amp; Erase All Data</span>
                     </div>
                     <p className="text-[11px] text-slate-300 mt-0.5 max-w-md">
-                      Permanently delete this account, all student explorers, unlocked mini-games, and game records. This action cannot be reversed.
+                      Permanently delete this account, all student explorers, unlocked mini-games,
+                      and game records. This action cannot be reversed.
                     </p>
                   </div>
 
@@ -1038,7 +1180,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 </div>
               </div>
 
-              {/* Log Out */}
               <div className="pt-2">
                 <button
                   onClick={() => {
@@ -1081,7 +1222,8 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">
-              Are you sure you want to permanently erase <b>@{account.username}</b>? All explorers, collected stars, custom avatars, and reading progress will be permanently lost.
+              Are you sure you want to permanently erase <b>@{account.username}</b>? All explorers,
+              collected stars, custom avatars, and reading progress will be permanently lost.
             </p>
 
             {deleteError && (
@@ -1119,244 +1261,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 Permanently Delete
               </button>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};import React, { useState, useEffect } from 'react';
-import { useGame } from '../context/GameContext';
-import { AvatarRenderer } from './AvatarRenderer';
-import { sounds } from '../utils/audio';
-import confetti from 'canvas-confetti';
-import { Crown, CheckCircle2, Star, Camera, Sparkles, Award } from 'lucide-react';
-
-interface HallOfFameCelebrationProps {
-  onDismiss: () => void;
-  isReplay?: boolean;
-}
-
-export const HallOfFameCelebration: React.FC<HallOfFameCelebrationProps> = ({ onDismiss, isReplay = false }) => {
-  const { activeExplorer } = useGame();
-
-  const [step, setStep] = useState<number>(0);
-  const [walkProgress, setWalkProgress] = useState<number>(0);
-  const [photoFlash, setPhotoFlash] = useState(false);
-
-  useEffect(() => {
-    sounds.playFanfare();
-    sounds.speak(
-      `All hail ${activeExplorer.name}! The Shadow King has fallen! The Golden Phonix is rescued! Approach for your coronation!`,
-      0.95,
-      1.1
-    );
-
-    const walkTimer = setInterval(() => {
-      setWalkProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(walkTimer);
-          setTimeout(() => setStep(1), 500);
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 120);
-
-    return () => clearInterval(walkTimer);
-  }, [activeExplorer.name]);
-
-  useEffect(() => {
-    if (step === 1) {
-      sounds.playSuccess();
-      confetti({ particleCount: 65, spread: 80, origin: { y: 0.5 } });
-      sounds.speak(`By the power of the Golden Phonix, ${activeExplorer.name} is crowned Eternal Flamekeeper!`);
-
-      const photoTimer = setTimeout(() => {
-        setStep(2);
-      }, 3200);
-      return () => clearTimeout(photoTimer);
-    }
-  }, [step, activeExplorer.name]);
-
-  useEffect(() => {
-    if (step === 2) {
-      setPhotoFlash(true);
-      sounds.playCollect();
-
-      try {
-        const wallKey = 'phonixia_wall_of_fame';
-        const currentWall = JSON.parse(localStorage.getItem(wallKey) || '[]');
-        const entry = {
-          explorerName: activeExplorer.name,
-          date: new Date().toLocaleDateString(),
-          stars: activeExplorer.totalStars,
-          customization: activeExplorer.customization,
-        };
-        localStorage.setItem(wallKey, JSON.stringify([entry, ...currentWall.slice(0, 15)]));
-      } catch {}
-
-      const flashTimer = setTimeout(() => {
-        setPhotoFlash(false);
-        setStep(3);
-      }, 700);
-      return () => clearTimeout(flashTimer);
-    }
-  }, [step, activeExplorer]);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/95 backdrop-blur-md select-none overflow-hidden animate-fade-in">
-      <div className="absolute inset-0 bg-radial from-amber-500/20 via-slate-950 to-slate-950 pointer-events-none" />
-
-      {photoFlash && (
-        <div className="absolute inset-0 z-60 bg-white transition-opacity duration-300 pointer-events-none" />
-      )}
-
-      {step === 0 && (
-        <div className="relative w-full max-w-2xl bg-slate-900 border-4 border-amber-400 rounded-3xl p-6 text-center space-y-4 shadow-[0_0_80px_rgba(245,158,11,0.5)]">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-400 text-amber-300 font-mono font-black text-xs uppercase tracking-widest">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Grand Coronation Aisle</span>
-            <Sparkles className="w-4 h-4 text-amber-400" />
-          </div>
-
-          <h2 className="text-xl sm:text-2xl font-black text-amber-200 font-display">
-            The Citizens of Phonixia Cheer for {activeExplorer.name}!
-          </h2>
-
-          <div className="relative h-64 bg-gradient-to-b from-purple-950 via-slate-950 to-stone-900 rounded-2xl border-2 border-amber-500/40 overflow-hidden flex flex-col justify-end">
-            <div className="absolute top-4 inset-x-0 flex justify-between px-8 text-2xl opacity-75">
-              <span className="animate-bounce">👑</span>
-              <span>🏛️</span>
-              <span className="animate-bounce" style={{ animationDelay: '150ms' }}>🎉</span>
-              <span>🏛️</span>
-              <span className="animate-bounce" style={{ animationDelay: '300ms' }}>🔥</span>
-            </div>
-
-            <div className="absolute inset-x-12 bottom-0 h-32 bg-gradient-to-t from-rose-700 via-rose-800 to-rose-900 border-x-4 border-amber-400 shadow-2xl" />
-
-            <div
-              style={{
-                left: `${18 + walkProgress * 0.64}%`,
-                bottom: '24px',
-              }}
-              className="absolute z-20 transition-all duration-100 flex flex-col items-center -translate-x-1/2"
-            >
-              <div className="text-[10px] font-black text-amber-300 bg-black/80 px-2 py-0.5 rounded border border-amber-400 mb-1">
-                {activeExplorer.name}
-              </div>
-              <AvatarRenderer
-                customization={activeExplorer.customization}
-                size={70}
-                isWalking={true}
-                walkCycle={walkProgress}
-              />
-            </div>
-
-            <div className="absolute right-6 bottom-8 z-10 flex flex-col items-center">
-              <span className="text-4xl filter drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]">🪑</span>
-              <span className="text-[9px] font-bold text-amber-300 uppercase">Flame Throne</span>
-            </div>
-          </div>
-
-          <p className="text-xs text-slate-400 font-bold animate-pulse">
-            Walking to the Royal Altar of Flamekeepers...
-          </p>
-        </div>
-      )}
-
-      {step === 1 && (
-        <div className="relative w-full max-w-xl bg-slate-900 border-4 border-amber-400 rounded-3xl p-6 text-center space-y-4 shadow-[0_0_80px_rgba(245,158,11,0.6)] animate-scale-up">
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-amber-500/20 border border-amber-400 text-amber-300 font-mono font-black text-xs uppercase tracking-widest">
-            <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span>The Coronation</span>
-            <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
-          </div>
-
-          <div className="relative mx-auto w-36 h-36 rounded-full bg-slate-950 border-4 border-amber-400 flex items-center justify-center shadow-[0_0_40px_rgba(245,158,11,0.8)]">
-            <AvatarRenderer customization={activeExplorer.customization} size={90} />
-            <div className="absolute -top-3 text-4xl animate-bounce filter drop-shadow-[0_0_15px_rgba(245,158,11,1)]">
-              👑
-            </div>
-          </div>
-
-          <h1 className="text-2xl font-black text-amber-300 font-display">
-            A New Sovereign of Words!
-          </h1>
-          <p className="text-xs text-amber-100 font-bold max-w-md mx-auto">
-            The Royal Scepter has crowned {activeExplorer.name}! Rescuer of the Golden Phonix!
-          </p>
-
-          <div className="flex items-center justify-center gap-1.5 text-xs text-amber-300 font-mono">
-            <Camera className="w-4 h-4 animate-pulse" />
-            <span>Snapping Wall of Fame Photograph...</span>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="relative w-full max-w-xl bg-gradient-to-b from-slate-900 via-slate-900 to-amber-950/90 border-4 border-amber-400 rounded-3xl p-6 sm:p-8 text-center space-y-5 shadow-[0_0_80px_rgba(245,158,11,0.5)] animate-scale-up">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/80 text-amber-300 font-mono font-black text-xs uppercase tracking-widest shadow-md">
-            <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span>Wall of Fame Photograph</span>
-            <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
-          </div>
-
-          <div className="relative mx-auto w-44 h-44 rounded-2xl bg-slate-950 border-4 border-amber-300 flex items-center justify-center overflow-hidden shadow-[0_0_40px_rgba(245,158,11,0.6)] rotate-1">
-            <AvatarRenderer customization={activeExplorer.customization} size={110} facing="down" showPet={true} />
-            <div className="absolute top-1 right-2 text-2xl">👑</div>
-            <div className="absolute bottom-1 inset-x-0 bg-black/85 py-1 text-[9px] font-mono font-bold text-amber-300 border-t border-amber-500/50">
-              WALL OF FAME · {new Date().toLocaleDateString()}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black text-amber-300 font-display uppercase tracking-wider">
-              {activeExplorer.name}
-            </h1>
-            <p className="text-xs sm:text-sm font-bold text-amber-200">
-              Rescuer of the Golden Phonix &amp; Eternal Flamekeeper
-            </p>
-            <p className="text-[11px] sm:text-xs text-slate-300 max-w-md mx-auto leading-relaxed pt-1">
-              {isReplay
-                ? 'Your historic coronation photograph is permanently displayed on the Wall of Fame!'
-                : 'Your victory photograph has been mounted on the Wall of Fame in the Home Hut! Rewatch this ceremony anytime from the Legends tab!'}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-slate-950/90 border border-amber-500/40">
-            <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Total Stars</span>
-              <div className="flex items-center gap-1 text-sm font-black text-amber-400 font-mono">
-                <Star className="w-3.5 h-3.5 fill-amber-400" />
-                <span>{activeExplorer.totalStars}</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Realms Cleared</span>
-              <div className="flex items-center gap-1 text-sm font-black text-teal-400 font-mono">
-                <Award className="w-3.5 h-3.5" />
-                <span>5 / 5</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Coronation</span>
-              <span className="text-xs font-black text-rose-400 font-mono">CROWNED</span>
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <button
-              onClick={() => {
-                sounds.playSuccess();
-                onDismiss();
-              }}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:from-amber-300 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-2xl flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-102 active:scale-98"
-            >
-              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-              <span>{isReplay ? 'Close Wall of Fame Ceremony' : 'Continue Your Legend in Phonixia'}</span>
-            </button>
           </div>
         </div>
       )}

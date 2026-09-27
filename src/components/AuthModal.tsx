@@ -41,7 +41,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   }, []);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -50,8 +50,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    const success = loginWithCredentials(username.trim(), password.trim());
-    if (success) {
+    const result = await loginWithCredentials(username.trim(), password.trim());
+    if (result.success) {
       if (rememberUsername) {
         localStorage.setItem('phonixia_saved_username', username.trim());
       } else {
@@ -62,11 +62,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       sounds.speak(`Welcome back, ${account.familyName || username}!`);
       onSuccess();
     } else {
-      setErrorMsg('Incorrect username or password for this realm.');
+      setErrorMsg(result.error || 'Incorrect username or password for this realm.');
     }
   };
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -85,7 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       localStorage.setItem('phonixia_saved_username', username.trim());
     }
 
-    registerAccount({
+    const regResult = await registerAccount({
       username: username.trim(),
       password: password.trim(),
       familyName: familyName.trim(),
@@ -93,6 +93,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       starterExplorerName: firstKidName.trim() || 'Explorer',
       gender: firstKidGender
     });
+
+    if (!regResult.success) {
+      setErrorMsg(regResult.error || 'Failed to create account.');
+      sounds.playError();
+      return;
+    }
 
     sounds.playFanfare();
     sounds.speak(`Account created! Welcome to Phonixia!`);

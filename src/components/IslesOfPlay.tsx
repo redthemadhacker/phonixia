@@ -1,605 +1,1124 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useGame, getCompanionGuide } from '../context/GameContext';
+import React, { useState } from 'react';
+import { useGame } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
-import { PhonicsLetter } from './PhonicsLetter';
-import { PhonicsWordDisplay } from './PhonicsWordDisplay';
 import { sounds } from '../utils/audio';
-import { ALL_50_MINIGAMES, MinigameDefinition } from '../data/minigamesCurriculum';
+import { PHONIXIA_LANDS } from '../data/curriculumData';
 import { 
-  ArrowLeft, ArrowRight, Volume2, RotateCcw, 
-  Coins, ChevronsUp, Compass, Waves
+  X, Users, Palette, BarChart3, Settings, Star, Crown, 
+  UserPlus, RefreshCw, LogOut, Edit3, Check, Shirt, GraduationCap, 
+  Trash2, Camera, AlertTriangle, Scroll
 } from 'lucide-react';
-import islesBg from '../../isles.jpeg';
 
-interface IslesOfPlayProps {
-  onBackToWorld: () => void;
+interface HomeHutModalProps {
+  onClose: () => void;
+  onOpenCelebration?: () => void;
+  onOpenParentPortal?: () => void;
 }
 
-export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onBackToWorld }) => {
-  const { activeExplorer, awardCurrency } = useGame();
-  const _companionGuide = getCompanionGuide(activeExplorer);
+export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCelebration, onOpenParentPortal }) => {
+  const {
+    account,
+    activeExplorer,
+    switchExplorer,
+    createExplorer,
+    deleteExplorer,
+    updateExplorerName,
+    updateExplorerGender,
+    updateAvatarCustomization,
+    resetExplorerProgress,
+    resetClassroomAndGameData,
+    deleteAccount,
+    logout
+  } = useGame();
 
-  // Isles of Play exclusively houses Games 1 through 25 (Preschool through Late Elementary)
-  const islesGames = useMemo(() => {
-    return ALL_50_MINIGAMES.filter(g => g.hub === 'isles-of-play');
-  }, []);
+  const [activeTab, setActiveTab] = useState<'explorers' | 'customizer' | 'progress' | 'halloffame' | 'settings'>('customizer');
+  const [newExplorerName, setNewExplorerName] = useState('');
+  const [newExplorerGender, setNewExplorerGender] = useState<'boy' | 'girl'>('boy');
+  const [newExplorerTier, setNewExplorerTier] = useState<'preschool' | 'kindergarten' | 'early-elementary' | 'late-elementary' | 'middle-high'>('preschool');
+  const [isCreating, setIsCreating] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
-  const [activeGame, setActiveGame] = useState<MinigameDefinition | null>(null);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [isAnswered, setIsAnswered] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [_scoreStreak, setScoreStreak] = useState(0);
+  // Delete Account Confirmation State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // Travel & Select on the Island Archipelago
-  const [playerIslandNum, setPlayerIslandNum] = useState<number>(1);
-  const [hoveredIslandNum, setHoveredIslandNum] = useState<number | null>(null);
-  const [isJumping, setIsJumping] = useState<boolean>(false);
-  const [jumpOffset, setJumpOffset] = useState<number>(0);
-  const [_isSailingToIsland, setIsSailingToIsland] = useState<boolean>(false);
+  // Explorer Name & Customization Draft State
+  const [draftName, setDraftName] = useState(activeExplorer.name);
+  const [draftGender, setDraftGender] = useState<'boy' | 'girl'>(activeExplorer.gender || 'boy');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [draftCustomization, setDraftCustomization] = useState({ 
+    ...activeExplorer.customization,
+    outfitStyle: activeExplorer.customization.outfitStyle || 'ranger'
+  });
 
-  // Interactive Character & Tool Animation states
-  const [playerCol, setPlayerCol] = useState<number>(0);
-  const [isActing, setIsActing] = useState<boolean>(false);
-  const [actionEffect, setActionEffect] = useState<{ col: number; text: string; icon: string } | null>(null);
+  // Customization Palettes
+  const SKIN_TONES = ['#ffd1a4', '#fcd5b5', '#d99058', '#b0703c', '#8a4b1e', '#5c3818'];
+  
+  const OUTFIT_STYLES = [
+    { id: 'ranger', label: 'Ranger Suit', icon: '🏹', desc: 'Forest tracker gear' },
+    { id: 'scholar', label: 'Scholar Robes', icon: '📜', desc: 'Citadel academic wear' },
+    { id: 'wizard', label: 'Wizard Cloak', icon: '🧙‍♂️', desc: 'Enchanted mystic coat' },
+    { id: 'knight', label: 'Knight Armor', icon: '🛡️', desc: 'Shining plate cuirass' },
+    { id: 'ninja', label: 'Ninja Gi', icon: '🥷', desc: 'Silent stealth shroud' },
+    { id: 'adventurer', label: 'Adventurer Vest', icon: '🧭', desc: 'Trail blazer jacket' },
+    { id: 'classic', label: 'Classic Tunic', icon: '👕', desc: 'Comfortable explorer tee' }
+  ];
 
-  const launchMinigame = useCallback((game: MinigameDefinition) => {
-    setPlayerIslandNum(game.gameNum);
-    setIsSailingToIsland(true);
+  const OUTFIT_COLORS = [
+    '#3b82f6', '#22c55e', '#a855f7', '#f97316', '#ef4444', 
+    '#06b6d4', '#eab308', '#64748b', '#1e293b'
+  ];
+
+  const HAIR_STYLES = [
+    { id: 'curls', label: 'Curls' },
+    { id: 'braids', label: 'Braids' },
+    { id: 'afro', label: 'Afro' },
+    { id: 'short', label: 'Short' },
+    { id: 'spiky', label: 'Spiky' },
+    { id: 'wavy', label: 'Wavy' },
+    { id: 'straight', label: 'Straight' }
+  ];
+
+  const HAIR_COLORS = [
+    '#1e1b18', '#3d2314', '#5c3818', '#b45309', '#d97706', 
+    '#dc2626', '#ec4899', '#8b5cf6', '#3b82f6', '#e0e7ff'
+  ];
+
+  const ACCESSORIES = [
+    { id: 'none', label: 'None' },
+    { id: 'glasses', label: 'Glasses 👓' },
+    { id: 'sparkles', label: 'Magic Sparkles ✨' },
+    { id: 'crown', label: 'Royal Crown 👑' },
+    { id: 'bandana', label: 'Explorer Bandana 🧣' },
+    { id: 'headband', label: 'Sport Headband ⚡' }
+  ];
+
+  const COMPANIONS = [
+    { id: 'golden-eagle', name: 'Golden Eagle', icon: '🦅', desc: 'Majestic Golden Sky Companion' },
+    { id: 'baby-dragon', name: 'Baby Dragon', icon: '🐲', desc: 'Kam’s Dragon Companion' },
+    { id: 'feather-owl', name: 'Starlight Owl', icon: '🦉', desc: 'Celine’s Owl Companion' },
+    { id: 'woodland-fox', name: 'Curious Fox', icon: '🦊', desc: 'Clever & Quick' },
+    { id: 'sea-turtle', name: 'Wise Turtle', icon: '🐢', desc: 'Patient & Steady' },
+    { id: 'bunny', name: 'Brisk Bunny', icon: '🐰', desc: 'Speedy Reader' }
+  ];
+
+  const handleGenderToggle = (gender: 'boy' | 'girl') => {
+    setDraftGender(gender);
     sounds.playStep();
-
-    setTimeout(() => {
-      setIsSailingToIsland(false);
-      setActiveGame(game);
-      setSelectedOption(null);
-      setIsAnswered(false);
-      setIsCorrect(false);
-      setPlayerCol(0);
-      setIsActing(false);
-      setActionEffect(null);
-      sounds.playJump();
-      sounds.speak(game.spokenAudioCue || game.howToPlay);
-    }, 280);
-  }, []);
-
-  const triggerIslandJump = useCallback((gameTarget?: MinigameDefinition) => {
-    if (isJumping) return;
-    setIsJumping(true);
-    sounds.playJump();
-
-    const targetGame = gameTarget || islesGames.find(g => g.gameNum === playerIslandNum) || islesGames[0];
-
-    const startTime = performance.now();
-    const jumpDuration = 400;
-    const maxDisplacement = 35;
-
-    const animateJump = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / jumpDuration, 1);
-      const height = Math.sin(progress * Math.PI) * maxDisplacement;
-      setJumpOffset(height);
-
-      if (progress < 1) {
-        requestAnimationFrame(animateJump);
-      } else {
-        setJumpOffset(0);
-        setIsJumping(false);
-        launchMinigame(targetGame);
-      }
-    };
-
-    requestAnimationFrame(animateJump);
-  }, [isJumping, islesGames, playerIslandNum, launchMinigame]);
-
-  const handleChoiceSelect = useCallback((choice: string, _choiceIdx?: number) => {
-    if (!activeGame || isAnswered) return;
-    setSelectedOption(choice);
-    setIsAnswered(true);
-
-    const win = choice.trim().toLowerCase() === activeGame.correctAnswer.trim().toLowerCase();
-    setIsCorrect(win);
-
-    if (win) {
-      sounds.playSuccess();
-      awardCurrency(8, 2);
-      setScoreStreak(s => s + 1);
+    if (gender === 'boy') {
+      setDraftCustomization(prev => ({
+        ...prev,
+        companionPet: 'baby-dragon',
+        title: 'Adventurer with Kam',
+        outfitColor: prev.outfitColor === '#ec4899' ? '#3b82f6' : prev.outfitColor
+      }));
     } else {
-      sounds.playError();
-      sounds.speak('Try again! Listen closely to the sound!');
+      setDraftCustomization(prev => ({
+        ...prev,
+        companionPet: 'feather-owl',
+        title: 'Adventurer with Celine',
+        outfitColor: prev.outfitColor === '#3b82f6' ? '#ec4899' : prev.outfitColor
+      }));
     }
-  }, [activeGame, isAnswered, awardCurrency]);
-
-  // Specific Actions Derived Directly From Each Minigame's True Description
-  const executeToolAction = useCallback((targetCol: number) => {
-    if (!activeGame || isAnswered || isActing) return;
-
-    setPlayerCol(targetCol);
-    setIsActing(true);
-
-    const name = activeGame.name.toLowerCase();
-    let effectText = 'TARGET!';
-    let effectIcon = '✨';
-
-    if (name.includes('chime') || name.includes('bell')) {
-      effectText = 'RING CHIME!';
-      effectIcon = '🔔✨';
-      sounds.playCollect();
-    } else if (name.includes('plunge') || name.includes('seagull')) {
-      effectText = 'FISH PLUNGE!';
-      effectIcon = '🦅🌊';
-      sounds.playSplash();
-    } else if (name.includes('slingshot') || name.includes('cannon') || name.includes('coconut')) {
-      effectText = 'SLINGSHOT!';
-      effectIcon = '🥥🎯';
-      sounds.playWhoosh();
-    } else if (name.includes('whack') || name.includes('crab')) {
-      effectText = 'CRAB WHACK!';
-      effectIcon = '🔨🦀';
-      sounds.playHammer();
-    } else if (name.includes('catch') || name.includes('basket') || name.includes('net')) {
-      effectText = 'CAUGHT!';
-      effectIcon = '🧺✨';
-      sounds.playCollect();
-    } else if (name.includes('bubble') || name.includes('dive') || name.includes('pearl')) {
-      effectText = 'PEARL POP!';
-      effectIcon = '🫧💎';
-      sounds.playSplash();
-    } else if (name.includes('lilypad') || name.includes('frog')) {
-      effectText = 'LILYPAD LEAP!';
-      effectIcon = '🐸🪷';
-      sounds.playJump();
-    } else {
-      effectText = 'DISCOVERED!';
-      effectIcon = '⭐✨';
-      sounds.playCollect();
-    }
-
-    setActionEffect({ col: targetCol, text: effectText, icon: effectIcon });
-
-    setTimeout(() => {
-      const selectedChoice = activeGame.options[targetCol];
-      handleChoiceSelect(selectedChoice, targetCol);
-    }, 280);
-
-    setTimeout(() => {
-      setIsActing(false);
-      setActionEffect(null);
-    }, 550);
-  }, [activeGame, isAnswered, isActing, handleChoiceSelect]);
-
-  useEffect(() => {
-    if (!activeGame || isAnswered) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-        e.preventDefault();
-        setPlayerCol(c => Math.max(0, c - 1));
-        sounds.playStep();
-      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-        e.preventDefault();
-        setPlayerCol(c => Math.min(activeGame.options.length - 1, c + 1));
-        sounds.playStep();
-      } else if (e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault();
-        executeToolAction(playerCol);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeGame, isAnswered, playerCol, executeToolAction]);
-
-  const handleNextIslandInSequence = () => {
-    if (!activeGame) return;
-    const nextNum = (activeGame.gameNum % 25) + 1;
-    const nextGame = islesGames.find(g => g.gameNum === nextNum) || islesGames[0];
-    launchMinigame(nextGame);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (activeGame) return;
-      const k = e.key.toLowerCase();
-      if (k === ' ' || k === 'tab' || k === 'enter') {
-        e.preventDefault();
-        triggerIslandJump();
-      } else if (k === 'arrowright' || k === 'd') {
-        setPlayerIslandNum((prev) => Math.min(25, prev + 1));
-      } else if (k === 'arrowleft' || k === 'a') {
-        setPlayerIslandNum((prev) => Math.max(1, prev - 1));
-      } else if (k === 'arrowdown' || k === 's') {
-        setPlayerIslandNum((prev) => Math.min(25, prev + 5));
-      } else if (k === 'arrowup' || k === 'w') {
-        setPlayerIslandNum((prev) => Math.max(1, prev - 5));
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeGame, triggerIslandJump]);
+  const handleCreateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newExplorerName.trim()) return;
+    createExplorer(newExplorerName.trim(), newExplorerTier, newExplorerGender);
+    setNewExplorerName('');
+    setIsCreating(false);
+    sounds.playFanfare();
+    sounds.speak(`Welcome to Phonixia, ${newExplorerName}! Traveling with ${newExplorerGender === 'boy' ? 'Kam' : 'Celine'}!`);
+  };
 
-  // Determine Exact Tool Icon for Current Game
-  const currentToolIcon = useMemo(() => {
-    if (!activeGame) return '✨';
-    const name = activeGame.name.toLowerCase();
-    if (name.includes('chime') || name.includes('bell')) return '🔔';
-    if (name.includes('plunge') || name.includes('seagull')) return '🤿';
-    if (name.includes('slingshot') || name.includes('coconut')) return '🥥';
-    if (name.includes('whack') || name.includes('crab')) return '🔨';
-    if (name.includes('catch') || name.includes('basket')) return '🧺';
-    if (name.includes('bubble') || name.includes('dive')) return '🫧';
-    if (name.includes('lilypad') || name.includes('frog')) return '🪷';
-    return '🎯';
-  }, [activeGame]);
+  const handleDeleteChildExplorer = (e: React.MouseEvent, explorerId: string, explorerName: string) => {
+    e.stopPropagation();
+
+    if (account.explorers.length <= 1) {
+      alert("You must keep at least one active explorer profile on the account.");
+      return;
+    }
+
+    if (confirm(`Are you sure you want to permanently delete explorer ${explorerName}? All stars and progress for this child will be erased.`)) {
+      if (deleteExplorer) {
+        deleteExplorer(explorerId);
+      } else {
+        // Fallback context deletion
+        const updatedList = account.explorers.filter(exp => exp.id !== explorerId);
+        account.explorers = updatedList;
+        localStorage.setItem('phonixia_account_v2', JSON.stringify(account));
+        localStorage.removeItem(`phonixia_struggles_${explorerId}`);
+        if (activeExplorer.id === explorerId && updatedList.length > 0) {
+          switchExplorer(updatedList[0].id);
+        }
+      }
+      sounds.playDamage();
+      setSyncStatus(`Explorer ${explorerName} was deleted.`);
+      setTimeout(() => setSyncStatus(null), 3500);
+    }
+  };
+
+  const handleSaveAll = () => {
+    if (draftName.trim() && draftName.trim() !== activeExplorer.name) {
+      updateExplorerName(activeExplorer.id, draftName.trim());
+    }
+    updateExplorerGender(activeExplorer.id, draftGender);
+    updateAvatarCustomization(draftCustomization);
+    setIsEditingName(false);
+    sounds.playSuccess();
+    sounds.speak(`Profile updated for ${draftName.trim() || activeExplorer.name}!`);
+  };
+
+  const handleTeacherClassroomReset = () => {
+    const confirmation = confirm(
+      '⚠️ EDUCATOR YEAR-END RESET:\n\nThis will reset student game progress to Level 1 and PERMANENTLY ERASE the entire leaderboard so you can welcome a new class this school year.\n\nAre you sure you want to proceed?'
+    );
+    if (confirmation) {
+      resetClassroomAndGameData();
+      sounds.playFanfare();
+      setSyncStatus('Classroom and leaderboard have been reset for the new school year!');
+      setTimeout(() => setSyncStatus(null), 4000);
+    }
+  };
+
+  const handleConfirmAccountDeletion = () => {
+    if (deleteConfirmationText.trim().toLowerCase() !== 'delete') {
+      setDeleteError('Please type DELETE to confirm account removal.');
+      return;
+    }
+
+    if (deleteAccount) {
+      deleteAccount();
+    } else {
+      localStorage.removeItem('phonixia_account_v2');
+      localStorage.removeItem('phonixia_active_id_v2');
+      localStorage.removeItem('phonixia_active_user');
+      localStorage.removeItem('phonixia_parent_pin');
+      sessionStorage.removeItem('phonixia_active_session');
+      if (account.username) {
+        localStorage.removeItem(`phonixia_pw_${account.username.toLowerCase()}`);
+      }
+      sounds.playDamage();
+      window.location.reload();
+    }
+  };
 
   return (
-    <div className="relative w-full h-full bg-slate-950 flex flex-col justify-between overflow-hidden select-none">
-      
-      {/* Tropical Island Header */}
-      <div className="p-2.5 sm:p-3 bg-gradient-to-r from-emerald-950 via-teal-950 to-blue-950 border-b-2 border-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.5)] flex items-center justify-between z-30">
-        <button
-          onClick={onBackToWorld}
-          className="px-3.5 py-1.5 sm:py-2 rounded-xl bg-teal-950/80 hover:bg-teal-900 text-emerald-300 border border-emerald-400 font-black text-xs sm:text-sm cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.4)] flex items-center gap-1.5 active:scale-95 transition-transform"
-        >
-          <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
-          <span>Exit Isles</span>
-        </button>
-
-        <div className="text-center">
-          <div className="text-[10px] sm:text-xs font-mono font-black text-emerald-300 uppercase tracking-widest flex items-center justify-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 text-amber-400 animate-spin" />
-            <span>ISLES OF PLAY ARCHIPELAGO</span>
-            <Waves className="w-3.5 h-3.5 text-cyan-400" />
-          </div>
-          <h1 className="text-sm sm:text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-yellow-200 to-cyan-300 font-display">
-            Tropical Islands · 25 Action Challenges
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-mono font-bold text-amber-300 bg-black/80 px-3 py-1 rounded-xl border border-amber-400/50 shadow-inner">
-          <Coins className="w-4 h-4 text-amber-400" />
-          <span>{activeExplorer.coins} Shells</span>
-        </div>
-      </div>
-
-      {/* Main Island Voyage Canvas */}
-      <div className="relative flex-1 w-full overflow-hidden select-none">
-        <img
-          src={islesBg}
-          alt="Isles of Play Archipelago Canvas"
-          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none opacity-90 z-0"
-        />
-
-        <div className="absolute inset-0 bg-gradient-to-b from-teal-950/30 via-transparent to-blue-950/60 pointer-events-none z-0" />
-
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
-          <polyline
-            points={islesGames.map((_, idx) => {
-              const row = Math.floor(idx / 5);
-              const col = idx % 5;
-              const xNorm = row % 2 === 0 ? col : 4 - col;
-              const x = 12 + xNorm * 19;
-              const y = 14 + row * 18;
-              return `${x}%,${y}%`;
-            }).join(' ')}
-            fill="none"
-            stroke="#38bdf8"
-            strokeWidth="3.5"
-            strokeDasharray="8 5"
-            className="animate-pulse"
-            opacity="0.8"
-          />
-        </svg>
-
-        {/* 25 Tropical Phonics Islands - SINGLE ICON DISPLAY (NO DUPLICATES) */}
-        {islesGames.map((game, idx) => {
-          const row = Math.floor(idx / 5);
-          const col = idx % 5;
-          const xNorm = row % 2 === 0 ? col : 4 - col;
-          const x = 12 + xNorm * 19;
-          const y = 14 + row * 18;
-          const isHovered = hoveredIslandNum === game.gameNum;
-          const isCurrentIsland = playerIslandNum === game.gameNum;
-
-          return (
-            <div
-              key={game.id}
-              style={{ left: `${x}%`, top: `${y}%` }}
-              onMouseEnter={() => setHoveredIslandNum(game.gameNum)}
-              onMouseLeave={() => setHoveredIslandNum(null)}
-              onClick={() => {
-                setPlayerIslandNum(game.gameNum);
-                triggerIslandJump(game);
-              }}
-              className="absolute z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-            >
-              <div
-                className={`relative w-12 h-14 sm:w-16 sm:h-18 rounded-2xl p-1.5 flex flex-col items-center justify-between border-2 transition-all duration-200 ${
-                  isCurrentIsland
-                    ? 'bg-gradient-to-b from-amber-200 via-emerald-400 to-teal-600 border-white ring-4 ring-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.9)] scale-115'
-                    : isHovered
-                    ? 'bg-gradient-to-b from-emerald-800 to-teal-950 border-amber-300 shadow-[0_0_18px_rgba(52,211,153,0.7)] scale-110'
-                    : 'bg-slate-950/85 border-emerald-500/70 shadow-lg'
-                }`}
-              >
-                <div className="w-full flex items-center justify-between px-0.5">
-                  <span className="text-[9px] sm:text-[10px] font-mono font-black text-amber-300">
-                    #{game.gameNum}
+    <div 
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+        paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)'
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md animate-fade-in select-none"
+    >
+      <div className="relative w-full max-w-4xl h-[92vh] max-h-[820px] bg-slate-900 border-4 border-amber-600/70 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-scale-up">
+        {/* Top Header */}
+        <div className="px-5 py-3.5 bg-slate-950/90 border-b-2 border-amber-900/60 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-2xl bg-amber-950 border border-amber-400/80 flex items-center justify-center text-xl shadow">
+              🛖
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-black text-amber-300 font-display uppercase tracking-wide">
+                  Home Hut
+                </h2>
+                {account.role === 'teacher' && (
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/60 text-blue-300 text-[10px] font-black uppercase flex items-center gap-1">
+                    <GraduationCap className="w-3 h-3" />
+                    <span>Educator</span>
                   </span>
-                  <span className="text-[9px]">🌴</span>
-                </div>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {account.role === 'teacher' ? 'Classroom Hub' : 'Family Hub'} · {account.familyName}
+              </p>
+            </div>
+          </div>
 
-                {/* EXACT SINGLE EMOJI PER ISLAND */}
-                <span className="text-xl sm:text-2xl filter drop-shadow my-auto">
-                  {game.themeIcon}
+          <button
+            onClick={() => {
+              sounds.playStep();
+              onClose();
+            }}
+            className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="grid grid-cols-5 p-1.5 bg-slate-950/60 border-b border-slate-800 text-xs font-bold">
+          <button
+            onClick={() => setActiveTab('explorers')}
+            className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              activeTab === 'explorers' ? 'bg-amber-500 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Explorers</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('customizer')}
+            className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              activeTab === 'customizer' ? 'bg-amber-500 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Studio</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('progress')}
+            className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              activeTab === 'progress' ? 'bg-amber-500 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Progress</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('halloffame')}
+            className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              activeTab === 'halloffame' 
+                ? 'bg-amber-500 text-slate-950 font-black shadow' 
+                : activeExplorer.isHallOfFameInducted
+                  ? 'text-amber-300 hover:text-amber-200 font-extrabold'
+                  : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Crown className="w-3.5 h-3.5 fill-current" />
+            <span className="hidden sm:inline">Legends</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`py-2 rounded-xl flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              activeTab === 'settings' ? 'bg-amber-500 text-slate-950 font-black shadow' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Settings className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Settings</span>
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          {/* TAB 1: EXPLORERS (NO LIMIT ON COUNT + DELETE CHILD EXPLORER) */}
+          {activeTab === 'explorers' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  Active Explorers ({account.explorers.length})
                 </span>
+                {!isCreating && (
+                  <button
+                    onClick={() => setIsCreating(true)}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow cursor-pointer transition-transform hover:scale-105"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>Add Explorer</span>
+                  </button>
+                )}
               </div>
 
-              {isCurrentIsland && (
-                <div
-                  style={{
-                    transform: `translate(-50%, calc(-100% - ${jumpOffset}px))`,
-                  }}
-                  className="absolute top-0 left-1/2 z-35 pointer-events-none transition-transform flex flex-col items-center"
-                >
-                  <AvatarRenderer customization={activeExplorer.customization} size={42} showPet={true} />
+              {syncStatus && (
+                <div className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-bold text-center animate-fade-in">
+                  {syncStatus}
                 </div>
               )}
-            </div>
-          );
-        })}
-      </div>
 
-      {/* Bottom Bar Controls */}
-      <div className="p-2 sm:p-2.5 bg-slate-950/95 border-t border-emerald-800/60 flex items-center justify-between z-30">
-        <div className="flex items-center gap-2">
-          <div className="px-3 py-1 bg-emerald-950 border border-emerald-400/60 rounded-xl text-emerald-200 text-xs font-bold flex items-center gap-1.5">
-            <span className="text-amber-400">🏝️</span>
-            <span>Island #{playerIslandNum}: {islesGames[playerIslandNum - 1]?.name}</span>
-          </div>
-        </div>
+              {isCreating && (
+                <form onSubmit={handleCreateSubmit} className="p-4 rounded-2xl bg-slate-950 border-2 border-amber-500/50 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-200">New Explorer Profile</span>
+                    <button type="button" onClick={() => setIsCreating(false)} className="text-slate-400 hover:text-white text-xs cursor-pointer">
+                      Cancel
+                    </button>
+                  </div>
 
-        <button
-          onClick={() => triggerIslandJump()}
-          className="h-10 sm:h-12 px-6 sm:px-8 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.6)] cursor-pointer active:scale-95"
-        >
-          <ChevronsUp className="w-5 h-5 stroke-[3]" />
-          <span>JUMP TO OPEN (SPACE)</span>
-        </button>
-      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Explorer Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Liam, Maya, Jordan"
+                        value={newExplorerName}
+                        onChange={(e) => setNewExplorerName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400 font-bold"
+                        required
+                        autoFocus
+                      />
+                    </div>
 
-      {/* EXPANDED INTERACTIVE ISLAND MINIGAME ARENA MODAL */}
-      {activeGame && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in select-none">
-          <div className="relative w-full max-w-4xl bg-slate-900 border-3 border-emerald-400 rounded-3xl p-4 sm:p-6 shadow-[0_0_60px_rgba(16,185,129,0.6)] space-y-4">
-            
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl sm:text-4xl p-1 bg-emerald-950/80 rounded-2xl border border-emerald-400/40">
-                  {activeGame.themeIcon}
-                </span>
-                <div>
-                  <h2 className="text-base sm:text-lg font-black text-emerald-300 uppercase tracking-wide">
-                    {activeGame.name}
-                  </h2>
-                  <p className="text-xs text-amber-300 font-medium">
-                    Island #{activeGame.gameNum} · {activeGame.skillCategory}
-                  </p>
-                </div>
-              </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Grade / Reading Level
+                      </label>
+                      <select
+                        value={newExplorerTier}
+                        onChange={(e) => setNewExplorerTier(e.target.value as any)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400 cursor-pointer"
+                      >
+                        <option value="preschool">Preschool (Ages 3-4 · Gentle Mode)</option>
+                        <option value="kindergarten">Kindergarten (Ages 5-6)</option>
+                        <option value="early-elementary">Early Elementary (Ages 6-8)</option>
+                        <option value="late-elementary">Late Elementary (Ages 8-11)</option>
+                        <option value="middle-high">Middle &amp; High (Ages 11+)</option>
+                      </select>
+                    </div>
+                  </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => sounds.speak(activeGame.spokenAudioCue || activeGame.howToPlay)}
-                  className="p-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/40 cursor-pointer"
-                  title="Hear instruction again"
-                >
-                  <Volume2 className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setActiveGame(null)}
-                  className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Gender &amp; Traveling Companion
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewExplorerGender('boy')}
+                        className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
+                          newExplorerGender === 'boy'
+                            ? 'bg-blue-950/70 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)] ring-1 ring-amber-400'
+                            : 'bg-slate-900 border-slate-800 opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <div className="text-xs font-black text-amber-200">👦 Boy Explorer</div>
+                        <div className="text-[10px] text-blue-300 font-bold">Kam Travels with You</div>
+                      </button>
 
-            {/* Instruction Banner */}
-            <div className="p-3 bg-slate-950/90 border border-emerald-500/40 rounded-2xl text-center space-y-1.5">
-              <p className="text-sm sm:text-base font-black text-amber-100">
-                {activeGame.howToPlay}
-              </p>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-xs font-mono font-bold text-emerald-400">Target Sound:</span>
-                <PhonicsWordDisplay text={activeGame.targetSoundOrWord} size={34} />
-              </div>
-            </div>
+                      <button
+                        type="button"
+                        onClick={() => setNewExplorerGender('girl')}
+                        className={`p-2 rounded-xl border text-left cursor-pointer transition-all ${
+                          newExplorerGender === 'girl'
+                            ? 'bg-pink-950/70 border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)] ring-1 ring-amber-400'
+                            : 'bg-slate-900 border-slate-800 opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <div className="text-xs font-black text-amber-200">👧 Girl Explorer</div>
+                        <div className="text-[10px] text-pink-300 font-bold">Celine Travels with You</div>
+                      </button>
+                    </div>
+                  </div>
 
-            {/* EXPANDED ARENA WITH STAGGERED ELEVATION (PREVENTS ANY CUTOFF) */}
-            <div className="relative w-full min-h-[300px] h-[300px] sm:h-[340px] bg-gradient-to-b from-teal-950 via-slate-900 to-blue-950 rounded-2xl border-2 border-emerald-500/50 overflow-hidden flex flex-col justify-between p-3 select-none">
-              
-              {/* STAGGERED WAVE-HEIGHT STATIONS */}
-              <div className="w-full grid grid-cols-4 gap-2.5 z-20 my-auto">
-                {activeGame.options.map((option, idx) => {
-                  const isPlayerStandingHere = playerCol === idx;
-                  const isSelected = selectedOption === option;
-                  const isCorrectChoice = isAnswered && option.trim().toLowerCase() === activeGame.correctAnswer.trim().toLowerCase();
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow cursor-pointer transition-transform hover:scale-102"
+                  >
+                    Create &amp; Switch Explorer
+                  </button>
+                </form>
+              )}
 
-                  // Staggered vertical elevation: 0px, -12px, 0px, -12px
-                  const staggerY = idx % 2 === 1 ? '-translate-y-2' : 'translate-y-1';
-
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {account.explorers.map((exp) => {
+                  const isActive = exp.id === activeExplorer.id;
                   return (
                     <div
-                      key={idx}
-                      onClick={() => executeToolAction(idx)}
-                      className={`p-2.5 sm:p-3.5 rounded-2xl border-2 text-center transition-all cursor-pointer flex flex-col items-center justify-between relative shadow-lg ${staggerY} ${
-                        isAnswered
-                          ? isCorrect && isCorrectChoice
-                            ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
-                            : isSelected && !isCorrect
-                            ? 'bg-rose-900/90 border-rose-400 text-rose-200 animate-shake'
-                            : isCorrectChoice
-                            ? 'bg-emerald-600/90 border-white text-white shadow-[0_0_25px_rgba(16,185,129,1)] scale-105'
-                            : isSelected
-                            ? 'bg-rose-900/90 border-rose-400 text-rose-200'
-                            : 'bg-slate-950/70 border-slate-800 text-slate-600 opacity-40'
-                          : isPlayerStandingHere
-                          ? 'bg-emerald-950/90 border-amber-300 ring-2 ring-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.8)] scale-105'
-                          : 'bg-slate-950/85 border-emerald-400/60 hover:border-amber-300 text-slate-100'
+                      key={exp.id}
+                      onClick={() => {
+                        switchExplorer(exp.id);
+                        setDraftName(exp.name);
+                        setDraftGender(exp.gender || 'boy');
+                        setDraftCustomization({ 
+                          ...exp.customization,
+                          outfitStyle: exp.customization.outfitStyle || 'ranger'
+                        });
+                        sounds.playSuccess();
+                        sounds.speak(`Switched to ${exp.name}!`);
+                      }}
+                      className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
+                        isActive
+                          ? 'bg-amber-500/15 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
+                          : 'bg-slate-950/80 border-slate-800 hover:border-slate-700'
                       }`}
                     >
-                      {/* Animated Living Mascot Indicator */}
-                      <div className="text-2xl sm:text-3xl mb-1 filter drop-shadow">
-                        {activeGame.themeIcon}
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-12 h-12 rounded-2xl bg-amber-950/80 border border-amber-400/60 flex items-center justify-center overflow-hidden">
+                          <AvatarRenderer customization={exp.customization} size={42} showPet={false} />
+                          {exp.isHallOfFameInducted && (
+                            <span className="absolute bottom-0 right-0 text-xs">👑</span>
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-black text-slate-100">{exp.name}</span>
+                            {isActive && (
+                              <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black uppercase">
+                                Active
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            {exp.gender === 'girl' ? '👧 Girl' : '👦 Boy'} · Companion: {exp.gender === 'girl' ? 'Celine' : 'Kam'}
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="my-1 flex items-center justify-center">
-                        {option.length === 1 ? (
-                          <PhonicsLetter letter={option} size={40} showBadge={false} />
-                        ) : (
-                          <PhonicsWordDisplay text={option} size={26} />
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-end text-xs font-mono font-bold">
+                          <span className="flex items-center gap-1 text-amber-400">
+                            <Star className="w-3.5 h-3.5 fill-amber-400" />
+                            <span>{exp.totalStars}</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {Object.values(exp.landScores || {}).reduce((s, l: any) => s + (l.completedGamesCount || 0), 0)}/250 Games
+                          </span>
+                        </div>
+
+                        {/* Delete Single Child Profile Button */}
+                        {account.explorers.length > 1 && (
+                          <button
+                            type="button"
+                            title={`Delete ${exp.name}`}
+                            onClick={(e) => handleDeleteChildExplorer(e, exp.id, exp.name)}
+                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-rose-950 text-slate-500 hover:text-rose-400 border border-slate-800 hover:border-rose-500/50 cursor-pointer transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         )}
                       </div>
-
-                      <span className="text-[8px] sm:text-[9px] text-emerald-300 font-mono font-bold tracking-wider uppercase bg-black/60 px-2 py-0.5 rounded-full mt-1">
-                        {isPlayerStandingHere ? '👉 STANDING HERE' : `STATION #${idx + 1}`}
-                      </span>
-
-                      {/* Action Impact Popup */}
-                      {actionEffect && actionEffect.col === idx && (
-                        <div className="absolute -top-3.5 z-30 px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shadow-xl animate-ping flex items-center gap-1 whitespace-nowrap">
-                          <span>{actionEffect.icon}</span>
-                          <span>{actionEffect.text}</span>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
               </div>
+            </div>
+          )}
 
-              {/* Free Moving Player Character with Exact Tool Equipment */}
-              <div className="relative w-full h-24 flex items-end">
-                <div
-                  style={{
-                    left: `${(playerCol * 25) + 12.5}%`,
-                    transform: 'translateX(-50%)',
-                    transition: 'left 0.15s cubic-bezier(0.25, 1, 0.5, 1)'
-                  }}
-                  className="absolute bottom-1 flex flex-col items-center pointer-events-none"
+          {/* TAB 2: STUDIO */}
+          {activeTab === 'customizer' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+              <div className="flex flex-col items-center justify-center p-5 rounded-3xl bg-slate-950 border-2 border-amber-500/40 shadow-inner space-y-4">
+                <div className="relative w-36 h-36 rounded-full bg-gradient-to-b from-amber-950/80 to-slate-950 border-4 border-amber-400 flex items-center justify-center overflow-visible shadow-[0_0_30px_rgba(245,158,11,0.3)]">
+                  <AvatarRenderer customization={draftCustomization} size={115} showPet={true} />
+                </div>
+                
+                <div className="w-full text-center space-y-1">
+                  {isEditingName ? (
+                    <div className="flex items-center justify-center gap-1">
+                      <input
+                        type="text"
+                        value={draftName}
+                        onChange={(e) => setDraftName(e.target.value)}
+                        className="px-2.5 py-1 text-sm font-black text-amber-300 bg-slate-900 border border-amber-400 rounded-lg text-center focus:outline-none w-40"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => setIsEditingName(false)}
+                        className="p-1.5 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 cursor-pointer"
+                        title="Done"
+                      >
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-1.5 group cursor-pointer" onClick={() => setIsEditingName(true)}>
+                      <span className="text-lg font-black text-amber-300 font-display">
+                        {draftName || activeExplorer.name}
+                      </span>
+                      <Edit3 className="w-4 h-4 text-slate-400 group-hover:text-amber-400 transition-colors" />
+                    </div>
+                  )}
+                  <div className="text-[11px] text-slate-400">
+                    {draftGender === 'boy' ? '👦 Traveling with Kam' : '👧 Traveling with Celine'}
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSaveAll}
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95"
                 >
-                  <div className="relative">
-                    <AvatarRenderer customization={activeExplorer.customization} size={46} showPet={false} />
-                    
-                    {/* The Themed Tool Equipped in Hand */}
-                    <div
-                      style={{
-                        transform: isActing ? 'rotate(45deg) scale(1.3)' : 'rotate(0deg)',
-                        transition: 'transform 0.15s ease-out'
-                      }}
-                      className="absolute -top-1 -right-3 text-2xl filter drop-shadow"
+                  Save Profile Changes
+                </button>
+              </div>
+
+              <div className="md:col-span-2 space-y-5 max-h-[60vh] overflow-y-auto pr-1">
+                <div className="p-3.5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-2">
+                  <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
+                    Explorer Gender &amp; Companion
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleGenderToggle('boy')}
+                      className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+                        draftGender === 'boy'
+                          ? 'bg-blue-950/70 border-amber-400 text-amber-300 shadow ring-1 ring-amber-400'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 opacity-60 hover:opacity-100'
+                      }`}
                     >
-                      {currentToolIcon}
+                      <span className="text-xl">👦</span>
+                      <div className="text-left">
+                        <div className="leading-tight">Boy Explorer</div>
+                        <div className="text-[10px] text-blue-300">Kam as Companion</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleGenderToggle('girl')}
+                      className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+                        draftGender === 'girl'
+                          ? 'bg-pink-950/70 border-amber-400 text-amber-300 shadow ring-1 ring-amber-400'
+                          : 'bg-slate-900 border-slate-800 text-slate-400 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <span className="text-xl">👧</span>
+                      <div className="text-left">
+                        <div className="leading-tight">Girl Explorer</div>
+                        <div className="text-[10px] text-pink-300">Celine as Companion</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <Shirt className="w-3.5 h-3.5 text-amber-400" />
+                    <label className="text-xs font-black text-amber-400 uppercase tracking-wide">
+                      Themed Outfit Suit
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {OUTFIT_STYLES.map((suit) => (
+                      <button
+                        key={suit.id}
+                        type="button"
+                        onClick={() => setDraftCustomization((p) => ({ ...p, outfitStyle: suit.id }))}
+                        className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+                          draftCustomization.outfitStyle === suit.id
+                            ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md scale-102 ring-1 ring-amber-400'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <span className="text-xl">{suit.icon}</span>
+                        <div className="text-left">
+                          <div className="leading-tight">{suit.label}</div>
+                          <div className="text-[9px] text-slate-500 font-normal">{suit.desc}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
+                    Outfit Accent Color
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {OUTFIT_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setDraftCustomization((p) => ({ ...p, outfitColor: color }))}
+                        style={{ backgroundColor: color }}
+                        className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
+                          draftCustomization.outfitColor === color ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50' : 'border-slate-800'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
+                    Companion Pet
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {COMPANIONS.map((pet) => (
+                      <button
+                        key={pet.id}
+                        type="button"
+                        onClick={() => setDraftCustomization((p) => ({ ...p, companionPet: pet.id }))}
+                        className={`p-2.5 rounded-xl border flex items-center gap-2.5 text-xs font-bold transition-all cursor-pointer ${
+                          draftCustomization.companionPet === pet.id
+                            ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md scale-102 ring-1 ring-amber-400'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <span className="text-2xl">{pet.icon}</span>
+                        <div className="text-left">
+                          <div className="leading-tight">{pet.name}</div>
+                          <div className="text-[9px] text-slate-500 font-normal">{pet.desc}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
+                    Hair Style
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {HAIR_STYLES.map((style) => (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => setDraftCustomization((p) => ({ ...p, hairStyle: style.id }))}
+                        className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          draftCustomization.hairStyle === style.id
+                            ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {style.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
+                    Hair Color
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {HAIR_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setDraftCustomization((p) => ({ ...p, hairColor: color }))}
+                        style={{ backgroundColor: color }}
+                        className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
+                          draftCustomization.hairColor === color ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50' : 'border-slate-800'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
+                    Skin Tone
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {SKIN_TONES.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setDraftCustomization((p) => ({ ...p, skinTone: color }))}
+                        style={{ backgroundColor: color }}
+                        className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
+                          draftCustomization.skinTone === color ? 'border-amber-400 scale-125 shadow-lg ring-2 ring-amber-400/50' : 'border-slate-800'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
+                    Accessory
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ACCESSORIES.map((acc) => (
+                      <button
+                        key={acc.id}
+                        type="button"
+                        onClick={() => setDraftCustomization((p) => ({ ...p, accessory: acc.id }))}
+                        className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          draftCustomization.accessory === acc.id
+                            ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {acc.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: REALM QUEST PROGRESS */}
+          {activeTab === 'progress' && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  {activeExplorer.name}'s Realm Quest Map
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-300">
+                  Power Stars: <b className="text-amber-400">{activeExplorer.totalStars}</b>
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                {PHONIXIA_LANDS.map((land) => {
+                  const score = activeExplorer.landScores?.[land.id] || { completedGamesCount: 0, stars: 0, unlocked: false };
+                  const percent = Math.min(100, Math.round((score.completedGamesCount / 50) * 100));
+
+                  return (
+                    <div key={land.id} className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-black text-slate-100 font-display uppercase tracking-wide">
+                            {land.name}
+                          </div>
+                          <div className="text-[10px] text-amber-400/80 font-mono font-bold">50 Adventure Stages</div>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-xs font-mono font-bold">
+                          <span className="text-amber-400 flex items-center gap-1">
+                            <Star className="w-3.5 h-3.5 fill-amber-400" />
+                            {score.stars}
+                          </span>
+                          <span className="text-slate-300">{score.completedGamesCount}/50</span>
+                        </div>
+                      </div>
+
+                      <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                        <div
+                          style={{ width: `${percent}%` }}
+                          className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: HALL OF FAME */}
+          {activeTab === 'halloffame' && (
+            <div className="space-y-5">
+              {activeExplorer.isHallOfFameInducted ? (
+                <div className="relative p-6 rounded-3xl bg-gradient-to-b from-amber-950/70 via-slate-950 to-slate-950 border-2 border-amber-400 text-center space-y-4 shadow-2xl overflow-hidden">
+                  <div className="absolute top-3 right-3 text-3xl opacity-30 select-none">👑</div>
+                  
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/80 text-amber-300 font-mono text-[11px] font-black uppercase tracking-widest">
+                    <Crown className="w-3.5 h-3.5 fill-current" />
+                    <span>Eternal Flamekeeper · Savior of the Golden Phonix</span>
+                  </div>
+
+                  <div className="relative mx-auto w-24 h-24 rounded-full bg-slate-950 border-4 border-amber-400 flex items-center justify-center overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.5)]">
+                    <AvatarRenderer customization={activeExplorer.customization} size={70} showPet={true} />
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-black text-amber-300 font-display uppercase tracking-wider">
+                      {activeExplorer.name}
+                    </h3>
+                    <p className="text-xs text-amber-200 font-bold">{activeExplorer.customization.title}</p>
+                    <p className="text-[11px] text-slate-300 max-w-md mx-auto pt-2 leading-relaxed">
+                      Legendary savior of the Golden Phonix! Conquered all 5 realms, vanquished the Shadow King, and earned your place on the permanent Wall of Fame!
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 max-w-sm mx-auto pt-1 text-center font-mono">
+                    <div className="p-2 rounded-xl bg-slate-900 border border-amber-500/30">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Stars</span>
+                      <span className="text-xs font-black text-amber-400">{activeExplorer.totalStars}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-slate-900 border border-amber-500/30">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Stages Won</span>
+                      <span className="text-xs font-black text-teal-300">250 / 250</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-slate-900 border border-amber-500/30">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Story Clears</span>
+                      <span className="text-xs font-black text-rose-400">{Math.max(1, activeExplorer.timesStorylineCompleted || 1)}x</span>
                     </div>
                   </div>
 
-                  <span className="text-[10px] font-mono font-black text-amber-300 mt-1 bg-slate-950/80 px-2 rounded-full border border-amber-400/40">
-                    {activeExplorer.name}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* In-Game Action Bar & Touch Controls with Clear Action Verbs */}
-            <div className="flex items-center justify-between gap-2 p-2 bg-slate-950/90 rounded-2xl border border-emerald-500/40">
-              <button
-                type="button"
-                onClick={() => {
-                  setPlayerCol(c => Math.max(0, c - 1));
-                  sounds.playStep();
-                }}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Move Left</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => executeToolAction(playerCol)}
-                className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-emerald-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.7)] cursor-pointer active:scale-95 hover:brightness-110"
-              >
-                <span>
-                  {activeGame.name.toLowerCase().includes('chime') || activeGame.name.toLowerCase().includes('bell')
-                    ? '🔔 RING TIKI CHIME (SPACE)'
-                    : activeGame.name.toLowerCase().includes('plunge')
-                    ? '🦅 PLUNGE FOR FISH (SPACE)'
-                    : activeGame.name.toLowerCase().includes('whack') || activeGame.name.toLowerCase().includes('crab')
-                    ? '🔨 WHACK HERMIT CRAB (SPACE)'
-                    : activeGame.name.toLowerCase().includes('catch') || activeGame.name.toLowerCase().includes('basket')
-                    ? '🧺 CATCH IN NET (SPACE)'
-                    : activeGame.name.toLowerCase().includes('slingshot')
-                    ? '🥥 LAUNCH COCONUT (SPACE)'
-                    : activeGame.name.toLowerCase().includes('bubble') || activeGame.name.toLowerCase().includes('dive')
-                    ? '🫧 POP PEARL (SPACE)'
-                    : '⭐ ACTIVATE STATION (SPACE)'}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setPlayerCol(c => Math.min(activeGame.options.length - 1, c + 1));
-                  sounds.playStep();
-                }}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
-              >
-                <span>Move Right</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Answer Result Banner */}
-            {isAnswered && (
-              <div className={`p-4 rounded-2xl border text-center space-y-2 animate-scale-up ${
-                isCorrect ? 'bg-emerald-950/95 border-emerald-400 text-emerald-200' : 'bg-rose-950/95 border-rose-400 text-rose-200'
-              }`}>
-                <div className="text-sm sm:text-base font-black uppercase">
-                  {isCorrect ? '⭐ Excellent Voyage Success!' : '❌ Not Quite Right!'}
-                </div>
-                {isCorrect ? (
-                  <p className="text-xs sm:text-sm font-medium text-slate-200">
-                    {activeGame.explanation}
-                  </p>
-                ) : (
-                  <p className="text-xs sm:text-sm font-medium text-rose-300">
-                    Listen closely and try again!
-                  </p>
-                )}
-                <div className="flex items-center justify-center gap-3 pt-1">
-                  {!isCorrect ? (
+                  {onOpenCelebration && (
                     <button
-                      onClick={() => {
-                        setIsAnswered(false);
-                        setSelectedOption(null);
-                        sounds.speak(activeGame.spokenAudioCue);
-                      }}
-                      className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                      onClick={onOpenCelebration}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:from-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 mx-auto cursor-pointer transition-transform hover:scale-105 active:scale-95"
                     >
-                      <RotateCcw className="w-4 h-4" />
-                      <span>Try Again</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleNextIslandInSequence}
-                      className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg hover:scale-105 cursor-pointer"
-                    >
-                      <span>Sail to Next Island ➔</span>
+                      <Camera className="w-4 h-4 stroke-[2.5]" />
+                      <span>Rewatch Coronation &amp; Wall of Fame Ceremony</span>
                     </button>
                   )}
                 </div>
+              ) : (
+                <div className="p-6 rounded-3xl bg-slate-950 border-2 border-slate-800 text-center space-y-3">
+                  <div className="w-14 h-14 rounded-full bg-slate-900 border border-slate-700 mx-auto flex items-center justify-center text-2xl text-slate-500">
+                    👑
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-200 uppercase tracking-wide">
+                      {activeExplorer.name}'s Rescue Quest in Progress
+                    </h3>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto pt-1">
+                      Conquer all 50 challenge stages across all five realms to defeat the Shadow King, rescue the Golden Phonix, and unlock your Coronation Aisle &amp; Wall of Fame picture!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2 pt-2">
+                <div className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Scroll className="w-3.5 h-3.5" />
+                  <span>Eternal Flamekeepers Inductees</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {account.explorers
+                    .filter((e) => e.isHallOfFameInducted)
+                    .map((inductee) => (
+                      <div
+                        key={inductee.id}
+                        className="p-3 rounded-2xl bg-slate-950/80 border border-amber-500/40 flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative w-9 h-9 rounded-xl bg-amber-950/80 border border-amber-400 flex items-center justify-center overflow-hidden">
+                            <AvatarRenderer customization={inductee.customization} size={32} showPet={false} />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs font-black text-amber-200">{inductee.name}</span>
+                              <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              Level {inductee.level} · {inductee.totalStars} Stars
+                            </div>
+                          </div>
+                        </div>
+
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[9px] font-bold">
+                          Inducted
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: SETTINGS & DELETE ACCOUNT */}
+          {activeTab === 'settings' && (
+            <div className="space-y-4">
+              {/* PARENT & TEACHER ACCESS PORTAL */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border-2 border-amber-400 shadow-xl space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-2xl shadow-inner">
+                      🔒
+                    </div>
+                    <div>
+                      <div className="text-sm font-black text-amber-300 uppercase tracking-wide flex items-center gap-2">
+                        <span>Parent &amp; Teacher Portal</span>
+                        <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-mono border border-amber-400/40">
+                          GROWN-UPS ONLY
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 mt-0.5 max-w-md">
+                        Enter your 4-digit PIN (or account password) to inspect student progress, view pattern detection diagnostics, or print reports.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sounds.playStep();
+                      if (onOpenParentPortal) onOpenParentPortal();
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <span>Enter PIN / Login ➔</span>
+                  </button>
+                </div>
+              </div>
+
+              {syncStatus && (
+                <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-bold text-center animate-fade-in">
+                  {syncStatus}
+                </div>
+              )}
+
+              {/* Automatic Cloud Save Status */}
+              <div className="p-4 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-base">
+                    ☁️
+                  </div>
+                  <div>
+                    <div className="text-xs font-black text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+                      <span>Automatic Cloud Game Save</span>
+                      <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono border border-emerald-400/40">
+                        ACTIVE &amp; ENCRYPTED
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+                      Your progress, stars, and character customization automatically sync across all your devices.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+                  <span>Signed in as: <b className="text-amber-400">@{account.username}</b> ({account.role === 'teacher' ? 'Educator' : 'Parent/Family'})</span>
+                  <span className="text-emerald-400 font-bold">● Cloud Connected</span>
+                </div>
+              </div>
+
+              {/* TEACHER ONLY: CLASSROOM & LEADERBOARD RESET */}
+              {account.role === 'teacher' && (
+                <div className="p-4 rounded-2xl bg-slate-950 border-2 border-rose-500/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-black text-rose-400 uppercase tracking-wide flex items-center gap-1.5">
+                        <GraduationCap className="w-4 h-4 text-rose-400" />
+                        <span>Educator Year-End Reset</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5 max-w-md">
+                        Resets all classroom explorer progress to Stage 1 and <b>completely purges the class leaderboard</b> so you can start a fresh cohort of students every school year.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleTeacherClassroomReset}
+                      className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-lg transition-transform hover:scale-105 active:scale-95"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Reset Class &amp; Board</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Reset Single Explorer Story Progress */}
+              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-black text-rose-400 uppercase tracking-wide">
+                    Reset Active Story Progress
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Resets completed lands for {activeExplorer.name} back to Sound Shallows.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (confirm(`Reset storyline progress for ${activeExplorer.name}?`)) {
+                      resetExplorerProgress(activeExplorer.id);
+                      sounds.playFanfare();
+                    }
+                  }}
+                  className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Reset Progress</span>
+                </button>
+              </div>
+
+              {/* DANGER ZONE: DELETE ACCOUNT & ERASE ALL PROGRESS */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-rose-950/40 border-2 border-rose-500/60 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs sm:text-sm font-black text-rose-300 uppercase tracking-wide flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-rose-400" />
+                      <span>Delete Account &amp; Erase All Data</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-0.5 max-w-md">
+                      Permanently delete this account, all student explorers, unlocked mini-games, and game records. This action cannot be reversed.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeleteConfirmationText('');
+                      setShowDeleteModal(true);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider shadow cursor-pointer transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Account</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Log Out */}
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    logout();
+                    window.location.reload();
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Log Out of Phonixia Gateway</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* CONFIRM DELETE ACCOUNT MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-3 bg-black/85 backdrop-blur-md animate-fade-in select-none">
+          <div className="relative w-full max-w-md bg-slate-900 border-3 border-rose-500 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                  <AlertTriangle className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-rose-300 uppercase tracking-wide">
+                    Permanent Account Deletion
+                  </h3>
+                  <p className="text-[11px] text-slate-400">Irreversible Action</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-slate-400 hover:text-white text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Are you sure you want to permanently erase <b>@{account.username}</b>? All explorers, collected stars, custom avatars, and reading progress will be permanently lost.
+            </p>
+
+            {deleteError && (
+              <div className="p-2.5 rounded-xl bg-rose-950 border border-rose-400 text-rose-200 text-xs font-bold text-center">
+                {deleteError}
               </div>
             )}
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-slate-300 block">
+                Type <span className="text-rose-400 font-mono font-black">DELETE</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmationText}
+                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                placeholder="DELETE"
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-rose-500/50 text-white font-mono text-center tracking-widest text-sm focus:outline-none focus:border-rose-400"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAccountDeletion}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider cursor-pointer shadow active:scale-95"
+              >
+                Permanently Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

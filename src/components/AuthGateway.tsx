@@ -58,23 +58,33 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
   const pwCheckResult = validatePassword(regPassword);
   const newPwCheckResult = validatePassword(newPasswordInput);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setIsSubmitting(true);
 
-    const ok = loginWithCredentials(username.trim().toLowerCase(), password);
-    if (ok) {
-      sessionStorage.setItem('phonixia_active_session', 'true');
-      sounds.playSuccess();
-      sounds.speak('Welcome to Phonixia! Exploring with Kam and Celine!');
-      onAuthenticated();
-    } else {
+    try {
+      const result = await loginWithCredentials(username.trim().toLowerCase(), password);
+      if (result.success) {
+        sessionStorage.setItem('phonixia_active_session', 'true');
+        sounds.playSuccess();
+        sounds.speak('Welcome to Phonixia! Exploring with Kam and Celine!');
+        onAuthenticated();
+      } else {
+        sounds.playError();
+        setErrorMsg(result.error || 'Invalid username or password.');
+      }
+    } catch {
       sounds.playError();
-      setErrorMsg('Invalid username or password.');
+      setErrorMsg('Login request failed. Please check your network or credentials.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -85,7 +95,17 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
       return;
     }
 
-    // UNIQUE USERNAME CHECK: No fallbacks or duplicate collisions
+    // UNIQUE USERNAME CHECK: Check server cloud database & local device cache
+    try {
+      const checkRes = await fetch(`/api/auth/check-username/${encodeURIComponent(cleanUser)}`);
+      const checkData = await checkRes.json();
+      if (checkData.exists) {
+        sounds.playError();
+        setErrorMsg('That username is already taken. Please choose another username.');
+        return;
+      }
+    } catch {}
+
     const existingPassword = localStorage.getItem(`phonixia_pw_${cleanUser}`);
     let accountExists = false;
     try {
@@ -110,10 +130,11 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
       return;
     }
 
+    setIsSubmitting(true);
     const companionId = characterGender === 'boy' ? 'kam' : 'celine';
     const companionName = characterGender === 'boy' ? 'Kam' : 'Celine';
 
-    registerAccount({
+    const regResult = await registerAccount({
       username: cleanUser,
       password: regPassword,
       familyName: regFamilyName.trim() || (regRole === 'teacher' ? `${characterName}'s Classroom` : `${characterName}'s Family`),
@@ -123,13 +144,20 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
       companionGuide: companionId,
     });
 
+    setIsSubmitting(false);
+    if (!regResult.success) {
+      setErrorMsg(regResult.error || 'Failed to create account.');
+      sounds.playError();
+      return;
+    }
+
     sessionStorage.setItem('phonixia_active_session', 'true');
     sounds.playFanfare();
     sounds.speak(`Welcome to Phonixia, ${characterName}! ${companionName} is excited to travel with you!`);
     onAuthenticated();
   };
 
-  const handleVerifyIdentity = (e: React.FormEvent) => {
+  const handleVerifyIdentity = async (e: React.FormEvent) => {
     e.preventDefault();
     setForgotError(null);
 
@@ -139,18 +167,25 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
       return;
     }
 
-    // Verify account existence strictly without default shortcuts
+    // Verify account existence in cloud or local cache
     const savedPw = localStorage.getItem(`phonixia_pw_${cleanUser}`);
     let accountFound = false;
     try {
-      const savedAccounts = localStorage.getItem('phonixia_account_v2');
-      if (savedAccounts) {
-        const parsed = JSON.parse(savedAccounts);
-        if (parsed.username?.toLowerCase() === cleanUser) {
-          accountFound = true;
-        }
-      }
+      const checkRes = await fetch(`/api/account/${encodeURIComponent(cleanUser)}`);
+      if (checkRes.ok) accountFound = true;
     } catch {}
+
+    if (!accountFound) {
+      try {
+        const savedAccounts = localStorage.getItem('phonixia_account_v2');
+        if (savedAccounts) {
+          const parsed = JSON.parse(savedAccounts);
+          if (parsed.username?.toLowerCase() === cleanUser) {
+            accountFound = true;
+          }
+        }
+      } catch {}
+    }
 
     if (!savedPw && !accountFound) {
       sounds.playError();
@@ -196,6 +231,13 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
 
     const cleanUser = forgotUsernameInput.trim().toLowerCase();
     localStorage.setItem(`phonixia_pw_${cleanUser}`, newPasswordInput);
+
+    // Sync new password to server database
+    fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: cleanUser, newPassword: newPasswordInput })
+    }).catch(() => {});
 
     try {
       const savedAccounts = localStorage.getItem('phonixia_account_v2');

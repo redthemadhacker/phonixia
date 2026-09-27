@@ -8,6 +8,8 @@ import { sounds } from '../utils/audio';
 import { HallOfFameCelebration } from './HallOfFameCelebration';
 import { getComprehensiveStageChallenge } from '../data/comprehensiveCurriculum';
 import { ALL_50_MINIGAMES, MinigameDefinition } from '../data/minigamesCurriculum';
+import { CutePicturePrompt } from './CutePicturePrompt';
+import { getPictureClue } from '../utils/phonicsPictures';
 import { 
   ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Star, Volume2, 
   RotateCcw, ChevronsUp, Flame, Undo2, RefreshCw, Gamepad2, HeartCrack
@@ -661,6 +663,10 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
       const k = e.key.toLowerCase();
       if (k === 'arrowleft' || k === 'a') setActiveDpad((prev) => ({ ...prev, left: true }));
       if (k === 'arrowright' || k === 'd') setActiveDpad((prev) => ({ ...prev, right: true }));
@@ -673,6 +679,10 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
       const k = e.key.toLowerCase();
       if (k === 'arrowleft' || k === 'a') setActiveDpad((prev) => ({ ...prev, left: false }));
       if (k === 'arrowright' || k === 'd') setActiveDpad((prev) => ({ ...prev, right: false }));
@@ -761,7 +771,19 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               : displayedQuestion.instruction}
           </p>
 
-          <div className="flex justify-center items-center py-0.5">
+          <div className="flex flex-wrap justify-center items-center gap-2 py-0.5">
+            {/* Cute Picture Clue Button & Animation for Simpler Levels */}
+            <CutePicturePrompt
+              targetSound={sanitizedTargetSound}
+              word={targetBuilderWord || (displayedQuestion.builderLetters ? displayedQuestion.correct : undefined)}
+              instruction={displayedQuestion.instruction}
+              soundCue={displayedQuestion.soundCue}
+              builderTarget={targetBuilderWord}
+              stageNumber={activeGameIndex}
+              landId={landId}
+              isSimplerLevel={landId === 'sound-shallows' || landId === 'builders-guild' || activeGameIndex <= 25 || activeExplorer.ageTier === 'preschool' || activeExplorer.ageTier === 'kindergarten'}
+            />
+
             <div className="inline-flex items-center gap-2 sm:gap-3 bg-slate-950/90 border-2 border-amber-400 px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-xl sm:rounded-2xl shadow-inner">
               {landId === 'sound-shallows' || landId === 'builders-guild' ? (
                 <PhonicsWordDisplay text={sanitizedTargetSound} size={32} showSubtitle={false} />
@@ -867,11 +889,14 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         {landId === 'builders-guild' && (
           <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-stone-900 via-amber-950 to-stone-950 rounded-2xl border-2 border-amber-500/60 overflow-hidden select-none">
             <div className="absolute top-1.5 left-2 z-20 bg-slate-950/90 border border-amber-400 p-2 rounded-xl text-left shadow-xl min-w-[100px] xs:min-w-[120px]">
-              <div className="text-[9px] font-mono font-bold text-amber-400 uppercase tracking-widest">
-                Target Word:
+              <div className="flex items-center justify-between gap-1 text-[9px] font-mono font-bold text-amber-400 uppercase tracking-widest">
+                <span>Target Word:</span>
+                <span className="text-sm filter drop-shadow animate-bounce-gentle">
+                  {getPictureClue({ builderTarget: targetBuilderWord }).emoji}
+                </span>
               </div>
-              <div className="text-base sm:text-xl font-black text-white font-mono tracking-wider">
-                {targetBuilderWord}
+              <div className="text-base sm:text-xl font-black text-white font-mono tracking-wider flex items-center gap-1.5">
+                <span>{targetBuilderWord}</span>
               </div>
 
               <div className="mt-1 flex flex-col-reverse gap-0.5 border-t border-amber-500/40 pt-1">

@@ -362,6 +362,10 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
       const k = e.key.toLowerCase();
       const code = e.code;
 
@@ -389,6 +393,10 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
       const k = e.key.toLowerCase();
       const code = e.code;
 

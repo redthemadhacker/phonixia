@@ -1,8 +1,26 @@
+# Dependencies
 node_modules/
-build/
+
+# Production build outputs
 dist/
-coverage/
+build/
+.next/
+out/
+
+# Local databases & runtime caches
+.data/
+*.sqlite
+*.sqlite3
+
+# Environment & local secrets
+.env
+.env.local
+*.local
+
+# System & Editor clutter
 .DS_Store
-*.log
-.env*
-!.env.example
+Thumbs.db
+.vscode/
+.idea/
+npm-debug.log*
+yarn-debug.log*

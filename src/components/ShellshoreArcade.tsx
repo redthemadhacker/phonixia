@@ -3,6 +3,7 @@ import { useGame, getCompanionGuide } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
 import { ALL_50_MINIGAMES, MinigameDefinition } from '../data/minigamesCurriculum';
+import { CutePicturePrompt } from './CutePicturePrompt';
 import { 
   ArrowLeft, ArrowRight, Volume2, RotateCcw,
   Coins, ChevronsUp
@@ -151,6 +152,10 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
     if (!activeGame || isAnswered) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         e.preventDefault();
         setPlayerCol(c => Math.max(0, c - 1));
@@ -178,6 +183,10 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
       if (activeGame) return;
       const k = e.key.toLowerCase();
       if (k === ' ' || k === 'tab' || k === 'enter') {
@@ -376,13 +385,22 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
             </div>
 
             {/* Instruction Banner */}
-            <div className="p-3 bg-slate-950/90 border border-fuchsia-500/40 rounded-2xl text-center space-y-1">
+            <div className="p-3 bg-slate-950/90 border border-fuchsia-500/40 rounded-2xl text-center space-y-2">
               <p className="text-sm sm:text-base font-black text-fuchsia-100">
                 {activeGame.howToPlay}
               </p>
-              <span className="text-xs font-mono font-bold text-cyan-300 block">
-                Target Concept: {activeGame.targetSoundOrWord}
-              </span>
+              <div className="flex flex-wrap items-center justify-center gap-2.5">
+                <CutePicturePrompt
+                  targetSound={activeGame.targetSoundOrWord}
+                  instruction={activeGame.howToPlay}
+                  soundCue={activeGame.spokenAudioCue}
+                  stageNumber={activeGame.gameNum}
+                  isSimplerLevel={activeGame.gameNum <= 35}
+                />
+                <span className="text-xs font-mono font-bold text-cyan-300 px-3 py-1 bg-purple-950/70 border border-cyan-400/40 rounded-xl shadow">
+                  Target: {activeGame.targetSoundOrWord}
+                </span>
+              </div>
             </div>
 
             {/* Real Interactive Arcade Arena: Moving Player + Themed Action Tools */}

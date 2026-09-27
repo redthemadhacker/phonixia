@@ -469,6 +469,10 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
   // Global Keyboard event handling (Uses Refs to avoid stale closures!)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
       if (activeGameIndex !== null) return;
       const k = e.key ? e.key.toLowerCase() : '';
       const code = e.code || '';
@@ -521,6 +525,10 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
       if (activeGameIndex !== null) return;
       const k = e.key ? e.key.toLowerCase() : '';
       const code = e.code || '';

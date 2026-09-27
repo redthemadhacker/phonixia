@@ -84,220 +84,236 @@ export function saveAccounts(accounts: Record<string, StoredAccountRecord>) {
   }
 }
 
-// Initialize seed accounts if file does not exist or needs updates
+// Initialize seed accounts
 export function initAccountsFile() {
   const accounts = loadAccounts();
 
-  // ONLY seed if the accounts don't already exist!
+  // 1. Account: readingheroes
   if (!accounts['readingheroes']) {
     const saltReading = 'edea1da3976daae316c4f23cf622edf9';
     accounts['readingheroes'] = {
-      // ... readingheroes seed
+      id: 'acc-readingheroes',
+      username: 'readingheroes',
+      salt: saltReading,
+      passwordHash: hashPassword('Phonics123!', saltReading),
+      updatedAt: new Date().toISOString(),
+      accountData: {
+        id: 'acc-readingheroes',
+        familyName: 'Reading Heroes Family',
+        username: 'readingheroes',
+        role: 'parent',
+        explorers: [
+          {
+            id: 'exp-kam',
+            name: 'Kam',
+            gender: 'boy',
+            companionGuide: 'kam',
+            ageTier: 'preschool',
+            level: 1,
+            totalStars: 0,
+            coins: 30,
+            arcadeTokens: 5,
+            isHallOfFameInducted: false,
+            timesStorylineCompleted: 0,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 0, stars: 0, unlocked: true },
+              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+            },
+            customization: {
+              skinTone: '#fcd5b5',
+              hairStyle: 'curls',
+              hairColor: '#5c3818',
+              outfitStyle: 'adventurer',
+              outfitColor: '#dc2626',
+              accessory: 'bandana',
+              companionPet: 'sea-turtle',
+              title: 'Adventurer with Kam'
+            }
+          },
+          {
+            id: 'exp-lani',
+            name: 'Lani',
+            gender: 'girl',
+            companionGuide: 'celine',
+            ageTier: 'late-elementary',
+            level: 50,
+            totalStars: 774,
+            coins: 950,
+            arcadeTokens: 150,
+            isHallOfFameInducted: true,
+            timesStorylineCompleted: 1,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 50, stars: 159, unlocked: true },
+              'builders-guild': { completedGamesCount: 50, stars: 153, unlocked: true },
+              'tricky-trails': { completedGamesCount: 50, stars: 156, unlocked: true },
+              'whispering-peaks': { completedGamesCount: 50, stars: 153, unlocked: true },
+              'lexicon-empire': { completedGamesCount: 50, stars: 153, unlocked: true }
+            },
+            customization: {
+              skinTone: '#d99058',
+              hairStyle: 'braids',
+              hairColor: '#1e1b18',
+              outfitStyle: 'wizard',
+              outfitColor: '#a855f7',
+              accessory: 'sparkles',
+              companionPet: 'golden-phonix',
+              title: 'Hall of Fame Grand Scholar'
+            }
+          }
+        ]
+      }
     };
   }
 
+  // 2. Account: phonixiatest (Amari, Landry, Joleigh, Zuri - all girls)
   if (!accounts['phonixiatest']) {
     const saltTest = 'a9f8e7d6c5b4a3210123456789abcdef';
     accounts['phonixiatest'] = {
-      // ... phonixiatest seed with Amari, Landry, Joleigh, Zuri
+      id: 'acc-phonixiatest',
+      username: 'phonixiatest',
+      salt: saltTest,
+      passwordHash: hashPassword('Cousins2026!', saltTest),
+      updatedAt: new Date().toISOString(),
+      accountData: {
+        id: 'acc-phonixiatest',
+        familyName: "Cousins Test Family",
+        username: 'phonixiatest',
+        role: 'parent',
+        explorers: [
+          {
+            id: 'exp-amari',
+            name: 'Amari',
+            gender: 'girl',
+            companionGuide: 'celine',
+            ageTier: 'preschool',
+            level: 1,
+            totalStars: 12,
+            coins: 40,
+            arcadeTokens: 6,
+            isHallOfFameInducted: false,
+            timesStorylineCompleted: 0,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 4, stars: 12, unlocked: true },
+              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+            },
+            customization: {
+              skinTone: '#8d5524',
+              hairStyle: 'curls',
+              hairColor: '#1a110b',
+              outfitStyle: 'wizard',
+              outfitColor: '#2563eb',
+              accessory: 'glasses',
+              companionPet: 'baby-dragon',
+              title: 'Adventurer with Celine'
+            }
+          },
+          {
+            id: 'exp-landry',
+            name: 'Landry',
+            gender: 'girl',
+            companionGuide: 'celine',
+            ageTier: 'preschool',
+            level: 1,
+            totalStars: 3,
+            coins: 35,
+            arcadeTokens: 5,
+            isHallOfFameInducted: false,
+            timesStorylineCompleted: 0,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
+              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+            },
+            customization: {
+              skinTone: '#ffd1a4',
+              hairStyle: 'pigtails',
+              hairColor: '#4a2e18',
+              outfitStyle: 'wizard',
+              outfitColor: '#10b981',
+              accessory: 'bandana',
+              companionPet: 'baby-dragon',
+              title: 'Sound Shallows Explorer'
+            }
+          },
+          {
+            id: 'exp-joleigh',
+            name: 'Joleigh',
+            gender: 'girl',
+            companionGuide: 'celine',
+            ageTier: 'early-elementary',
+            level: 1,
+            totalStars: 3,
+            coins: 35,
+            arcadeTokens: 5,
+            isHallOfFameInducted: false,
+            timesStorylineCompleted: 0,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
+              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+            },
+            customization: {
+              skinTone: '#fcd5b5',
+              hairStyle: 'pigtails',
+              hairColor: '#d97706',
+              outfitStyle: 'wizard',
+              outfitColor: '#ec4899',
+              accessory: 'sparkles',
+              companionPet: 'baby-dragon',
+              title: 'Sound Shallows Explorer'
+            }
+          },
+          {
+            id: 'exp-zuri',
+            name: 'Zuri',
+            gender: 'girl',
+            companionGuide: 'celine',
+            ageTier: 'late-elementary',
+            level: 1,
+            totalStars: 3,
+            coins: 35,
+            arcadeTokens: 5,
+            isHallOfFameInducted: false,
+            timesStorylineCompleted: 0,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
+              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+            },
+            customization: {
+              skinTone: '#8d5524',
+              hairStyle: 'braids',
+              hairColor: '#1e1b18',
+              outfitStyle: 'wizard',
+              outfitColor: '#7e22ce',
+              accessory: 'glasses',
+              companionPet: 'baby-dragon',
+              title: 'Sound Shallows Explorer'
+            }
+          }
+        ]
+      }
     };
   }
 
   saveAccounts(accounts);
 }
 
-  // 1. Account: readingheroes with Kam (Level 1) and Lani (Fully Finished Level 50)
-  const saltReading = accounts['readingheroes']?.salt || 'edea1da3976daae316c4f23cf622edf9';
-  accounts['readingheroes'] = {
-    id: 'acc-readingheroes',
-    username: 'readingheroes',
-    salt: saltReading,
-    passwordHash: hashPassword('Phonics123!', saltReading),
-    updatedAt: new Date().toISOString(),
-    accountData: {
-      id: 'acc-readingheroes',
-      familyName: 'Reading Heroes Family',
-      username: 'readingheroes',
-      role: 'parent',
-      explorers: [
-        {
-          id: 'exp-kam',
-          name: 'Kam',
-          gender: 'boy',
-          companionGuide: 'kam',
-          ageTier: 'preschool',
-          level: 1,
-          totalStars: 0,
-          coins: 30,
-          arcadeTokens: 5,
-          isHallOfFameInducted: false,
-          timesStorylineCompleted: 0,
-          landScores: {
-            'sound-shallows': { completedGamesCount: 0, stars: 0, unlocked: true },
-            'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-          },
-          customization: {
-            skinTone: '#fcd5b5',
-            hairStyle: 'curls',
-            hairColor: '#5c3818',
-            outfitStyle: 'adventurer',
-            outfitColor: '#dc2626',
-            accessory: 'bandana',
-            companionPet: 'sea-turtle',
-            title: 'Adventurer with Kam'
-          }
-        },
-        {
-          id: 'exp-lani',
-          name: 'Lani',
-          gender: 'girl',
-          companionGuide: 'celine',
-          ageTier: 'late-elementary',
-          level: 50,
-          totalStars: 774,
-          coins: 950,
-          arcadeTokens: 150,
-          isHallOfFameInducted: true,
-          timesStorylineCompleted: 1,
-          landScores: {
-            'sound-shallows': { completedGamesCount: 50, stars: 159, unlocked: true },
-            'builders-guild': { completedGamesCount: 50, stars: 153, unlocked: true },
-            'tricky-trails': { completedGamesCount: 50, stars: 156, unlocked: true },
-            'whispering-peaks': { completedGamesCount: 50, stars: 153, unlocked: true },
-            'lexicon-empire': { completedGamesCount: 50, stars: 153, unlocked: true }
-          },
-          customization: {
-            skinTone: '#d99058',
-            hairStyle: 'braids',
-            hairColor: '#1e1b18',
-            outfitStyle: 'wizard',
-            outfitColor: '#a855f7',
-            accessory: 'sparkles',
-            companionPet: 'golden-phonix',
-            title: 'Hall of Fame Grand Scholar'
-          }
-        }
-      ]
-    }
-  };
-
-  // 2. Account: phonixiatest with Amari, Landry (preschool, Level 1 complete), Joleigh (age 6, Level 1 complete)
-  const saltTest = accounts['phonixiatest']?.salt || 'a9f8e7d6c5b4a3210123456789abcdef';
-  accounts['phonixiatest'] = {
-    id: 'acc-phonixiatest',
-    username: 'phonixiatest',
-    salt: saltTest,
-    passwordHash: hashPassword('Cousins2026!', saltTest),
-    updatedAt: new Date().toISOString(),
-    accountData: {
-      id: 'acc-phonixiatest',
-      familyName: "Cousins Test Family",
-      username: 'phonixiatest',
-      role: 'parent',
-      explorers: [
-        {
-          id: 'exp-amari',
-          name: 'Amari',
-          gender: 'boy',
-          companionGuide: 'kam',
-          ageTier: 'preschool',
-          level: 1,
-          totalStars: 12,
-          coins: 40,
-          arcadeTokens: 6,
-          isHallOfFameInducted: false,
-          timesStorylineCompleted: 0,
-          landScores: {
-            'sound-shallows': { completedGamesCount: 4, stars: 12, unlocked: true },
-            'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-          },
-          customization: {
-            skinTone: '#8d5524',
-            hairStyle: 'curls',
-            hairColor: '#1a110b',
-            outfitStyle: 'adventurer',
-            outfitColor: '#2563eb',
-            accessory: 'glasses',
-            companionPet: 'baby-dragon',
-            title: 'Adventurer with Kam'
-          }
-        },
-        {
-          id: 'exp-landry',
-          name: 'Landry',
-          gender: 'boy',
-          companionGuide: 'kam',
-          ageTier: 'preschool',
-          level: 1,
-          totalStars: 3,
-          coins: 35,
-          arcadeTokens: 5,
-          isHallOfFameInducted: false,
-          timesStorylineCompleted: 0,
-          landScores: {
-            'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
-            'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-          },
-          customization: {
-            skinTone: '#ffd1a4',
-            hairStyle: 'short',
-            hairColor: '#4a2e18',
-            outfitStyle: 'adventurer',
-            outfitColor: '#10b981',
-            accessory: 'bandana',
-            companionPet: 'sea-turtle',
-            title: 'Sound Shallows Explorer'
-          }
-        },
-        {
-          id: 'exp-joleigh',
-          name: 'Joleigh',
-          gender: 'girl',
-          companionGuide: 'celine',
-          ageTier: 'early-elementary',
-          level: 1,
-          totalStars: 3,
-          coins: 35,
-          arcadeTokens: 5,
-          isHallOfFameInducted: false,
-          timesStorylineCompleted: 0,
-          landScores: {
-            'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
-            'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-            'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-          },
-          customization: {
-            skinTone: '#fcd5b5',
-            hairStyle: 'pigtails',
-            hairColor: '#d97706',
-            outfitStyle: 'wizard',
-            outfitColor: '#ec4899',
-            accessory: 'sparkles',
-            companionPet: 'baby-dragon',
-            title: 'Sound Shallows Explorer'
-          }
-        }
-      ]
-    }
-  };
-
-  saveAccounts(accounts);
-
-
 initAccountsFile();
 
-// Password parameter validator (Standard secure site standards: 8+ chars, upper, lower, number, special char)
+// Password parameter validator
 export function validatePasswordSecurity(password: string): { valid: boolean; reason?: string } {
   if (password.length < 8) return { valid: false, reason: 'Password must be at least 8 characters long.' };
   if (!/[A-Z]/.test(password)) return { valid: false, reason: 'Password must include at least 1 uppercase letter.' };
@@ -477,7 +493,6 @@ apiApp.post('/api/auth/login', rateLimiter, (req: Request, res: Response) => {
     matches = true;
   }
 
-  // Flexible seamless password verification for user accounts
   if (!matches && cleanUser === 'readingheroes') {
     const cleanPw = rawPass.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (cleanPw === 'phonics123' || rawPass.toLowerCase() === 'phonics 123') {
@@ -550,7 +565,6 @@ apiApp.post('/api/account/save', (req: Request, res: Response) => {
     return res.json({ success: true, savedAt: accounts[cleanUser].updatedAt });
   }
 
-  // Fallback creation if saving fresh account
   const salt = crypto.randomBytes(16).toString('hex');
   accounts[cleanUser] = {
     id: accountData.id || `acc-${Date.now()}`,

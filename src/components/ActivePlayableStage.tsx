@@ -1364,7 +1364,6 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
             <div className="text-sm sm:text-base font-black uppercase tracking-wider">
               {isCorrect ? '⭐ Correct! Phonics Mastered!' : '❌ Not Quite! Listen closely to the pure sound!'}
             </div>
-<<<<<<< HEAD
             {isCorrect ? (
               <p className="text-xs sm:text-sm text-slate-200 font-medium">
                 {displayedQuestion.explanation}
@@ -1374,12 +1373,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                 Try again! Listen to the sound and make your choice!
               </p>
             )}
-=======
             <p className="text-xs sm:text-sm text-slate-200 font-medium">
               {displayedQuestion.explanation}
             </p>
->>>>>>> b66e17b5c3f732139f1785a4f7c8fd2efdcce036
-
             <div className="flex gap-3 justify-center pt-1">
               {!isCorrect ? (
                 <button

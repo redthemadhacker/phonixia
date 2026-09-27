@@ -4,9 +4,9 @@ import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
 import { PHONIXIA_LANDS } from '../data/curriculumData';
 import { 
-  X, Users, Palette, BarChart3, Settings, Star, Crown, Award, 
-  UserPlus, RefreshCw, LogOut, CheckCircle2, 
-  Sparkles, Flame, Scroll, Edit3, Check, Shirt, GraduationCap, Trash2, Camera
+  X, Users, Palette, BarChart3, Settings, Star, Crown, 
+  UserPlus, RefreshCw, LogOut, Edit3, Check, Shirt, GraduationCap, 
+  Trash2, Camera, AlertTriangle, Scroll
 } from 'lucide-react';
 
 interface HomeHutModalProps {
@@ -26,6 +26,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
     updateAvatarCustomization,
     resetExplorerProgress,
     resetClassroomAndGameData,
+    deleteAccount,
     logout
   } = useGame();
 
@@ -35,6 +36,11 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
   const [newExplorerTier, setNewExplorerTier] = useState<'preschool' | 'kindergarten' | 'early-elementary' | 'late-elementary' | 'middle-high'>('preschool');
   const [isCreating, setIsCreating] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
+
+  // Delete Account Confirmation State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Explorer Name & Customization Draft State
   const [draftName, setDraftName] = useState(activeExplorer.name);
@@ -146,6 +152,28 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
       sounds.playFanfare();
       setSyncStatus('Classroom and leaderboard have been reset for the new school year!');
       setTimeout(() => setSyncStatus(null), 4000);
+    }
+  };
+
+  const handleConfirmAccountDeletion = () => {
+    if (deleteConfirmationText.trim().toLowerCase() !== 'delete') {
+      setDeleteError('Please type DELETE to confirm account removal.');
+      return;
+    }
+
+    if (deleteAccount) {
+      deleteAccount();
+    } else {
+      localStorage.removeItem('phonixia_account_v2');
+      localStorage.removeItem('phonixia_active_id_v2');
+      localStorage.removeItem('phonixia_active_user');
+      localStorage.removeItem('phonixia_parent_pin');
+      sessionStorage.removeItem('phonixia_active_session');
+      if (account.username) {
+        localStorage.removeItem(`phonixia_pw_${account.username.toLowerCase()}`);
+      }
+      sounds.playDamage();
+      window.location.reload();
     }
   };
 
@@ -272,7 +300,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 )}
               </div>
 
-              {/* Explorer Creation Form */}
               {isCreating && (
                 <form onSubmit={handleCreateSubmit} className="p-4 rounded-2xl bg-slate-950 border-2 border-amber-500/50 space-y-3.5">
                   <div className="flex items-center justify-between">
@@ -315,7 +342,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                     </div>
                   </div>
 
-                  {/* Gender Selector with Kam / Celine Auto-Binding */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                       Gender &amp; Traveling Companion
@@ -420,16 +446,14 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             </div>
           )}
 
-          {/* TAB 2: FULL AVATAR & NAME CUSTOMIZER STUDIO */}
+          {/* TAB 2: STUDIO */}
           {activeTab === 'customizer' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-              {/* Left Live Avatar + Companion Preview Card */}
               <div className="flex flex-col items-center justify-center p-5 rounded-3xl bg-slate-950 border-2 border-amber-500/40 shadow-inner space-y-4">
                 <div className="relative w-36 h-36 rounded-full bg-gradient-to-b from-amber-950/80 to-slate-950 border-4 border-amber-400 flex items-center justify-center overflow-visible shadow-[0_0_30px_rgba(245,158,11,0.3)]">
                   <AvatarRenderer customization={draftCustomization} size={115} showPet={true} />
                 </div>
                 
-                {/* Editable Explorer Name */}
                 <div className="w-full text-center space-y-1">
                   {isEditingName ? (
                     <div className="flex items-center justify-center gap-1">
@@ -469,9 +493,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 </button>
               </div>
 
-              {/* Right Customization Controls */}
               <div className="md:col-span-2 space-y-5 max-h-[60vh] overflow-y-auto pr-1">
-                {/* GENDER & COMPANION EDIT IN STUDIO */}
                 <div className="p-3.5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-2">
                   <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
                     Explorer Gender &amp; Companion
@@ -511,7 +533,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   </div>
                 </div>
 
-                {/* THEMED OUTFIT SUITS */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-1.5">
                     <Shirt className="w-3.5 h-3.5 text-amber-400" />
@@ -541,7 +562,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   </div>
                 </div>
 
-                {/* Outfit Color Palette */}
                 <div className="space-y-2">
                   <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
                     Outfit Accent Color
@@ -561,7 +581,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   </div>
                 </div>
 
-                {/* Companion Pets */}
                 <div className="space-y-2">
                   <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
                     Companion Pet
@@ -588,7 +607,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   </div>
                 </div>
 
-                {/* Hair Style */}
                 <div className="space-y-2">
                   <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
                     Hair Style
@@ -611,7 +629,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   </div>
                 </div>
 
-                {/* Hair Color */}
                 <div className="space-y-2">
                   <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
                     Hair Color
@@ -631,7 +648,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   </div>
                 </div>
 
-                {/* Skin Tone */}
                 <div className="space-y-2">
                   <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
                     Skin Tone
@@ -651,7 +667,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                   </div>
                 </div>
 
-                {/* Accessories */}
                 <div className="space-y-2">
                   <label className="text-xs font-black text-amber-400 uppercase tracking-wide block">
                     Accessory
@@ -726,7 +741,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             </div>
           )}
 
-          {/* TAB 4: HALL OF FAME & REWATCH CORONATION */}
+          {/* TAB 4: HALL OF FAME */}
           {activeTab === 'halloffame' && (
             <div className="space-y-5">
               {activeExplorer.isHallOfFameInducted ? (
@@ -793,7 +808,6 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 </div>
               )}
 
-              {/* Family Registry */}
               <div className="space-y-2 pt-2">
                 <div className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Scroll className="w-3.5 h-3.5" />
@@ -833,10 +847,10 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
             </div>
           )}
 
-          {/* TAB 5: SETTINGS & TEACHER CLASSROOM RESET */}
+          {/* TAB 5: SETTINGS & DELETE ACCOUNT */}
           {activeTab === 'settings' && (
             <div className="space-y-4">
-              {/* PARENT & TEACHER ACCESS PORTAL WITH PIN / PASSWORD (YOUTUBE KIDS STYLE) */}
+              {/* PARENT & TEACHER ACCESS PORTAL */}
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border-2 border-amber-400 shadow-xl space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -851,7 +865,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                         </span>
                       </div>
                       <p className="text-xs text-slate-300 mt-0.5 max-w-md">
-                        Enter your 4-digit PIN (or account password) to inspect kids progress, view detailed accuracy stats, or set a shorter quick PIN.
+                        Enter your 4-digit PIN (or account password) to inspect student progress, view pattern detection diagnostics, or print reports.
                       </p>
                     </div>
                   </div>
@@ -900,7 +914,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 </div>
               </div>
 
-              {/* TEACHER ONLY: CLASSROOM & LEADERBOARD RESET FOR NEW SCHOOL YEAR */}
+              {/* TEACHER ONLY: CLASSROOM & LEADERBOARD RESET */}
               {account.role === 'teacher' && (
                 <div className="p-4 rounded-2xl bg-slate-950 border-2 border-rose-500/50 space-y-2">
                   <div className="flex items-center justify-between">
@@ -948,6 +962,33 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
                 </button>
               </div>
 
+              {/* DANGER ZONE: DELETE ACCOUNT & ERASE ALL PROGRESS */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-rose-950/40 border-2 border-rose-500/60 space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs sm:text-sm font-black text-rose-300 uppercase tracking-wide flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-rose-400" />
+                      <span>Delete Account &amp; Erase All Data</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-0.5 max-w-md">
+                      Permanently delete this account, all student explorers, unlocked mini-games, and game records. This action cannot be reversed.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeleteConfirmationText('');
+                      setShowDeleteModal(true);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider shadow cursor-pointer transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Account</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Log Out */}
               <div className="pt-2">
                 <button
@@ -965,6 +1006,73 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({ onClose, onOpenCeleb
           )}
         </div>
       </div>
+
+      {/* CONFIRM DELETE ACCOUNT MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-3 bg-black/85 backdrop-blur-md animate-fade-in select-none">
+          <div className="relative w-full max-w-md bg-slate-900 border-3 border-rose-500 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                  <AlertTriangle className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-rose-300 uppercase tracking-wide">
+                    Permanent Account Deletion
+                  </h3>
+                  <p className="text-[11px] text-slate-400">Irreversible Action</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-slate-400 hover:text-white text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Are you sure you want to permanently erase <b>@{account.username}</b>? All explorers, collected stars, custom avatars, and reading progress will be permanently lost.
+            </p>
+
+            {deleteError && (
+              <div className="p-2.5 rounded-xl bg-rose-950 border border-rose-400 text-rose-200 text-xs font-bold text-center">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-slate-300 block">
+                Type <span className="text-rose-400 font-mono font-black">DELETE</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmationText}
+                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                placeholder="DELETE"
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-rose-500/50 text-white font-mono text-center tracking-widest text-sm focus:outline-none focus:border-rose-400"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAccountDeletion}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider cursor-pointer shadow active:scale-95"
+              >
+                Permanently Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

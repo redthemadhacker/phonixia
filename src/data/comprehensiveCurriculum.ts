@@ -10,10 +10,8 @@ export interface StageChallenge {
   choices: string[];
   correct: string;
   explanation: string;
-  // Specifically for Builders Guild: 8 letter choices to spell target word sequentially
   builderLetters?: string[];
   builderTarget?: string;
-  // Specifically for Whispering Peaks: Dual-sound alpine snowboard slalom
   whisperingParts?: {
     targetWord: string;
     part1: string;
@@ -724,7 +722,7 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
 };
 
 // -------------------------------------------------------------
-// LAND 2: BUILDERS GUILD (1st - 2nd Grade)
+// LAND 2: BUILDERS GUILD WORDS BANK
 // -------------------------------------------------------------
 const BUILDERS_WORDS_BANK: { word: string; category: string; soundCue: string; distractors: string[] }[] = [
   { word: 'BED', category: 'CVC Foundation', soundCue: 'b - eh - d', distractors: ['M', 'T', 'S', 'P', 'A'] },
@@ -788,7 +786,6 @@ const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
   const targetLetters = item.word.toUpperCase().split('');
   const uniqueTargetLetters = Array.from(new Set(targetLetters));
 
-  // 100% Guaranteed inclusion of all target letters
   const pool = [...uniqueTargetLetters];
 
   for (const d of item.distractors) {
@@ -807,7 +804,6 @@ const getBuilderGuildChallenge = (stageNum: number): StageChallenge => {
     }
   }
 
-  // Ensure every required letter exists in the final choices
   for (const letter of uniqueTargetLetters) {
     if (!pool.includes(letter)) {
       pool.unshift(letter);
@@ -2150,63 +2146,146 @@ const LEXICON_EMPIRE_STAGES: Record<number, StageChallenge[]> = {
 };
 
 // -------------------------------------------------------------
-// UNIFIED GETTER: Returns an accurate, verified challenge
+// UNIFIED GETTER: Returns difficulty-calibrated challenges
 // -------------------------------------------------------------
-export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: number): StageChallenge => {
+export const getComprehensiveStageChallenge = (
+  landId: LandId,
+  stageNumber: number,
+  ageTier: string = 'early-elementary'
+): StageChallenge => {
   const normalizedStage = Math.max(1, Math.min(50, stageNumber));
+  const isPreschool = ageTier === 'preschool';
 
+  // =========================================================
+  // PRESCHOOL / SIMPLIFIED RETUNING ACROSS ALL 5 LANDS
+  // =========================================================
+  if (isPreschool) {
+    if (landId === 'sound-shallows') {
+      const list = SOUND_SHALLOWS_STAGES[normalizedStage];
+      if (list && list.length > 0) {
+        return list[Math.floor(Math.random() * list.length)];
+      }
+      const item = EXPANDED_CVC_BANK[(normalizedStage - 1) % EXPANDED_CVC_BANK.length];
+      const choices = buildRandomDistractors(item.word, EXPANDED_CVC_BANK.map(w => w.word), 4);
+      return {
+        stageNumber: normalizedStage,
+        skillTitle: `CVC Word Blending: ${item.word}`,
+        instruction: `Listen to the sounds: ${item.soundCue}. Spell the word!`,
+        spokenPrompt: `Listen: ${item.soundCue}. Tap ${item.word}!`,
+        targetSound: item.word,
+        soundCue: item.soundCue,
+        choices,
+        correct: item.word,
+        explanation: `${item.soundCue} blends smoothly into ${item.word}!`
+      };
+    }
+
+    if (landId === 'builders-guild') {
+      return getBuilderGuildChallenge(normalizedStage);
+    }
+
+    if (landId === 'tricky-trails') {
+      if (normalizedStage <= 25) {
+        const item = EXPANDED_MAGIC_E_BANK[(normalizedStage - 1) % EXPANDED_MAGIC_E_BANK.length];
+        const allMagicWords = EXPANDED_MAGIC_E_BANK.map(m => m.magic);
+        const choices = buildRandomDistractors(item.magic, [item.base, ...allMagicWords], 4);
+        return {
+          stageNumber: normalizedStage,
+          skillTitle: `Magic Silent E: ${item.base} to ${item.magic}`,
+          instruction: `Add magic silent E to ${item.base}. What long vowel word does it build?`,
+          spokenPrompt: `Add magic silent E to ${item.base}. Pick the word ${item.magic}!`,
+          targetSound: `${item.base} + E = ?`,
+          soundCue: item.cue,
+          choices,
+          correct: item.magic,
+          explanation: `Magic silent E makes the vowel say its name in ${item.magic}!`
+        };
+      } else {
+        const earlySightWords = [
+          'SEE', 'LIKE', 'CAN', 'YOU', 'PLAY', 'COME', 'LOOK', 'MY', 'WE', 'GO',
+          'SAID', 'THEY', 'WHERE', 'FRIEND', 'WATER', 'BLUE', 'TWO', 'ONE', 'HAVE', 'LITTLE'
+        ];
+        const targetWord = earlySightWords[(normalizedStage - 26) % earlySightWords.length];
+        const choices = buildRandomDistractors(targetWord, earlySightWords, 4);
+        return {
+          stageNumber: normalizedStage,
+          skillTitle: `Jungle Path Word: ${targetWord}`,
+          instruction: `Leap across the vine! Spot the sight word: ${targetWord}!`,
+          spokenPrompt: `Spot the sight word: ${targetWord}!`,
+          targetSound: targetWord,
+          soundCue: targetWord,
+          choices,
+          correct: targetWord,
+          explanation: `Awesome job! "${targetWord}" is a helpful sight word!`
+        };
+      }
+    }
+
+    if (landId === 'whispering-peaks') {
+      const item = EXPANDED_PRESCHOOL_SLALOM_BANK[(normalizedStage - 1) % EXPANDED_PRESCHOOL_SLALOM_BANK.length];
+      return {
+        stageNumber: normalizedStage,
+        skillTitle: `Alpine Slalom: ${item.word}`,
+        instruction: `Carve downhill through both parts that make ${item.word}!`,
+        spokenPrompt: `Carve downhill through both sound parts for ${item.word}!`,
+        targetSound: item.word,
+        soundCue: item.cue,
+        choices: item.choices1,
+        correct: item.part1,
+        explanation: `Great job! ${item.word} decodes into ${item.part1} and ${item.part2}!`,
+        whisperingParts: {
+          targetWord: item.word,
+          part1: item.part1,
+          part2: item.part2,
+          choices1: item.choices1,
+          choices2: item.choices2
+        }
+      };
+    }
+
+    if (landId === 'lexicon-empire') {
+      const bossWordList = [
+        ...EXPANDED_CVC_BANK.slice(0, 30),
+        ...EXPANDED_EARLY_BLENDS_BANK,
+        ...EXPANDED_MAGIC_E_BANK.map(m => ({ word: m.magic, family: 'Magic E', soundCue: m.cue }))
+      ];
+      const item = bossWordList[(normalizedStage - 1) % bossWordList.length];
+      const choices = buildRandomDistractors(item.word, bossWordList.map(w => w.word), 4);
+      return {
+        stageNumber: normalizedStage,
+        skillTitle: `Guardian Trial: ${item.word}`,
+        instruction: `Fire chariot laser at the word that sounds like: ${item.soundCue}!`,
+        spokenPrompt: `Aim your laser at: ${item.word}!`,
+        targetSound: item.word,
+        soundCue: item.soundCue,
+        choices,
+        correct: item.word,
+        explanation: `Direct hit! ${item.word} deals critical damage!`
+      };
+    }
+  }
+
+  // =========================================================
+  // STANDARD LEVEL PROGRESSION (Elementary / Advanced)
+  // =========================================================
   if (landId === 'sound-shallows') {
     const list = SOUND_SHALLOWS_STAGES[normalizedStage];
     if (list && list.length > 0) {
-      const idx = Math.floor(Math.random() * list.length);
-      return list[idx];
+      return list[Math.floor(Math.random() * list.length)];
     }
-    if (normalizedStage <= 15) {
-      const fallbackLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P'];
-      const targetL = fallbackLetters[(normalizedStage - 1) % fallbackLetters.length];
-      const dist = fallbackLetters.filter(l => l !== targetL).sort(() => Math.random() - 0.5).slice(0, 3);
-      return {
-        stageNumber: normalizedStage,
-        skillTitle: `Pure Phoneme Sound: /${targetL.toLowerCase()}/`,
-        instruction: `Dive down to the seafloor! Which letter makes the /${targetL.toLowerCase()}/ sound?`,
-        spokenPrompt: `Listen carefully! Which letter makes the sound, ${targetL.toLowerCase()}?`,
-        targetSound: targetL,
-        soundCue: `${targetL.toLowerCase()}`,
-        choices: [targetL, ...dist].sort(() => Math.random() - 0.5),
-        correct: targetL,
-        explanation: `Letter ${targetL} makes the pure sound /${targetL.toLowerCase()}/!`
-      };
-    } else if (normalizedStage <= 25) {
-      const blends = ['AT', 'IN', 'ON', 'UP', 'IT', 'AM', 'AN', 'IF', 'US', 'AS'];
-      const targetB = blends[(normalizedStage - 16) % blends.length];
-      const dist = blends.filter(b => b !== targetB).sort(() => Math.random() - 0.5).slice(0, 3);
-      return {
-        stageNumber: normalizedStage,
-        skillTitle: `2-Letter Blend: ${targetB}`,
-        instruction: 'Blend the 2 pure sounds! What word do they form?',
-        spokenPrompt: `Blend the sounds to spell: ${targetB}!`,
-        targetSound: targetB,
-        soundCue: targetB.toLowerCase().split('').join(' - '),
-        choices: [targetB, ...dist].sort(() => Math.random() - 0.5),
-        correct: targetB,
-        explanation: `Those pure sounds blend cleanly into the word ${targetB}!`
-      };
-    } else {
-      const cvcList = ['CAT', 'BED', 'SUN', 'DOG', 'FOX', 'PIG', 'CUP', 'BUG', 'HAT', 'FAN', 'MAP', 'NET', 'PIN', 'TOP', 'BAT', 'RUN', 'BOX', 'HEN', 'WEB', 'DIG', 'MUG', 'RED', 'ZIP', 'BUS', 'SIT'];
-      const targetC = cvcList[(normalizedStage - 26) % cvcList.length];
-      const dist = cvcList.filter(c => c !== targetC).sort(() => Math.random() - 0.5).slice(0, 3);
-      return {
-        stageNumber: normalizedStage,
-        skillTitle: `CVC Word Blending: ${targetC}`,
-        instruction: `Listen to the sounds: ${targetC.toLowerCase().split('').join(' - ')}. Spell the word!`,
-        spokenPrompt: `Listen to the pure sounds: ${targetC.toLowerCase().split('').join(' - ')}. Spell ${targetC}!`,
-        targetSound: targetC,
-        soundCue: targetC.toLowerCase().split('').join(' - '),
-        choices: [targetC, ...dist].sort(() => Math.random() - 0.5),
-        correct: targetC,
-        explanation: `${targetC.toLowerCase().split('').join(' - ')} blends smoothly into ${targetC}!`
-      };
-    }
+    const item = EXPANDED_CVC_BANK[(normalizedStage - 1) % EXPANDED_CVC_BANK.length];
+    const choices = buildRandomDistractors(item.word, EXPANDED_CVC_BANK.map(w => w.word), 4);
+    return {
+      stageNumber: normalizedStage,
+      skillTitle: `CVC Word Blending: ${item.word}`,
+      instruction: `Listen to the sounds: ${item.soundCue}. Spell the word!`,
+      spokenPrompt: `Listen to the pure sounds: ${item.soundCue}. Spell ${item.word}!`,
+      targetSound: item.word,
+      soundCue: item.soundCue,
+      choices,
+      correct: item.word,
+      explanation: `${item.soundCue} blends smoothly into ${item.word}!`
+    };
   }
 
   if (landId === 'builders-guild') {
@@ -2216,8 +2295,7 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
   if (landId === 'tricky-trails') {
     const list = TRICKY_TRAILS_STAGES[normalizedStage];
     if (list && list.length > 0) {
-      const idx = Math.floor(Math.random() * list.length);
-      return list[idx];
+      return list[Math.floor(Math.random() * list.length)];
     }
     const sights = ['SAID', 'THEY', 'COULD', 'WOULD', 'SHOULD', 'WHERE', 'WERE', 'FRIEND', 'LAUGH', 'PEOPLE', 'WATER', 'ENOUGH', 'THROUGH', 'THOUGHT', 'BEAUTIFUL'];
     const s = sights[(normalizedStage - 1) % sights.length];
@@ -2236,87 +2314,21 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
   }
 
   if (landId === 'whispering-peaks') {
+    const list = WHISPERING_PEAKS_STAGES[normalizedStage];
+    if (list && list.length > 0) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
     const peaksDualList = [
-      {
-        word: 'BLIZZARD',
-        part1: 'BL',
-        part2: 'ARD',
-        choices1: ['BL', 'CL', 'FL', 'GL'],
-        choices2: ['ARD', 'ORD', 'ERD', 'URD'],
-        cue: 'b - l - ih - z - ar - d'
-      },
-      {
-        word: 'WINTER',
-        part1: 'IN',
-        part2: 'ER',
-        choices1: ['IN', 'AN', 'ON', 'UN'],
-        choices2: ['ER', 'AR', 'OR', 'UR'],
-        cue: 'w - in - t - er'
-      },
-      {
-        word: 'THUNDER',
-        part1: 'UN',
-        part2: 'ER',
-        choices1: ['UN', 'AN', 'EN', 'IN'],
-        choices2: ['ER', 'OR', 'AR', 'UR'],
-        cue: 'th - un - d - er'
-      },
-      {
-        word: 'GLACIER',
-        part1: 'GL',
-        part2: 'ER',
-        choices1: ['GL', 'CL', 'BL', 'FL'],
-        choices2: ['ER', 'AR', 'OR', 'UR'],
-        cue: 'g - l - ay - sh - er'
-      },
-      {
-        word: 'HARBOR',
-        part1: 'AR',
-        part2: 'OR',
-        choices1: ['AR', 'ER', 'IR', 'UR'],
-        choices2: ['OR', 'AR', 'ER', 'UR'],
-        cue: 'h - ar - b - or'
-      },
-      {
-        word: 'FREEZING',
-        part1: 'EE',
-        part2: 'ING',
-        choices1: ['EE', 'EA', 'AI', 'OA'],
-        choices2: ['ING', 'ED', 'LY', 'ER'],
-        cue: 'f - r - ee - z - ing'
-      },
-      {
-        word: 'SNOWMAN',
-        part1: 'OW',
-        part2: 'AN',
-        choices1: ['OW', 'OA', 'OU', 'OO'],
-        choices2: ['AN', 'EN', 'IN', 'ON'],
-        cue: 's - n - ow - m - an'
-      },
-      {
-        word: 'MOUNTAIN',
-        part1: 'OU',
-        part2: 'AIN',
-        choices1: ['OU', 'OW', 'OI', 'OY'],
-        choices2: ['AIN', 'EAM', 'OOT', 'AIL'],
-        cue: 'm - ou - n - t - ain'
-      },
-      {
-        word: 'STARLIGHT',
-        part1: 'AR',
-        part2: 'IGH',
-        choices1: ['AR', 'OR', 'ER', 'UR'],
-        choices2: ['IGH', 'EE', 'AY', 'OW'],
-        cue: 's - t - ar - l - igh - t'
-      },
-      {
-        word: 'FORTRESS',
-        part1: 'OR',
-        part2: 'ESS',
-        choices1: ['OR', 'AR', 'ER', 'UR'],
-        choices2: ['ESS', 'ABLE', 'FUL', 'LESS'],
-        cue: 'f - or - t - r - ess'
-      }
+      { word: 'BLIZZARD', part1: 'BL', part2: 'ARD', choices1: ['BL', 'CL', 'FL', 'GL'], choices2: ['ARD', 'ORD', 'ERD', 'URD'], cue: 'b - l - ih - z - ar - d' },
+      { word: 'WINTER', part1: 'IN', part2: 'ER', choices1: ['IN', 'AN', 'ON', 'UN'], choices2: ['ER', 'AR', 'OR', 'UR'], cue: 'w - in - t - er' },
+      { word: 'THUNDER', part1: 'UN', part2: 'ER', choices1: ['UN', 'AN', 'EN', 'IN'], choices2: ['ER', 'OR', 'AR', 'UR'], cue: 'th - un - d - er' },
+      { word: 'GLACIER', part1: 'GL', part2: 'ER', choices1: ['GL', 'CL', 'BL', 'FL'], choices2: ['ER', 'AR', 'OR', 'UR'], cue: 'g - l - ay - sh - er' },
+      { word: 'HARBOR', part1: 'AR', part2: 'OR', choices1: ['AR', 'ER', 'IR', 'UR'], choices2: ['OR', 'AR', 'ER', 'UR'], cue: 'h - ar - b - or' },
+      { word: 'FREEZING', part1: 'EE', part2: 'ING', choices1: ['EE', 'EA', 'AI', 'OA'], choices2: ['ING', 'ED', 'LY', 'ER'], cue: 'f - r - ee - z - ing' },
+      { word: 'SNOWMAN', part1: 'OW', part2: 'AN', choices1: ['OW', 'OA', 'OU', 'OO'], choices2: ['AN', 'EN', 'IN', 'ON'], cue: 's - n - ow - m - an' },
+      { word: 'MOUNTAIN', part1: 'OU', part2: 'AIN', choices1: ['OU', 'OW', 'OI', 'OY'], choices2: ['AIN', 'EAM', 'OOT', 'AIL'], cue: 'm - ou - n - t - ain' },
+      { word: 'STARLIGHT', part1: 'AR', part2: 'IGH', choices1: ['AR', 'OR', 'ER', 'UR'], choices2: ['IGH', 'EE', 'AY', 'OW'], cue: 's - t - ar - l - igh - t' },
+      { word: 'FORTRESS', part1: 'OR', part2: 'ESS', choices1: ['OR', 'AR', 'ER', 'UR'], choices2: ['ESS', 'ABLE', 'FUL', 'LESS'], cue: 'f - or - t - r - ess' }
     ];
     const item = peaksDualList[(normalizedStage - 1) % peaksDualList.length];
     return {
@@ -2339,12 +2351,12 @@ export const getComprehensiveStageChallenge = (landId: LandId, stageNumber: numb
     };
   }
 
-  // Lexicon Empire
+  // Lexicon Empire standard
   const list = LEXICON_EMPIRE_STAGES[normalizedStage];
   if (list && list.length > 0) {
-    const idx = Math.floor(Math.random() * list.length);
-    return list[idx];
+    return list[Math.floor(Math.random() * list.length)];
   }
+
   const roots = [
     { root: 'CHRON', meaning: 'Time', ex: 'Chronometer' },
     { root: 'BIO', meaning: 'Life', ex: 'Biology' },

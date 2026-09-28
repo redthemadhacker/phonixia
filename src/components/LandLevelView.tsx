@@ -82,6 +82,27 @@ const LAND_STATIONS: Record<LandId, StationNode[]> = {
     { stationIndex: 4, name: 'Affix Foundry', skillTitle: 'Prefixes & Suffixes', x: 32, y: 72, icon: '⚖️' },
     { stationIndex: 5, name: 'Golden Acropolis', skillTitle: 'Grand Etymology Mastery', x: 72, y: 66, icon: '👑' },
   ],
+  'phonixia-academy': [
+    { stationIndex: 1, name: 'Hall of Linguistics', skillTitle: 'Phonetics & IPA', x: 20, y: 30, icon: '🏛️' },
+    { stationIndex: 2, name: 'Colloquium of Storycraft', skillTitle: 'Narrative Architecture', x: 45, y: 25, icon: '📖' },
+    { stationIndex: 3, name: 'Chamber of Rhetoric', skillTitle: 'Ethos, Pathos & Logos', x: 76, y: 32, icon: '⚖️' },
+    { stationIndex: 4, name: 'Grammar Arcanum', skillTitle: 'Syntax Tree Parsing', x: 32, y: 70, icon: '📜' },
+    { stationIndex: 5, name: 'Grand Senate', skillTitle: 'Collegiate Capstone Defense', x: 72, y: 66, icon: '🎓' },
+  ],
+  'masters-pathways': [
+    { stationIndex: 1, name: 'Clinical Lab', skillTitle: 'Diagnostic Dyslexia Assessment', x: 22, y: 32, icon: '🔬' },
+    { stationIndex: 2, name: 'Neurolinguistics Lab', skillTitle: 'Visual Word Form Area', x: 46, y: 24, icon: '🧠' },
+    { stationIndex: 3, name: 'MTSS Tier 3 Studio', skillTitle: 'Multisensory Interventions', x: 78, y: 30, icon: '📊' },
+    { stationIndex: 4, name: 'Oratory Amphitheater', skillTitle: 'Prosody & Public Dialectic', x: 34, y: 72, icon: '🎙️' },
+    { stationIndex: 5, name: 'High Council of Masters', skillTitle: 'Master Thesis Defense', x: 74, y: 68, icon: '📜' },
+  ],
+  'celestial-archives': [
+    { stationIndex: 1, name: 'Reading Rope Sanctum', skillTitle: 'Scarborough’s Reading Rope', x: 22, y: 30, icon: '🌌' },
+    { stationIndex: 2, name: 'Neuronal Recycling Vault', skillTitle: 'Dehaene Cortical Evolution', x: 48, y: 22, icon: '✨' },
+    { stationIndex: 3, name: 'Ancient Glyphs Observatory', skillTitle: 'Phoenician & PIE Decipherment', x: 78, y: 32, icon: '🗿' },
+    { stationIndex: 4, name: 'AI & Language Nexus', skillTitle: 'Transformer Semantics & LLMs', x: 30, y: 74, icon: '⚡' },
+    { stationIndex: 5, name: 'Throne of the Master', skillTitle: 'Supreme Title: MASTER OF PHONIXIA', x: 72, y: 68, icon: '👑' },
+  ],
 };
 
 const LAND_CONFIG: Record<LandId, { name: string; bg: string; color: string }> = {
@@ -90,6 +111,9 @@ const LAND_CONFIG: Record<LandId, { name: string; bg: string; color: string }> =
   'tricky-trails': { name: 'Tricky Trails', bg: trailsBg, color: '#34d399' },
   'whispering-peaks': { name: 'Whispering Peaks', bg: peaksBg, color: '#818cf8' },
   'lexicon-empire': { name: 'Lexicon Empire', bg: empireBg, color: '#f59e0b' },
+  'phonixia-academy': { name: 'Phonixia Academy', bg: empireBg, color: '#a855f7' },
+  'masters-pathways': { name: 'Master’s Pathways', bg: peaksBg, color: '#10b981' },
+  'celestial-archives': { name: 'Celestial Archives', bg: shallowsBg, color: '#eab308' },
 };
 
 interface LandTheme {
@@ -207,6 +231,63 @@ const LAND_THEMES: Record<LandId, LandTheme> = {
     jumpIconEmoji: '⚡',
     accentBadge: 'bg-rose-500/20 text-rose-300 border-rose-400/50',
     hudBg: 'border-rose-500/50'
+  },
+  'phonixia-academy': {
+    questName: 'Collegiate Lecture Hall & Colloquium',
+    questAction: 'Solve collegiate linguistic parsing trees to defend academic honors!',
+    questLore: 'Enter the grand lecture halls of the 8 Colleges. Advance scholarship, conduct research, and master high linguistics!',
+    mechanic: 'boss',
+    icon: '🏛️',
+    skyGradient: 'from-purple-950 via-slate-900 to-indigo-950',
+    groundGradient: 'from-slate-950 via-purple-950 to-indigo-900',
+    groundBorder: 'border-purple-400',
+    decor: ['📜', '🏛️', '🎓', '📚', '🖋️'],
+    blockBg: 'bg-gradient-to-b from-purple-300 via-indigo-400 to-violet-600 text-slate-950',
+    blockBorder: 'border-purple-300',
+    blockShadow: 'shadow-[0_0_20px_rgba(168,85,247,0.7)]',
+    jumpBtn: 'bg-gradient-to-r from-purple-500 via-indigo-400 to-violet-600 text-slate-950 shadow-[0_0_20px_rgba(168,85,247,0.8)] hover:from-purple-400',
+    jumpLabel: 'DEFEND THESIS',
+    jumpIconEmoji: '🎓',
+    accentBadge: 'bg-purple-500/20 text-purple-300 border-purple-400/50',
+    hudBg: 'border-purple-500/50'
+  },
+  'masters-pathways': {
+    questName: 'Master’s Clinical Practicum & Socratic Seminar',
+    questAction: 'Apply advanced diagnostic reading interventions to unlock clinical masteries!',
+    questLore: 'Conduct specialized master-level practicums in dyslexia intervention, neurolinguistics, and oratorical debate!',
+    mechanic: 'boss',
+    icon: '📜',
+    skyGradient: 'from-emerald-950 via-slate-900 to-teal-950',
+    groundGradient: 'from-slate-950 via-emerald-950 to-teal-900',
+    groundBorder: 'border-emerald-400',
+    decor: ['🔬', '🧠', '📜', '⚖️', '🌟'],
+    blockBg: 'bg-gradient-to-b from-emerald-300 via-teal-400 to-emerald-600 text-slate-950',
+    blockBorder: 'border-emerald-300',
+    blockShadow: 'shadow-[0_0_20px_rgba(16,185,129,0.7)]',
+    jumpBtn: 'bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 text-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.8)] hover:from-emerald-400',
+    jumpLabel: 'MASTER PRACTICUM',
+    jumpIconEmoji: '🔬',
+    accentBadge: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50',
+    hudBg: 'border-emerald-500/50'
+  },
+  'celestial-archives': {
+    questName: 'Doctoral Senate Defense & Master of Phonixia',
+    questAction: 'Attain the Supreme Seal of Literacy & Defend your Doctoral Dissertation!',
+    questLore: 'The pinnacle of human literacy science. Synthesize reading neuroscience, evolutionary linguistics, and earn the supreme title: MASTER OF PHONIXIA!',
+    mechanic: 'boss',
+    icon: '🌌',
+    skyGradient: 'from-amber-950 via-slate-950 to-yellow-950',
+    groundGradient: 'from-slate-950 via-amber-950 to-yellow-900',
+    groundBorder: 'border-yellow-400',
+    decor: ['🌌', '✨', '👑', '🕊️', '☀️'],
+    blockBg: 'bg-gradient-to-b from-yellow-200 via-amber-400 to-yellow-600 text-slate-950',
+    blockBorder: 'border-yellow-300',
+    blockShadow: 'shadow-[0_0_25px_rgba(234,179,8,0.8)]',
+    jumpBtn: 'bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 text-slate-950 shadow-[0_0_25px_rgba(234,179,8,0.9)] hover:from-yellow-300',
+    jumpLabel: 'CELESTIAL SEAL',
+    jumpIconEmoji: '👑',
+    accentBadge: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/50',
+    hudBg: 'border-yellow-500/50'
   }
 };
 

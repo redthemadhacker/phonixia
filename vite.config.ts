@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 import path from 'path';
 import { defineConfig } from 'vite';
-import { apiApp } from './src/server/apiApp.js'; // Ensure your server file extension matches JS/TS
+import { apiApp } from './src/server/apiApp.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

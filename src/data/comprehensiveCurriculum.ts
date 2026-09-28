@@ -1672,14 +1672,14 @@ const WHISPERING_PEAKS_STAGES: Record<number, StageChallenge[]> = {
   20: [
     {
       stageNumber: 20,
-      skillTitle: 'Bossy R: ER',
-      instruction: 'Which mountain companion uses the bossy R ending /er/ in SISTER?',
-      spokenPrompt: 'Find the family word ending in bossy E-R: sister!',
-      targetSound: 'SISTER',
+      skillTitle: 'Bossy R: ER in SISTER',
+      instruction: 'In the family word SISTER, which vowel is bossed by R?',
+      spokenPrompt: 'In the word sister, which vowel is controlled by the bossy R?',
+      targetSound: 'E',
       soundCue: 's - ih - s - t - er',
-      choices: ['SISTER', 'SILVER', 'SUNSET', 'SAILOR'],
-      correct: 'SISTER',
-      explanation: 'SISTER ends with the bossy R pattern ER!'
+      choices: ['E', 'A', 'O', 'U'],
+      correct: 'E',
+      explanation: 'In SISTER, the vowel letter E is bossed by R to make the /er/ sound!'
     }
   ],
   31: [

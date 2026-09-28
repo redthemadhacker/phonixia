@@ -263,6 +263,7 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [screenDamageFlash, setScreenDamageFlash] = useState<boolean>(false);
   const [isCharacterDying, setIsCharacterDying] = useState<boolean>(false);
+  const hasSavedThisRoundRef = useRef<boolean>(false);
 
   // Shadow King Boss Barrier (for Land 5)
   const [bossBarrierHp, setBossBarrierHp] = useState<number>(100);
@@ -294,7 +295,13 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     setSelectedAnswer(choice);
     setIsAnswered(true);
 
-    const correct = choice.trim().toLowerCase() === currentQuestion.correct.trim().toLowerCase();
+    const cleanChoice = choice.trim().toLowerCase();
+    const cleanCorrect = currentQuestion.correct.trim().toLowerCase();
+    const correct = 
+      cleanChoice === cleanCorrect ||
+      (cleanCorrect === 'e' && (cleanChoice === 'er' || cleanChoice === 'sister')) ||
+      (cleanCorrect === 'er' && (cleanChoice === 'e' || cleanChoice === 'sister')) ||
+      (cleanCorrect === 'sister' && (cleanChoice === 'e' || cleanChoice === 'er'));
     setIsCorrect(correct);
 
     if (correct) {
@@ -303,8 +310,18 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
       if (theme.mechanic === 'boss') {
         setBossBarrierHp((prev) => Math.max(0, prev - 25));
       }
+
+      // CRITICAL: Cache & Save progress immediately on win!
+      if (!hasSavedThisRoundRef.current) {
+        hasSavedThisRoundRef.current = true;
+        const currentCompleted = landProgress.completedGamesCount || 0;
+        const stageIdx = activeGameIndex || 1;
+        const nextCompleted = Math.max(currentCompleted, stageIdx);
+        const delta = nextCompleted - currentCompleted;
+        updateExplorerScore(landId, delta, earnedStars);
+        awardCurrency(15, 2);
+      }
     } else {
-      sounds.speak('Not quite! Listen closely to the sound and try again!');
       setEarnedStars((prev) => Math.max(1, prev - 1));
 
       // Getting an answer wrong restores life force to boss barrier!
@@ -322,6 +339,7 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
         if (next <= 0) {
           // Character death animation!
           setIsCharacterDying(true);
+          // Mario retro game over melody ONLY - no voice talking over death!
           sounds.playGameOver();
           setTimeout(() => {
             setIsGameOver(true);
@@ -333,28 +351,18 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
         return Math.max(0, next);
       });
     }
-  }, [currentQuestion, isAnswered, theme.mechanic]);
+  }, [currentQuestion, isAnswered, theme.mechanic, landProgress.completedGamesCount, activeGameIndex, updateExplorerScore, landId, earnedStars, awardCurrency]);
 
   handleSelectChoiceRef.current = handleSelectChoice;
 
   const handleGameOverRestart = () => {
-    restartLandProgress(landId);
+    // Keep saved stage completions cached - do not wipe progress!
     setRealmLives(3);
     setIsGameOver(false);
     setIsCharacterDying(false);
-    setActiveGameIndex(null);
-    setCurrentQuestion(null);
-    setSelectedStation(null);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
-    setIsCorrect(false);
-    setRoundCompleted(false);
-    setEarnedStars(3);
-    setBossBarrierHp(100);
-    setPlayerPos({ x: stations[0].x, y: stations[0].y + 5 });
-    playerPosRef.current = { x: stations[0].x, y: stations[0].y + 5 };
+    const resumeStage = activeGameIndex || Math.min(50, (landProgress.completedGamesCount || 0) + 1);
+    startPlayableGame(resumeStage);
     sounds.playFanfare();
-    sounds.speak(`Restarting ${config.name} from Level 1! Jump into action!`);
   };
 
   const triggerMapJump = useCallback(() => {
@@ -691,8 +699,10 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
     setRoundCompleted(true);
     sounds.playFanfare();
 
-    const wasNext = activeGameIndex === landProgress.completedGamesCount + 1;
-    updateExplorerScore(landId, wasNext ? 1 : 0, earnedStars);
+    const currentCompleted = landProgress.completedGamesCount || 0;
+    const nextCompleted = Math.max(currentCompleted, activeGameIndex);
+    const delta = nextCompleted - currentCompleted;
+    updateExplorerScore(landId, delta, earnedStars);
     awardCurrency(15, 2);
   };
 

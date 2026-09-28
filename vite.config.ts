@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 function expressApiPlugin() {
   return {
     name: 'express-api-plugin',
-    configureServer(server) {
+    configureServer(server: any) {
       server.middlewares.use(apiApp);
     },
   };

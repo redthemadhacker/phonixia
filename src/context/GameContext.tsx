@@ -53,7 +53,7 @@ interface GameContextType {
   deleteAccount: () => void;
   updateExplorerName: (id: string, newName: string) => void;
   updateExplorerGender: (id: string, gender: 'boy' | 'girl') => void;
-  updateExplorerScore: (landId: LandId, gamesCompletedDelta: number, starsDelta: number) => void;
+  updateExplorerScore: (landId: LandId, gamesCompletedDelta: number, starsDelta: number, specificCompletedCount?: number) => void;
   awardCurrency: (coinsDelta: number, tokensDelta: number) => void;
   updateAvatarCustomization: (customization: ExplorerProfile['customization']) => void;
   showHallOfFameCelebration: boolean;
@@ -216,27 +216,170 @@ const INITIAL_ACCOUNT: Account = {
   ]
 };
 
+export const PHONIXIATEST_ACCOUNT: Account = {
+  id: 'acc-phonixiatest',
+  familyName: "Cousins Test Family",
+  username: 'phonixiatest',
+  role: 'parent',
+  explorers: [
+    {
+      id: 'exp-zuri',
+      name: 'Zuri',
+      gender: 'girl',
+      age: 10,
+      companionGuide: 'celine',
+      ageTier: 'late-elementary',
+      level: 10,
+      totalStars: 30,
+      coins: 60,
+      arcadeTokens: 10,
+      isHallOfFameInducted: false,
+      timesStorylineCompleted: 0,
+      landScores: {
+        'sound-shallows': { completedGamesCount: 10, stars: 30, unlocked: true },
+        'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+      },
+      strugglingSkills: {},
+      customization: {
+        skinTone: '#8d5524',
+        hairStyle: 'braids',
+        hairColor: '#1e1b18',
+        outfitStyle: 'wizard',
+        outfitColor: '#7e22ce',
+        accessory: 'glasses',
+        companionPet: 'baby-dragon',
+        title: 'Sound Shallows Master (10/10)'
+      }
+    },
+    {
+      id: 'exp-landry',
+      name: 'Landry',
+      gender: 'girl',
+      age: 4,
+      companionGuide: 'celine',
+      ageTier: 'preschool',
+      level: 10,
+      totalStars: 30,
+      coins: 60,
+      arcadeTokens: 10,
+      isHallOfFameInducted: false,
+      timesStorylineCompleted: 0,
+      landScores: {
+        'sound-shallows': { completedGamesCount: 10, stars: 30, unlocked: true },
+        'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+      },
+      strugglingSkills: {},
+      customization: {
+        skinTone: '#ffd1a4',
+        hairStyle: 'pigtails',
+        hairColor: '#4a2e18',
+        outfitStyle: 'wizard',
+        outfitColor: '#10b981',
+        accessory: 'bandana',
+        companionPet: 'baby-dragon',
+        title: 'Sound Shallows Master (10/10)'
+      }
+    },
+    {
+      id: 'exp-joleigh',
+      name: 'Joleigh',
+      gender: 'girl',
+      age: 6,
+      companionGuide: 'celine',
+      ageTier: 'early-elementary',
+      level: 10,
+      totalStars: 30,
+      coins: 60,
+      arcadeTokens: 10,
+      isHallOfFameInducted: false,
+      timesStorylineCompleted: 0,
+      landScores: {
+        'sound-shallows': { completedGamesCount: 10, stars: 30, unlocked: true },
+        'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+      },
+      strugglingSkills: {},
+      customization: {
+        skinTone: '#fcd5b5',
+        hairStyle: 'pigtails',
+        hairColor: '#d97706',
+        outfitStyle: 'wizard',
+        outfitColor: '#ec4899',
+        accessory: 'sparkles',
+        companionPet: 'baby-dragon',
+        title: 'Sound Shallows Master (10/10)'
+      }
+    },
+    {
+      id: 'exp-amari',
+      name: 'Amari',
+      gender: 'girl',
+      age: '11+',
+      companionGuide: 'celine',
+      ageTier: 'middle-high',
+      level: 1,
+      totalStars: 3,
+      coins: 35,
+      arcadeTokens: 5,
+      isHallOfFameInducted: false,
+      timesStorylineCompleted: 0,
+      landScores: {
+        'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
+        'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+        'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+      },
+      strugglingSkills: {},
+      customization: {
+        skinTone: '#8d5524',
+        hairStyle: 'curls',
+        hairColor: '#1a110b',
+        outfitStyle: 'wizard',
+        outfitColor: '#2563eb',
+        accessory: 'glasses',
+        companionPet: 'baby-dragon',
+        title: 'Sound Shallows Explorer (1/10)'
+      }
+    }
+  ]
+};
+
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [account, setAccount] = useState<Account>(() => {
     try {
+      const activeUser = localStorage.getItem('phonixia_active_user') || 'phonixiatest';
       const saved = localStorage.getItem('phonixia_account_v2');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.explorers) && parsed.explorers.length > 0) {
+        if (parsed && Array.isArray(parsed.explorers) && parsed.explorers.length >= 4 && parsed.username === 'phonixiatest') {
+          return parsed;
+        }
+        if (activeUser === 'readingheroes' && parsed && Array.isArray(parsed.explorers) && parsed.explorers.length > 0) {
           return parsed;
         }
       }
+      return PHONIXIATEST_ACCOUNT;
     } catch {}
-    return INITIAL_ACCOUNT;
+    return PHONIXIATEST_ACCOUNT;
   });
 
   const [activeExplorerId, setActiveExplorerId] = useState<string>(() => {
-    return (
-      localStorage.getItem('phonixia_active_id_v2') ||
-      (account.explorers && account.explorers[0] ? account.explorers[0].id : FALLBACK_EXPLORER.id)
-    );
+    const cachedId = localStorage.getItem('phonixia_active_id_v2');
+    if (cachedId && account.explorers?.some((e) => e.id === cachedId)) {
+      return cachedId;
+    }
+    return (account.explorers && account.explorers[0]) ? account.explorers[0].id : 'exp-zuri';
   });
 
   const [showHallOfFameCelebration, setShowHallOfFameCelebration] = useState(false);
@@ -244,7 +387,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Helper to sync account to cloud and local storage
   const syncAccountData = useCallback((acc: Account) => {
-    if (!acc || !acc.username) return;
+    if (!acc || !acc.username || !Array.isArray(acc.explorers) || acc.explorers.length === 0) return;
     const userKey = acc.username.toLowerCase();
 
     try {
@@ -266,7 +409,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initial cloud fetch on startup
   useEffect(() => {
-    const savedUser = localStorage.getItem('phonixia_active_user') || 'readingheroes';
+    const savedUser = localStorage.getItem('phonixia_active_user') || 'phonixiatest';
     
     // First check local cache
     let localAccount: Account | null = null;
@@ -281,18 +424,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return res.json();
       })
       .then((data) => {
-        if (data && data.account) {
-          // Only overwrite local state if remote has higher total stars or more completed games
-          const getSumStars = (acc: Account) =>
-            acc?.explorers?.reduce((sum, e) => sum + (e.totalStars || 0), 0) || 0;
+        if (data && data.account && Array.isArray(data.account.explorers) && data.account.explorers.length > 0) {
+          // Verify matching account
+          if (data.account.username?.toLowerCase() !== savedUser.toLowerCase()) {
+            return;
+          }
 
-          const remoteStars = getSumStars(data.account);
-          const localStars = localAccount ? getSumStars(localAccount) : 0;
+          const getAccountScore = (acc: Account | null) => {
+            if (!acc || !acc.explorers) return 0;
+            return acc.explorers.reduce((sum, e) => {
+              const games = Object.values(e.landScores || {}).reduce(
+                (gSum: number, l: any) => gSum + (l?.completedGamesCount || 0),
+                0
+              );
+              return sum + (e.totalStars || 0) * 100 + games;
+            }, 0);
+          };
 
-          if (remoteStars >= localStars) {
+          const remoteScore = getAccountScore(data.account);
+          const localScore = (localAccount && localAccount.username?.toLowerCase() === savedUser.toLowerCase())
+            ? getAccountScore(localAccount)
+            : 0;
+
+          if (remoteScore > localScore) {
             setAccount(data.account);
             localStorage.setItem('phonixia_account_v2', JSON.stringify(data.account));
-          } else if (localAccount) {
+          } else if (localAccount && localScore > remoteScore) {
             // Push local account up to cloud since local is ahead!
             syncAccountData(localAccount);
           }
@@ -676,13 +833,28 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.location.reload();
   }, [account]);
 
-  const updateExplorerScore = (landId: LandId, gamesCompletedDelta: number, starsDelta: number) => {
+  const updateExplorerScore = (
+    landId: LandId, 
+    gamesCompletedDelta: number, 
+    starsDelta: number, 
+    specificCompletedCount?: number
+  ) => {
     setAccount((prev) => {
+      const hasActive = (prev.explorers || []).some((e) => e.id === activeExplorerId);
+      const targetExpId = hasActive ? activeExplorerId : (prev.explorers?.[0]?.id || '');
+
       const updatedExplorers = (prev.explorers || []).map((exp) => {
-        if (exp.id !== activeExplorerId) return exp;
+        if (exp.id !== targetExpId) return exp;
         const currentLand = exp.landScores?.[landId] || { completedGamesCount: 0, stars: 0, unlocked: false };
-        const newCompleted = Math.min(50, currentLand.completedGamesCount + gamesCompletedDelta);
-        const newLandStars = currentLand.stars + starsDelta;
+        
+        let newCompleted = currentLand.completedGamesCount;
+        if (typeof specificCompletedCount === 'number') {
+          newCompleted = Math.min(50, Math.max(currentLand.completedGamesCount, specificCompletedCount));
+        } else {
+          newCompleted = Math.min(50, Math.max(currentLand.completedGamesCount, currentLand.completedGamesCount + gamesCompletedDelta));
+        }
+
+        const newLandStars = currentLand.stars + Math.max(0, starsDelta);
 
         const updatedLandScores = {
           ...(exp.landScores || DEFAULT_LAND_SCORES),

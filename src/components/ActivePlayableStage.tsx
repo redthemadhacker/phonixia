@@ -200,23 +200,16 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     setWhisperingNotice(null);
   }, [displayedQuestion, activeGameIndex]);
 
-  const whisperingConfig = useMemo(() => {
-    if (landId !== 'whispering-peaks') return null;
-    if (displayedQuestion.whisperingParts) return displayedQuestion.whisperingParts;
-    const target = (displayedQuestion.targetSound || displayedQuestion.correct || 'BLIZZARD').toUpperCase();
-    return {
-      targetWord: target,
-      part1: target.length > 4 ? target.slice(0, 2) : target.charAt(0),
-      part2: target.length > 4 ? target.slice(-2) : target.slice(1),
-      choices1: ['I', 'E', 'O', 'A'],
-      choices2: ['AR', 'OR', 'ER', 'UR']
-    };
-  }, [landId, displayedQuestion]);
-
   const activeWhisperingChoices = useMemo(() => {
-    if (!whisperingConfig) return displayedQuestion.choices;
-    return whisperingStep === 1 ? whisperingConfig.choices1 : whisperingConfig.choices2;
-  }, [whisperingConfig, whisperingStep, displayedQuestion.choices]);
+    const raw = displayedQuestion.choices || [];
+    const correct = (displayedQuestion.correct || '').trim();
+    if (!correct) return raw;
+    const hasCorrect = raw.some((c) => c.trim().toLowerCase() === correct.toLowerCase());
+    if (!hasCorrect) {
+      return [...raw.slice(0, 3), correct].sort(() => 0.5 - Math.random());
+    }
+    return raw;
+  }, [displayedQuestion]);
 
   const sanitizedTargetSound = useMemo(() => {
     if (!displayedQuestion) return '';
@@ -372,7 +365,15 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   }, []);
 
   const handleAnswerEvaluation = useCallback((choice: string) => {
-    const isCorrectHit = choice.trim().toLowerCase() === displayedQuestion.correct.trim().toLowerCase();
+    const cleanChoice = choice.trim().toLowerCase();
+    const cleanCorrect = (displayedQuestion.correct || '').trim().toLowerCase();
+
+    // Check answer correctness - include flexible matching for Bossy R sister questions
+    const isCorrectHit = 
+      cleanChoice === cleanCorrect ||
+      (cleanCorrect === 'e' && (cleanChoice === 'er' || cleanChoice === 'sister')) ||
+      (cleanCorrect === 'er' && (cleanChoice === 'e' || cleanChoice === 'sister')) ||
+      (cleanCorrect === 'sister' && (cleanChoice === 'e' || cleanChoice === 'er'));
 
     if (!isCorrectHit) {
       const nextMiss = currentQuestionMissCount + 1;
@@ -382,8 +383,8 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
       }
 
       if (realmLives <= 1) {
+        // Mario 8-bit game over melody ONLY - no voice talking over death!
         sounds.playGameOver();
-        sounds.speak('You ran out of hearts! Let us restart this stage from the beginning!');
       } else {
         sounds.playDamage();
       }
@@ -408,8 +409,9 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
       setBossHp(nextHp);
 
       if (nextHp > 0) {
+        // Snappy sound effect - no talking announcements of depleted life force!
         sounds.playSuccess();
-        sounds.speak(`Direct hit! ${bossDef.bossName}'s life source down to ${nextHp} percent! Keep going!`);
+        sounds.playLaser();
         const nextCount = bossSubCount + 1;
         setBossSubCount(nextCount);
         const nextChallenge = getComprehensiveStageChallenge(landId, (activeGameIndex * 11 + nextCount) % 50 || 1);
@@ -432,8 +434,8 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
       setBossHp((prev) => Math.min(100, prev + 15));
       setBossDamageFlash(true);
       setTimeout(() => setBossDamageFlash(false), 300);
+      // Snappy sound effect - no talking announcements of restored life force!
       sounds.playDamage();
-      sounds.speak(`Miss! The ${bossDef.bossName} absorbs dark energy and restored 15% life force! Try again!`);
       onSelectChoice(choice);
     }
   }, [displayedQuestion, isBossStage, bossHp, bossDef, bossSubCount, landId, activeGameIndex, isFinalBoss, onSelectChoice, currentQuestionMissCount, recordSkillMiss, recommendedMinigame, realmLives]);
@@ -542,7 +544,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     }, 200);
   }, [isAnswered, vinePlayerState, displayedQuestion, getClosestChoiceIndex, vineX, handleAnswerEvaluation]);
 
-  // 4. Whispering Peaks (Strict Inline Row)
+  // 4. Whispering Peaks (Downhill Mountain Slalom Slide)
   const triggerSnowboardDownhillSlide = useCallback((choiceOverride?: string) => {
     if (isAnswered || isSnowboardSliding) return;
 
@@ -561,7 +563,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     sounds.playJump();
     sounds.playWhoosh();
 
-    const carveAngle = targetX > snowboardX ? 22 : -22;
+    const carveAngle = targetX > snowboardX ? 24 : -24;
     setSnowboardCarve(carveAngle);
     setSnowboardX(targetX);
 
@@ -573,48 +575,10 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         setSnowboardCarve(0);
         setIsSnowboardSliding(false);
         setActiveGateIdx(null);
-
-        if (whisperingConfig) {
-          if (whisperingStep === 1) {
-            if (targetChoice.trim().toUpperCase() === whisperingConfig.part1.trim().toUpperCase()) {
-              sounds.playSuccess();
-              setWhisperingPart1(targetChoice);
-              setWhisperingStep(2);
-              setWhisperingNotice(`❄️ Gate 1 Hit: [${targetChoice}]! Now carve through Sound 2!`);
-              setTimeout(() => setWhisperingNotice(null), 3000);
-            } else {
-              sounds.playError();
-              const nextMiss = currentQuestionMissCount + 1;
-              setCurrentQuestionMissCount(nextMiss);
-              if (recordSkillMiss) {
-                recordSkillMiss(whisperingConfig.part1);
-              }
-              setWhisperingNotice(`❄️ Wipeout! Try carving the first sound again: [${whisperingConfig.part1}]!`);
-              setTimeout(() => setWhisperingNotice(null), 2500);
-              handleAnswerEvaluation('__WRONG__');
-            }
-          } else {
-            if (targetChoice.trim().toUpperCase() === whisperingConfig.part2.trim().toUpperCase()) {
-              sounds.playSuccess();
-              handleAnswerEvaluation(targetChoice);
-            } else {
-              sounds.playError();
-              const nextMiss = currentQuestionMissCount + 1;
-              setCurrentQuestionMissCount(nextMiss);
-              if (recordSkillMiss) {
-                recordSkillMiss(whisperingConfig.part2);
-              }
-              setWhisperingNotice(`❄️ Wipeout on Gate 2! Steer into sound: [${whisperingConfig.part2}]!`);
-              setTimeout(() => setWhisperingNotice(null), 2500);
-              handleAnswerEvaluation('__WRONG__');
-            }
-          }
-        } else {
-          handleAnswerEvaluation(targetChoice);
-        }
+        handleAnswerEvaluation(targetChoice);
       }, 350);
-    }, 400);
-  }, [isAnswered, isSnowboardSliding, activeWhisperingChoices, getClosestChoiceIndex, snowboardX, whisperingConfig, whisperingStep, handleAnswerEvaluation, currentQuestionMissCount, recordSkillMiss]);
+    }, 350);
+  }, [isAnswered, isSnowboardSliding, activeWhisperingChoices, getClosestChoiceIndex, snowboardX, handleAnswerEvaluation]);
 
   // 5. Lexicon Empire
   const triggerChariotLaser = useCallback((choiceOverride?: string) => {
@@ -1027,28 +991,30 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           </div>
         )}
 
-        {/* 4. WHISPERING PEAKS: STRICT HORIZONTAL ROW (SIDE-BY-SIDE) */}
+        {/* 4. WHISPERING PEAKS: DOWNHILL MOUNTAIN SLALOM SLIDE */}
         {landId === 'whispering-peaks' && (
-          <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-indigo-950 via-slate-900 to-sky-950 rounded-2xl border-2 border-indigo-400/60 overflow-hidden select-none flex flex-col justify-between p-2.5 sm:p-3">
+          <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-slate-900 via-indigo-950 to-sky-950 rounded-2xl border-2 border-indigo-400/60 overflow-hidden select-none flex flex-col justify-between p-2.5 sm:p-3">
             <div className="w-full flex items-center justify-between text-[11px] font-mono font-bold text-cyan-200 border-b border-indigo-500/40 pb-1 z-20">
               <span className="flex items-center gap-1 truncate">
                 <span>🏔️</span>
-                <span>Alpine Downhill Slalom</span>
+                <span>Alpine Downhill Mountain Slide</span>
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-indigo-900 border border-cyan-400/50 text-cyan-300 text-[10px] shrink-0">
-                {whisperingStep === 1 ? 'Gate 1/2' : 'Gate 2/2'}
+              <span className="px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-400/50 text-cyan-300 text-[10px] shrink-0 flex items-center gap-1">
+                <span>🏂</span>
+                <span>Mountain Slope</span>
               </span>
             </div>
 
-            {whisperingNotice && (
-              <div className="absolute top-8 inset-x-0 flex justify-center pointer-events-none z-30 animate-bounce">
-                <div className="px-3 py-1 rounded-xl bg-indigo-950/95 border border-cyan-300 text-cyan-100 text-[10px] sm:text-xs font-black shadow-xl">
-                  {whisperingNotice}
-                </div>
-              </div>
-            )}
+            {/* Alpine Mountain Slope Background Decors */}
+            <div className="absolute inset-0 pointer-events-none opacity-25 z-0 flex items-end justify-between px-4 pb-2">
+              <span className="text-3xl filter drop-shadow">🌲</span>
+              <span className="text-4xl filter drop-shadow">🏔️</span>
+              <span className="text-3xl filter drop-shadow">🌲</span>
+              <span className="text-4xl filter drop-shadow">🏔️</span>
+              <span className="text-3xl filter drop-shadow">🌲</span>
+            </div>
 
-            {/* STRICT SINGLE HORIZONTAL ROW: Side-by-side like Builders Guild */}
+            {/* Downhill Mountain Slalom Gate Choices (Side-by-side with guaranteed correct answer available) */}
             <div className="w-full flex flex-row flex-nowrap items-center justify-around gap-1.5 sm:gap-3 z-20 my-auto px-1 overflow-x-auto">
               {activeWhisperingChoices.map((choice, idx) => {
                 const isTarget = activeGateIdx === idx;
@@ -1066,7 +1032,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                     <span className="font-black text-xs sm:text-base tracking-wide truncate max-w-full text-center">
                       {choice}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] text-cyan-300 font-mono mt-0.5 hidden xs:inline">Carve ➔</span>
+                    <span className="text-[8px] sm:text-[9px] text-cyan-300 font-mono mt-0.5 hidden xs:inline">Slide ➔</span>
                   </div>
                 );
               })}
@@ -1086,7 +1052,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                 SNOWBOARD
               </div>
               {snowboardSpray && (
-                <div className="text-[9px] text-cyan-200 animate-bounce">❄️ ✨ ❄️</div>
+                <div className="text-[9px] text-cyan-200 animate-bounce">❄️ 💨 ❄️</div>
               )}
             </div>
           </div>
@@ -1216,8 +1182,8 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                 <button
                   onClick={() => {
                     sounds.stopSpeech();
+                    onFinishRound();
                     if (onNextLevel) onNextLevel();
-                    else onFinishRound();
                   }}
                   className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg cursor-pointer border border-white hover:scale-105 active:scale-95 flex items-center gap-1.5"
                 >
@@ -1340,8 +1306,8 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                   <button
                     onClick={() => {
                       sounds.stopSpeech();
+                      onFinishRound();
                       if (onNextLevel) onNextLevel();
-                      else onFinishRound();
                     }}
                     className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow flex items-center gap-1 cursor-pointer hover:scale-105"
                   >

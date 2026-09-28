@@ -4,6 +4,7 @@ import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
 import { ALL_50_MINIGAMES, MinigameDefinition } from '../data/minigamesCurriculum';
 import { CutePicturePrompt } from './CutePicturePrompt';
+import { getMinigameVisuals } from '../utils/minigameVisuals';
 import { 
   ArrowLeft, ArrowRight, Volume2, RotateCcw,
   Coins, ChevronsUp
@@ -16,7 +17,7 @@ interface ShellshoreArcadeProps {
 
 export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorld }) => {
   const { activeExplorer, awardCurrency } = useGame();
-  const companionGuide = getCompanionGuide(activeExplorer);
+  const _companionGuide = getCompanionGuide(activeExplorer);
 
   // Shellshore Arcade houses Games 26 through 50 (Early Middle through Early High School)
   const arcadeGames = useMemo(() => {
@@ -27,18 +28,19 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [streak, setStreak] = useState(0);
+  const [_streak, setStreak] = useState(0);
 
   const [hoveredNode, setHoveredNode] = useState<number | null>(null);
   const [playerCabinetNum, setPlayerCabinetNum] = useState<number>(26);
   const [jumpOffset, setJumpOffset] = useState<number>(0);
   const [isJumping, setIsJumping] = useState<boolean>(false);
-  const [isWalkingToCabinet, setIsWalkingToCabinet] = useState<boolean>(false);
+  const [_isWalkingToCabinet, setIsWalkingToCabinet] = useState<boolean>(false);
 
   // Interactive Character & Tool Animation states in Arcade Modal
   const [playerCol, setPlayerCol] = useState<number>(0);
   const [isActing, setIsActing] = useState<boolean>(false);
   const [actionEffect, setActionEffect] = useState<{ col: number; text: string; icon: string } | null>(null);
+  const [clawDropping, setClawDropping] = useState<boolean>(false);
 
   const launchCabinet = useCallback((game: MinigameDefinition) => {
     setPlayerCabinetNum(game.gameNum);
@@ -106,46 +108,52 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
     }
   }, [activeGame, isAnswered, awardCurrency]);
 
-  // Arcade Tool Action (Arcade Laser, Crystal Smasher, Target Blaster, Sonic Net)
+  const activeVisuals = useMemo(() => {
+    if (!activeGame) return null;
+    return getMinigameVisuals(activeGame);
+  }, [activeGame]);
+
+  // Arcade Tool Action (matching each game's accurate tool and mechanic)
   const executeArcadeAction = useCallback((targetCol: number) => {
-    if (!activeGame || isAnswered || isActing) return;
+    if (!activeGame || isAnswered || isActing || !activeVisuals) return;
 
     setPlayerCol(targetCol);
     setIsActing(true);
 
-    let effectText = 'ZAP!';
-    let effectIcon = '⚡';
-
-    if (activeGame.mechanicType === 'whack') {
-      effectText = 'SMASH!';
-      effectIcon = '🔨💥';
-      sounds.playJump();
-    } else if (activeGame.mechanicType === 'basket-catch') {
-      effectText = 'CAPTURED!';
-      effectIcon = '🕸️✨';
+    if (activeVisuals.mechanicCategory === 'claw') {
+      setClawDropping(true);
+      sounds.playMinecart();
+    } else if (activeVisuals.soundType === 'splash') {
+      sounds.playSplash();
+    } else if (activeVisuals.soundType === 'slingshot') {
       sounds.playWhoosh();
-    } else if (activeGame.mechanicType === 'slingshot' || activeGame.mechanicType === 'target-blast') {
-      effectText = 'BLAST!';
-      effectIcon = '⚡🎯';
+    } else if (activeVisuals.soundType === 'whack') {
+      sounds.playHammer();
+    } else if (activeVisuals.soundType === 'drum') {
+      sounds.playCollect();
+    } else if (activeVisuals.soundType === 'laser') {
       sounds.playLaser();
     } else {
-      effectText = 'LOCKED!';
-      effectIcon = '💎✨';
       sounds.playCollect();
     }
 
-    setActionEffect({ col: targetCol, text: effectText, icon: effectIcon });
+    setActionEffect({
+      col: targetCol,
+      text: activeVisuals.actionEffectText,
+      icon: activeVisuals.actionEffectIcon
+    });
 
     setTimeout(() => {
       const selectedChoice = activeGame.options[targetCol];
       handleChoice(selectedChoice);
-    }, 280);
+    }, 320);
 
     setTimeout(() => {
       setIsActing(false);
+      setClawDropping(false);
       setActionEffect(null);
-    }, 550);
-  }, [activeGame, isAnswered, isActing, handleChoice]);
+    }, 600);
+  }, [activeGame, isAnswered, isActing, activeVisuals, handleChoice]);
 
   // Keyboard navigation inside arcade modal
   useEffect(() => {
@@ -406,8 +414,38 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
             {/* Real Interactive Arcade Arena: Moving Player + Themed Action Tools */}
             <div className="relative w-full h-64 sm:h-72 bg-gradient-to-b from-purple-950 via-slate-900 to-indigo-950 rounded-2xl border-2 border-fuchsia-500/50 overflow-hidden flex flex-col justify-between p-3 select-none">
               
+              {/* Overhead Mechanical Claw Gantry (ONLY for Crane / Claw games like Game 28 & 44!) */}
+              {activeVisuals?.mechanicCategory === 'claw' && (
+                <div className="absolute top-0 inset-x-0 h-10 border-b-2 border-slate-700 bg-slate-900/90 z-25 flex items-center">
+                  <div
+                    style={{
+                      left: `${(playerCol * 25) + 12.5}%`,
+                      transform: 'translateX(-50%)',
+                      transition: 'left 0.15s cubic-bezier(0.25, 1, 0.5, 1)'
+                    }}
+                    className="absolute top-0 flex flex-col items-center"
+                  >
+                    <div className="w-10 h-3 bg-fuchsia-600 rounded-b-md border border-fuchsia-300 shadow flex items-center justify-center text-[7px] font-black text-white">
+                      CRANE
+                    </div>
+                    {/* Dropping Mechanical Cable & Steel Claw */}
+                    <div
+                      style={{
+                        height: clawDropping ? '130px' : '20px',
+                        transition: 'height 0.25s cubic-bezier(0.17, 0.67, 0.83, 0.67)'
+                      }}
+                      className="w-1 bg-cyan-300 relative flex flex-col items-center justify-end"
+                    >
+                      <span className="text-2xl filter drop-shadow -mb-3 animate-pulse">
+                        {clawDropping ? '🦾' : '🪝'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* 4 Interactive Answer Stations with Animated Targets */}
-              <div className="w-full flex items-center justify-around gap-2 z-20">
+              <div className="w-full flex items-center justify-around gap-2 z-20 mt-4">
                 {activeGame.options.map((option, idx) => {
                   const isPlayerStandingHere = playerCol === idx;
                   const isSelected = selectedOption === option;
@@ -473,7 +511,7 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                   <div className="relative">
                     <AvatarRenderer customization={activeExplorer.customization} size={46} showPet={false} />
                     
-                    {/* The Themed Arcade Tool (Arcade Blaster, Laser, Smasher) */}
+                    {/* The Themed Arcade Tool matching game */}
                     <div
                       style={{
                         transform: isActing ? 'rotate(45deg) scale(1.2)' : 'rotate(0deg)',
@@ -481,7 +519,7 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                       }}
                       className="absolute -top-1 -right-3 text-2xl filter drop-shadow"
                     >
-                      {activeGame.mechanicType === 'whack' ? '🔨' : activeGame.mechanicType === 'basket-catch' ? '🕸️' : '⚡'}
+                      {activeVisuals ? activeVisuals.toolIcon : '⚡'}
                     </div>
                   </div>
 
@@ -511,13 +549,7 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                 onClick={() => executeArcadeAction(playerCol)}
                 className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(217,70,239,0.7)] cursor-pointer active:scale-95 hover:brightness-110"
               >
-                <span>
-                  {activeGame.mechanicType === 'whack'
-                    ? '🔨 SMASH TARGET (SPACE)'
-                    : activeGame.mechanicType === 'basket-catch'
-                    ? '🕸️ CAPTURE TARGET (SPACE)'
-                    : '⚡ ARCADE BLAST (SPACE)'}
-                </span>
+                <span>{activeVisuals ? activeVisuals.actionLabel : '⚡ ARCADE ACTION (SPACE)'}</span>
               </button>
 
               <button

@@ -168,9 +168,10 @@ export function initAccountsFile() {
     };
   }
 
-  // 2. Account: phonixiatest (Amari, Landry, Joleigh, Zuri - all girls)
-  if (!accounts['phonixiatest']) {
-    const saltTest = 'a9f8e7d6c5b4a3210123456789abcdef';
+  // 2. Account: phonixiatest (Zuri age 10, Landry age 4, Joleigh age 6, Amari age 11+ - all girls)
+  // Zuri, Landry, and Joleigh have Level 1 Sound Shallows COMPLETE 10/10. Amari is on lvl 1 at 1/10.
+  if (!accounts['phonixiatest'] || !accounts['phonixiatest'].accountData?.explorers || accounts['phonixiatest'].accountData.explorers.length < 4) {
+    const saltTest = accounts['phonixiatest']?.salt || 'a9f8e7d6c5b4a3210123456789abcdef';
     accounts['phonixiatest'] = {
       id: 'acc-phonixiatest',
       username: 'phonixiatest',
@@ -184,109 +185,20 @@ export function initAccountsFile() {
         role: 'parent',
         explorers: [
           {
-            id: 'exp-amari',
-            name: 'Amari',
-            gender: 'girl',
-            companionGuide: 'celine',
-            ageTier: 'preschool',
-            level: 1,
-            totalStars: 12,
-            coins: 40,
-            arcadeTokens: 6,
-            isHallOfFameInducted: false,
-            timesStorylineCompleted: 0,
-            landScores: {
-              'sound-shallows': { completedGamesCount: 4, stars: 12, unlocked: true },
-              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-            },
-            customization: {
-              skinTone: '#8d5524',
-              hairStyle: 'curls',
-              hairColor: '#1a110b',
-              outfitStyle: 'wizard',
-              outfitColor: '#2563eb',
-              accessory: 'glasses',
-              companionPet: 'baby-dragon',
-              title: 'Adventurer with Celine'
-            }
-          },
-          {
-            id: 'exp-landry',
-            name: 'Landry',
-            gender: 'girl',
-            companionGuide: 'celine',
-            ageTier: 'preschool',
-            level: 1,
-            totalStars: 3,
-            coins: 35,
-            arcadeTokens: 5,
-            isHallOfFameInducted: false,
-            timesStorylineCompleted: 0,
-            landScores: {
-              'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
-              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-            },
-            customization: {
-              skinTone: '#ffd1a4',
-              hairStyle: 'pigtails',
-              hairColor: '#4a2e18',
-              outfitStyle: 'wizard',
-              outfitColor: '#10b981',
-              accessory: 'bandana',
-              companionPet: 'baby-dragon',
-              title: 'Sound Shallows Explorer'
-            }
-          },
-          {
-            id: 'exp-joleigh',
-            name: 'Joleigh',
-            gender: 'girl',
-            companionGuide: 'celine',
-            ageTier: 'early-elementary',
-            level: 1,
-            totalStars: 3,
-            coins: 35,
-            arcadeTokens: 5,
-            isHallOfFameInducted: false,
-            timesStorylineCompleted: 0,
-            landScores: {
-              'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
-              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-            },
-            customization: {
-              skinTone: '#fcd5b5',
-              hairStyle: 'pigtails',
-              hairColor: '#d97706',
-              outfitStyle: 'wizard',
-              outfitColor: '#ec4899',
-              accessory: 'sparkles',
-              companionPet: 'baby-dragon',
-              title: 'Sound Shallows Explorer'
-            }
-          },
-          {
             id: 'exp-zuri',
             name: 'Zuri',
             gender: 'girl',
+            age: 10,
             companionGuide: 'celine',
             ageTier: 'late-elementary',
-            level: 1,
-            totalStars: 3,
-            coins: 35,
-            arcadeTokens: 5,
+            level: 10,
+            totalStars: 30,
+            coins: 60,
+            arcadeTokens: 10,
             isHallOfFameInducted: false,
             timesStorylineCompleted: 0,
             landScores: {
-              'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
+              'sound-shallows': { completedGamesCount: 10, stars: 30, unlocked: true },
               'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
               'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
               'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
@@ -300,7 +212,100 @@ export function initAccountsFile() {
               outfitColor: '#7e22ce',
               accessory: 'glasses',
               companionPet: 'baby-dragon',
-              title: 'Sound Shallows Explorer'
+              title: 'Sound Shallows Master (10/10)'
+            }
+          },
+          {
+            id: 'exp-landry',
+            name: 'Landry',
+            gender: 'girl',
+            age: 4,
+            companionGuide: 'celine',
+            ageTier: 'preschool',
+            level: 10,
+            totalStars: 30,
+            coins: 60,
+            arcadeTokens: 10,
+            isHallOfFameInducted: false,
+            timesStorylineCompleted: 0,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 10, stars: 30, unlocked: true },
+              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+            },
+            customization: {
+              skinTone: '#ffd1a4',
+              hairStyle: 'pigtails',
+              hairColor: '#4a2e18',
+              outfitStyle: 'wizard',
+              outfitColor: '#10b981',
+              accessory: 'bandana',
+              companionPet: 'baby-dragon',
+              title: 'Sound Shallows Master (10/10)'
+            }
+          },
+          {
+            id: 'exp-joleigh',
+            name: 'Joleigh',
+            gender: 'girl',
+            age: 6,
+            companionGuide: 'celine',
+            ageTier: 'early-elementary',
+            level: 10,
+            totalStars: 30,
+            coins: 60,
+            arcadeTokens: 10,
+            isHallOfFameInducted: false,
+            timesStorylineCompleted: 0,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 10, stars: 30, unlocked: true },
+              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+            },
+            customization: {
+              skinTone: '#fcd5b5',
+              hairStyle: 'pigtails',
+              hairColor: '#d97706',
+              outfitStyle: 'wizard',
+              outfitColor: '#ec4899',
+              accessory: 'sparkles',
+              companionPet: 'baby-dragon',
+              title: 'Sound Shallows Master (10/10)'
+            }
+          },
+          {
+            id: 'exp-amari',
+            name: 'Amari',
+            gender: 'girl',
+            age: '11+',
+            companionGuide: 'celine',
+            ageTier: 'middle-high',
+            level: 1,
+            totalStars: 3,
+            coins: 35,
+            arcadeTokens: 5,
+            isHallOfFameInducted: false,
+            timesStorylineCompleted: 0,
+            landScores: {
+              'sound-shallows': { completedGamesCount: 1, stars: 3, unlocked: true },
+              'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
+              'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+            },
+            customization: {
+              skinTone: '#8d5524',
+              hairStyle: 'curls',
+              hairColor: '#1a110b',
+              outfitStyle: 'wizard',
+              outfitColor: '#2563eb',
+              accessory: 'glasses',
+              companionPet: 'baby-dragon',
+              title: 'Sound Shallows Explorer (1/10)'
             }
           }
         ]
@@ -348,9 +353,18 @@ apiApp.get('/api/tts', async (req: Request, res: Response) => {
     const cachedFile = path.join(AUDIO_CACHE_DIR, `${hash}.mp3`);
 
     if (fs.existsSync(cachedFile)) {
-      res.setHeader('Content-Type', 'audio/mpeg');
-      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
-      return fs.createReadStream(cachedFile).pipe(res);
+      try {
+        const stats = fs.statSync(cachedFile);
+        if (stats.size > 256) {
+          res.setHeader('Content-Type', 'audio/mpeg');
+          res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+          return fs.createReadStream(cachedFile).pipe(res);
+        } else {
+          fs.unlinkSync(cachedFile);
+        }
+      } catch {
+        // Fallback to fresh fetch
+      }
     }
 
     const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text)}`;
@@ -553,6 +567,11 @@ apiApp.post('/api/account/save', (req: Request, res: Response) => {
   const { username, accountData } = req.body;
   if (!username || !accountData) {
     return res.status(400).json({ error: 'Username and accountData required.' });
+  }
+
+  // Reject saves that accidentally wipe out explorers
+  if (!Array.isArray(accountData.explorers) || accountData.explorers.length === 0) {
+    return res.status(400).json({ error: 'Cannot save account without explorers.' });
   }
 
   const cleanUser = String(username).trim().toLowerCase();

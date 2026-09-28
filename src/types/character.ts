@@ -40,6 +40,7 @@ export interface LandProgress {
 export interface ExplorerProfile {
   id: string;
   name: string;
+  age?: number | string;
   ageTier: 'preschool' | 'kindergarten' | 'early-elementary' | 'late-elementary' | 'middle-high';
   level: number;
   totalStars: number;

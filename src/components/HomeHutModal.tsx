@@ -52,7 +52,12 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
 
   const [activeTab, setActiveTab] = useState<
     'explorers' | 'customizer' | 'progress' | 'halloffame' | 'settings'
-  >('customizer');
+  >('explorers');
+
+  // Ensure Home Hut opens to explorer select every time
+  React.useEffect(() => {
+    setActiveTab('explorers');
+  }, []);
   const [newExplorerName, setNewExplorerName] = useState('');
   const [newExplorerGender, setNewExplorerGender] = useState<'boy' | 'girl'>('boy');
   const [newExplorerTier, setNewExplorerTier] = useState<
@@ -530,8 +535,9 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
                             )}
                           </div>
                           <div className="text-[11px] text-slate-400">
-                            {exp.gender === 'girl' ? '👧 Girl' : '👦 Boy'} · Companion:{' '}
-                            {exp.gender === 'girl' ? 'Celine' : 'Kam'}
+                            {exp.gender === 'girl' ? '👧 Girl' : '👦 Boy'}
+                            {exp.age ? ` · Age ${exp.age}` : ''}
+                            {' · '}Sound Shallows: {exp.landScores?.['sound-shallows']?.completedGamesCount || 0}/10
                           </div>
                         </div>
                       </div>

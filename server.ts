@@ -2,11 +2,11 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { apiApp } from './src/server/apiApp.js';
+import { apiApp } from './src/server/apiApp.ts';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
+const PORT = process.env.PORT || 3000;
 
 // Mount API app routes
 app.use(apiApp);

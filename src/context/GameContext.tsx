@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { Account, ExplorerProfile, LandId } from '../types/character';
+import { 
+  Account, 
+  ExplorerProfile, 
+  LandId, 
+  GradeLevel, 
+  LearningPathway, 
+  AccessibilitySettings, 
+  IEPProfile 
+} from '../types/character';
 
 export const LAND_ORDER: LandId[] = [
   'sound-shallows',
@@ -7,7 +15,36 @@ export const LAND_ORDER: LandId[] = [
   'tricky-trails',
   'whispering-peaks',
   'lexicon-empire',
+  'phonixia-academy',
+  'masters-pathways',
+  'celestial-archives'
 ];
+
+export const DEFAULT_ACCESSIBILITY: AccessibilitySettings = {
+  dyslexiaFont: false,
+  colorCodedPhonemes: true,
+  highContrast: false,
+  reducedMotion: false,
+  focusMode: false,
+  speechSpeed: 1.0,
+  soundVolume: 1.0,
+  sensoryCalmMode: false,
+  syllableChunking: true,
+  aacEnabled: false,
+  visualMouthGuides: true,
+  screenTimeLimitMinutes: 45
+};
+
+export const DEFAULT_IEP: IEPProfile = {
+  hasActivePlan: false,
+  planType: 'None',
+  primaryFocusArea: 'Phonological Awareness & Fluency',
+  accommodations: ['Visual phoneme color-coding', 'Text-to-speech replay', 'Extended response time'],
+  targetWCPM: 60,
+  currentWCPM: 42,
+  phonemicAccuracyPercent: 88,
+  notes: 'Progressing well through Structured Literacy scope and sequence.'
+};
 
 export const isLandUnlocked = (
   arg1: LandId | ExplorerProfile | Record<string, any>,
@@ -28,6 +65,17 @@ export const isLandUnlocked = (
   if (landIndex <= 0) return true;
 
   if (scores && scores[landId]?.unlocked === true) return true;
+
+  // Higher Ed Expansions can unlock after Lexicon Empire (Stage 50)
+  if (landId === 'phonixia-academy') {
+    return Boolean(scores?.['lexicon-empire']?.completedGamesCount >= 50);
+  }
+  if (landId === 'masters-pathways') {
+    return Boolean(scores?.['phonixia-academy']?.completedGamesCount >= 10 || scores?.['lexicon-empire']?.completedGamesCount >= 50);
+  }
+  if (landId === 'celestial-archives') {
+    return Boolean(scores?.['masters-pathways']?.completedGamesCount >= 10 || scores?.['lexicon-empire']?.completedGamesCount >= 50);
+  }
 
   const prevLandId = LAND_ORDER[landIndex - 1];
   const prevLand = scores ? scores[prevLandId] : null;
@@ -69,6 +117,14 @@ interface GameContextType {
   logout: () => void;
   recordGameCompletion: (landId: LandId, levelNumber: number, gameNumber: number, stars: number, score: number, isWin: boolean) => void;
   recordSkillMiss: (skillName: string) => void;
+  updateAccessibilitySettings: (settings: Partial<AccessibilitySettings>) => void;
+  updateIEPProfile: (profile: Partial<IEPProfile>) => void;
+  updateGradeLevel: (grade: GradeLevel) => void;
+  updateLearningPathway: (pathway: LearningPathway) => void;
+  awardScholarReputation: (delta: number) => void;
+  inductMasterOfPhonixia: () => void;
+  recordDissertationCompleted: (topicId: string) => void;
+  recordCyberBadge: (badgeId: string) => void;
 }
 
 const DEFAULT_LAND_SCORES = {
@@ -76,7 +132,10 @@ const DEFAULT_LAND_SCORES = {
   'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
   'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
   'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-  'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
+  'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false },
+  'phonixia-academy': { completedGamesCount: 0, stars: 0, unlocked: false },
+  'masters-pathways': { completedGamesCount: 0, stars: 0, unlocked: false },
+  'celestial-archives': { completedGamesCount: 0, stars: 0, unlocked: false }
 };
 
 export const getFreshLandScores = () => JSON.parse(JSON.stringify(DEFAULT_LAND_SCORES));
@@ -88,14 +147,24 @@ export const KAM_GUIDE: ExplorerProfile = {
   gender: 'boy',
   companionGuide: 'kam',
   ageTier: 'preschool',
+  gradeLevel: 'PreK3',
+  learningPathway: 'general-education',
   level: 1,
   totalStars: 20,
   coins: 50,
   arcadeTokens: 10,
+  scholarReputation: 100,
   isHallOfFameInducted: false,
+  isMasterOfPhonixia: false,
   timesStorylineCompleted: 0,
   landScores: getFreshLandScores(),
   strugglingSkills: {},
+  accessibility: { ...DEFAULT_ACCESSIBILITY },
+  iepProfile: { ...DEFAULT_IEP },
+  completedDissertations: [],
+  academicCollegeMajors: [],
+  masteryDisciplines: [],
+  cyberGuardianBadges: ['safe-password-initiate'],
   customization: {
     skinTone: '#fcd5b5',
     hairStyle: 'curls',
@@ -115,14 +184,24 @@ export const CELINE_GUIDE: ExplorerProfile = {
   gender: 'girl',
   companionGuide: 'celine',
   ageTier: 'kindergarten',
+  gradeLevel: 'Kindergarten',
+  learningPathway: 'general-education',
   level: 1,
   totalStars: 20,
   coins: 50,
   arcadeTokens: 10,
+  scholarReputation: 100,
   isHallOfFameInducted: false,
+  isMasterOfPhonixia: false,
   timesStorylineCompleted: 0,
   landScores: getFreshLandScores(),
   strugglingSkills: {},
+  accessibility: { ...DEFAULT_ACCESSIBILITY },
+  iepProfile: { ...DEFAULT_IEP },
+  completedDissertations: [],
+  academicCollegeMajors: [],
+  masteryDisciplines: [],
+  cyberGuardianBadges: ['safe-password-initiate'],
   customization: {
     skinTone: '#d99058',
     hairStyle: 'curls',
@@ -149,20 +228,24 @@ const FALLBACK_EXPLORER: ExplorerProfile = {
   gender: 'boy',
   companionGuide: 'kam',
   ageTier: 'preschool',
+  gradeLevel: 'PreK3',
+  learningPathway: 'general-education',
   level: 1,
   totalStars: 0,
   coins: 30,
   arcadeTokens: 5,
+  scholarReputation: 100,
   isHallOfFameInducted: false,
+  isMasterOfPhonixia: false,
   timesStorylineCompleted: 0,
-  landScores: {
-    'sound-shallows': { completedGamesCount: 0, stars: 0, unlocked: true },
-    'builders-guild': { completedGamesCount: 0, stars: 0, unlocked: false },
-    'tricky-trails': { completedGamesCount: 0, stars: 0, unlocked: false },
-    'whispering-peaks': { completedGamesCount: 0, stars: 0, unlocked: false },
-    'lexicon-empire': { completedGamesCount: 0, stars: 0, unlocked: false }
-  },
+  landScores: getFreshLandScores(),
   strugglingSkills: {},
+  accessibility: { ...DEFAULT_ACCESSIBILITY },
+  iepProfile: { ...DEFAULT_IEP },
+  completedDissertations: [],
+  academicCollegeMajors: [],
+  masteryDisciplines: [],
+  cyberGuardianBadges: [],
   customization: {
     skinTone: '#fcd5b5',
     hairStyle: 'curls',
@@ -180,6 +263,7 @@ const INITIAL_ACCOUNT: Account = {
   familyName: 'Reading Heroes Family',
   username: 'readingheroes',
   role: 'parent',
+  tier: 'family-pro',
   explorers: [
     FALLBACK_EXPLORER,
     {
@@ -487,7 +571,23 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...rawExplorer,
       gender: rawExplorer.gender || 'boy',
       companionGuide: rawExplorer.gender === 'girl' ? 'celine' : 'kam',
+      gradeLevel: rawExplorer.gradeLevel || 'Kindergarten',
+      learningPathway: rawExplorer.learningPathway || 'general-education',
+      scholarReputation: rawExplorer.scholarReputation ?? 100,
+      isMasterOfPhonixia: Boolean(rawExplorer.isMasterOfPhonixia),
       strugglingSkills: rawExplorer.strugglingSkills || {},
+      accessibility: {
+        ...DEFAULT_ACCESSIBILITY,
+        ...(rawExplorer.accessibility || {})
+      },
+      iepProfile: {
+        ...DEFAULT_IEP,
+        ...(rawExplorer.iepProfile || {})
+      },
+      completedDissertations: rawExplorer.completedDissertations || [],
+      academicCollegeMajors: rawExplorer.academicCollegeMajors || [],
+      masteryDisciplines: rawExplorer.masteryDisciplines || [],
+      cyberGuardianBadges: rawExplorer.cyberGuardianBadges || ['safe-password-initiate'],
       landScores: {
         ...DEFAULT_LAND_SCORES,
         ...(rawExplorer.landScores || {}),
@@ -586,6 +686,156 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem(storageKey, JSON.stringify(parsed));
     } catch {}
   }, [activeExplorerId]);
+
+  const updateAccessibilitySettings = useCallback((settings: Partial<AccessibilitySettings>) => {
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) =>
+          exp.id === activeExplorerId
+            ? {
+                ...exp,
+                accessibility: {
+                  ...DEFAULT_ACCESSIBILITY,
+                  ...(exp.accessibility || {}),
+                  ...settings
+                }
+              }
+            : exp
+        )
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  }, [activeExplorerId, syncAccountData]);
+
+  const updateIEPProfile = useCallback((profile: Partial<IEPProfile>) => {
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) =>
+          exp.id === activeExplorerId
+            ? {
+                ...exp,
+                iepProfile: {
+                  ...DEFAULT_IEP,
+                  ...(exp.iepProfile || {}),
+                  ...profile
+                }
+              }
+            : exp
+        )
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  }, [activeExplorerId, syncAccountData]);
+
+  const updateGradeLevel = useCallback((grade: GradeLevel) => {
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) =>
+          exp.id === activeExplorerId ? { ...exp, gradeLevel: grade } : exp
+        )
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  }, [activeExplorerId, syncAccountData]);
+
+  const updateLearningPathway = useCallback((pathway: LearningPathway) => {
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) =>
+          exp.id === activeExplorerId ? { ...exp, learningPathway: pathway } : exp
+        )
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  }, [activeExplorerId, syncAccountData]);
+
+  const awardScholarReputation = useCallback((delta: number) => {
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) =>
+          exp.id === activeExplorerId
+            ? { ...exp, scholarReputation: Math.max(0, (exp.scholarReputation ?? 100) + delta) }
+            : exp
+        )
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  }, [activeExplorerId, syncAccountData]);
+
+  const inductMasterOfPhonixia = useCallback(() => {
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) =>
+          exp.id === activeExplorerId
+            ? { 
+                ...exp, 
+                isMasterOfPhonixia: true,
+                customization: {
+                  ...exp.customization,
+                  title: 'MASTER OF PHONIXIA',
+                  companionPet: 'golden-phonix',
+                  mount: 'celestial-gryphon'
+                }
+              }
+            : exp
+        )
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  }, [activeExplorerId, syncAccountData]);
+
+  const recordDissertationCompleted = useCallback((topicId: string) => {
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) => {
+          if (exp.id !== activeExplorerId) return exp;
+          const current = exp.completedDissertations || [];
+          if (current.includes(topicId)) return exp;
+          return {
+            ...exp,
+            completedDissertations: [...current, topicId],
+            totalStars: exp.totalStars + 10,
+            coins: exp.coins + 100
+          };
+        })
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  }, [activeExplorerId, syncAccountData]);
+
+  const recordCyberBadge = useCallback((badgeId: string) => {
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) => {
+          if (exp.id !== activeExplorerId) return exp;
+          const current = exp.cyberGuardianBadges || [];
+          if (current.includes(badgeId)) return exp;
+          return {
+            ...exp,
+            cyberGuardianBadges: [...current, badgeId],
+            arcadeTokens: exp.arcadeTokens + 5
+          };
+        })
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  }, [activeExplorerId, syncAccountData]);
 
   const loginWithCredentials = async (
     u: string,
@@ -763,14 +1013,24 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       gender: explorerGender,
       companionGuide: guide,
       ageTier,
+      gradeLevel: 'Kindergarten',
+      learningPathway: 'general-education',
       level: 1,
       totalStars: 0,
       coins: 20,
       arcadeTokens: 3,
+      scholarReputation: 100,
       isHallOfFameInducted: false,
+      isMasterOfPhonixia: false,
       timesStorylineCompleted: 0,
       landScores: getFreshLandScores(),
       strugglingSkills: {},
+      accessibility: { ...DEFAULT_ACCESSIBILITY },
+      iepProfile: { ...DEFAULT_IEP },
+      completedDissertations: [],
+      academicCollegeMajors: [],
+      masteryDisciplines: [],
+      cyberGuardianBadges: ['safe-password-initiate'],
       customization: {
         skinTone: explorerGender === 'boy' ? '#fcd5b5' : '#d99058',
         hairStyle: 'curls',
@@ -1096,7 +1356,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         importSaveData,
         logout,
         recordGameCompletion,
-        recordSkillMiss
+        recordSkillMiss,
+        updateAccessibilitySettings,
+        updateIEPProfile,
+        updateGradeLevel,
+        updateLearningPathway,
+        awardScholarReputation,
+        inductMasterOfPhonixia,
+        recordDissertationCompleted,
+        recordCyberBadge
       }}
     >
       {children}

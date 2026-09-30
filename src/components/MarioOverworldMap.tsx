@@ -38,6 +38,9 @@ const LAND_BACKGROUNDS: Record<LandId, string> = {
   'tricky-trails': trailsBg,
   'whispering-peaks': peaksBg,
   'lexicon-empire': empireBg,
+  'phonixia-academy': empireBg,
+  'masters-pathways': peaksBg,
+  'celestial-archives': shallowsBg,
 };
 
 const LAND_THEME_BADGES: Record<LandId, { icon: string; border: string; glow: string; pathColor: string }> = {
@@ -46,6 +49,9 @@ const LAND_THEME_BADGES: Record<LandId, { icon: string; border: string; glow: st
   'tricky-trails': { icon: '🌿', border: 'border-emerald-400', glow: 'shadow-[0_0_20px_rgba(16,185,129,0.6)]', pathColor: '#10b981' },
   'whispering-peaks': { icon: '❄️', border: 'border-indigo-400', glow: 'shadow-[0_0_20px_rgba(99,102,241,0.6)]', pathColor: '#6366f1' },
   'lexicon-empire': { icon: '🔥', border: 'border-rose-400', glow: 'shadow-[0_0_20px_rgba(244,63,94,0.6)]', pathColor: '#f43f5e' },
+  'phonixia-academy': { icon: '🏛️', border: 'border-purple-400', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.6)]', pathColor: '#a855f7' },
+  'masters-pathways': { icon: '📜', border: 'border-emerald-400', glow: 'shadow-[0_0_20px_rgba(16,185,129,0.6)]', pathColor: '#10b981' },
+  'celestial-archives': { icon: '🌌', border: 'border-yellow-400', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.6)]', pathColor: '#eab308' },
 };
 
 export const MarioOverworldMap: React.FC<MarioOverworldMapProps> = ({

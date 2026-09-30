@@ -428,18 +428,18 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
 
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        Grade / Reading Level
+                        Adventurer Class / Specialization
                       </label>
                       <select
                         value={newExplorerTier}
                         onChange={(e) => setNewExplorerTier(e.target.value as any)}
-                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400 cursor-pointer"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400 cursor-pointer font-bold"
                       >
-                        <option value="preschool">Preschool (Ages 3-4 · Gentle Mode)</option>
-                        <option value="kindergarten">Kindergarten (Ages 5-6)</option>
-                        <option value="early-elementary">Early Elementary (Ages 6-8)</option>
-                        <option value="late-elementary">Late Elementary (Ages 8-11)</option>
-                        <option value="middle-high">Middle &amp; High (Ages 11+)</option>
+                        <option value="preschool">🏹 Scout Ranger (Forest Tracker)</option>
+                        <option value="kindergarten">📜 Rune Scholar (Glyph Weaver)</option>
+                        <option value="early-elementary">🛡️ Citadel Knight (Phonix Defender)</option>
+                        <option value="late-elementary">🧙‍♂️ Arch-Mage (Element Spellsword)</option>
+                        <option value="middle-high">👑 High Champion (Lexicon Paladin)</option>
                       </select>
                     </div>
                   </div>

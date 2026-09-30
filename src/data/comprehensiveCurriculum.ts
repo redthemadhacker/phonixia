@@ -2223,6 +2223,201 @@ export const getComprehensiveStageChallenge = (
     };
   }
 
+  if (landId === 'phonixia-academy') {
+    const academyChallenges = [
+      {
+        skill: 'Collegiate Linguistics: Grimm’s Law',
+        prompt: 'In historical Indo-European linguistics, what sound shift does Grimm’s Law describe?',
+        cue: 'Proto-Indo-European voiceless stops shift to Germanic voiceless fricatives',
+        choices: [
+          'Proto-Indo-European voiceless stops (p, t, k) shifted to voiceless fricatives (f, th, h)',
+          'All vowels elongated before voiced consonants',
+          'Prefixes fused irreversibly to nominal roots',
+          'Syllables reduced uniformly to monosyllabic codas'
+        ],
+        correct: 'Proto-Indo-European voiceless stops (p, t, k) shifted to voiceless fricatives (f, th, h)',
+        explanation: 'Grimm’s Law (1822) proves the systemic mathematical shift from PIE *pǝtér to Germanic *faðēr (father)!'
+      },
+      {
+        skill: 'College of Rhetoric: Aristotelian Appeals',
+        prompt: 'Which rhetorical appeal relies upon establishing credibility, ethical authority, and scholarly integrity?',
+        cue: 'Ethos: the appeal to character and moral authority',
+        choices: ['Ethos', 'Pathos', 'Logos', 'Kairos'],
+        correct: 'Ethos',
+        explanation: 'Ethos appeals to character and credibility, while Logos appeals to logic, and Pathos appeals to emotion.'
+      },
+      {
+        skill: 'College of Storycraft: Freytag’s Pyramid',
+        prompt: 'In classical narrative architecture, what turning point occurs at the apex of rising tension?',
+        cue: 'The Climax: highest dramatic tension and turning point',
+        choices: ['Climax', 'Inciting Incident', 'Exposition', 'Denouement'],
+        correct: 'Climax',
+        explanation: 'The Climax represents the decisive crisis turning point where the protagonist confronts the central conflict.'
+      },
+      {
+        skill: 'College of Grammar: Syntax Tree Parsing',
+        prompt: 'In generative transformational syntax, what constituent immediately dominates the Verb and its Direct Object?',
+        cue: 'VP (Verb Phrase)',
+        choices: ['VP (Verb Phrase)', 'NP (Noun Phrase)', 'TP (Tense Phrase)', 'CP (Complementizer Phrase)'],
+        correct: 'VP (Verb Phrase)',
+        explanation: 'In generative phrase structure trees, the VP node branches into the head Verb and complement NP!'
+      },
+      {
+        skill: 'College of Etymology: Cognate Identification',
+        prompt: 'The English word "heart" and Latin "cordis" (as in cardiac/cordial) are related through which ancestral root?',
+        cue: 'Proto-Indo-European *ḱērd-',
+        choices: ['Proto-Indo-European *ḱērd-', 'Sino-Tibetan *khrag', 'Proto-Semitic *libb-', 'Austronesian *puso'],
+        correct: 'Proto-Indo-European *ḱērd-',
+        explanation: 'Both heart (Germanic) and cord/cardiac (Italic/Hellenic) trace back to the PIE root *ḱērd-!'
+      }
+    ];
+    const item = academyChallenges[(normalizedStage - 1) % academyChallenges.length];
+    return {
+      stageNumber: normalizedStage,
+      skillTitle: item.skill,
+      instruction: `Phonixia Academy Seminar: ${item.prompt}`,
+      spokenPrompt: item.prompt,
+      targetSound: 'ACADEMY',
+      soundCue: item.cue,
+      choices: item.choices,
+      correct: item.correct,
+      explanation: item.explanation
+    };
+  }
+
+  if (landId === 'masters-pathways') {
+    const mastersChallenges = [
+      {
+        skill: 'Master Literacy Specialist: Dyslexia Neuroanatomy',
+        prompt: 'Brain imaging studies show that skilled readers automatically activate which left-hemisphere reading hub?',
+        cue: 'Left Occipitotemporal Visual Word Form Area (The Brain’s Letterbox)',
+        choices: [
+          'Left Occipitotemporal Visual Word Form Area (VWFA)',
+          'Right Frontal Motor Cortex',
+          'Bilateral Cerebellar Vermis',
+          'Primary Olfactory Bulb'
+        ],
+        correct: 'Left Occipitotemporal Visual Word Form Area (VWFA)',
+        explanation: 'Neuroscientist Stanislas Dehaene revealed that learning to read recycles the left VWFA to instantly recognize letter strings!'
+      },
+      {
+        skill: 'Master Educator: MTSS Tier 3 Structured Literacy',
+        prompt: 'What constitutes the defining pedagogical principle of Orton-Gillingham instructional methodology?',
+        cue: 'Explicit, systematic, sequential, cumulative, and multisensory diagnostic teaching',
+        choices: [
+          'Explicit, systematic, sequential, cumulative, and multisensory instruction',
+          'Incidental whole-language immersion with context guessing',
+          'Isolated memorization of 1,000 flashcard silhouettes',
+          'Unstructured free-reading without grapheme-phoneme feedback'
+        ],
+        correct: 'Explicit, systematic, sequential, cumulative, and multisensory instruction',
+        explanation: 'Structured Literacy must be explicit, systematic, sequential, cumulative, and multisensory to rewire neural pathways!'
+      },
+      {
+        skill: 'Master Orator: Prosodic Modulation',
+        prompt: 'In speech prosody, what phonetic feature refers to the melodic pitch contours and intonational phrasing of speech?',
+        cue: 'Intonation and Pitch Contour',
+        choices: ['Intonation and Pitch Contour', 'Vocal Staccato', 'Monotone Decibels', 'Subglottal Static'],
+        correct: 'Intonation and Pitch Contour',
+        explanation: 'Prosody encompasses pitch contour, rhythmic timing, and stress, which convey pragmatic and semantic meaning!'
+      },
+      {
+        skill: 'Master Researcher: Scarborough’s Reading Rope',
+        prompt: 'According to Scarborough’s Reading Rope (2001), what two primary strands intertwine to produce skilled reading?',
+        cue: 'Language Comprehension and Word Recognition',
+        choices: [
+          'Language Comprehension and Word Recognition',
+          'Sight Memorization and Speed Typing',
+          'Auditory Volume and Oral Vocabulary',
+          'Visual Acuity and Hand-Eye Coordination'
+        ],
+        correct: 'Language Comprehension and Word Recognition',
+        explanation: 'The Reading Rope synthesizes Upper Strand (Language Comprehension) with Lower Strand (Word Recognition)!'
+      }
+    ];
+    const item = mastersChallenges[(normalizedStage - 1) % mastersChallenges.length];
+    return {
+      stageNumber: normalizedStage,
+      skillTitle: item.skill,
+      instruction: `Master’s Practicum Challenge: ${item.prompt}`,
+      spokenPrompt: item.prompt,
+      targetSound: 'MASTER_PRACTICUM',
+      soundCue: item.cue,
+      choices: item.choices,
+      correct: item.correct,
+      explanation: item.explanation
+    };
+  }
+
+  if (landId === 'celestial-archives') {
+    const celestialChallenges = [
+      {
+        skill: 'Doctoral Defense: Neuronal Recycling Hypothesis',
+        prompt: 'Stanislas Dehaene’s "Neuronal Recycling Hypothesis" asserts what regarding the evolution of reading?',
+        cue: 'Reading culturally invades and repurposes cortical circuits evolved for visual object recognition',
+        choices: [
+          'Reading repurposes evolutionarily ancient cortical circuits originally dedicated to visual object and shape recognition',
+          'Human DNA contains innate genetic sequences specifically coding for the 26 Latin letters',
+          'Reading is exclusively processed by the auditory cortex with no visual involvement',
+          'Language comprehension operates completely independently of physical neural architecture'
+        ],
+        correct: 'Reading repurposes evolutionarily ancient cortical circuits originally dedicated to visual object and shape recognition',
+        explanation: 'Human writing is too young (~5,400 years) to be genetically hardwired; education culturally invades and recycles primate visual circuits!'
+      },
+      {
+        skill: 'Doctoral Defense: Simple View of Reading (Gough & Tunmer)',
+        prompt: 'The Simple View of Reading expresses reading comprehension (RC) as the mathematical product of which two variables?',
+        cue: 'RC = D x LC (Decoding multiplied by Language Comprehension)',
+        choices: [
+          'Decoding (D) multiplied by Language Comprehension (LC): RC = D × LC',
+          'Decoding (D) added to Word Count (WC): RC = D + WC',
+          'Vocabulary Size divided by Reading Speed: RC = V / S',
+          'Phonemic Awareness squared: RC = PA²'
+        ],
+        correct: 'Decoding (D) multiplied by Language Comprehension (LC): RC = D × LC',
+        explanation: 'Because it is a product (D × LC), if either decoding or language comprehension is zero, reading comprehension is zero!'
+      },
+      {
+        skill: 'Doctoral Defense: Orthographic Mapping (Ehri)',
+        prompt: 'According to Linnea Ehri, through what mental process do readers permanently bond printed words into sight word memory?',
+        cue: 'Orthographic Mapping: connecting phonemes in spoken words to graphemes in written words',
+        choices: [
+          'Orthographic Mapping: connecting individual phonemes to graphemes in memory',
+          'Visual photographic snapshot retention of the word’s outline',
+          'Subconscious subliminal guessing from surrounding illustrations',
+          'Repetitive mechanical copying of letter strokes 100 times'
+        ],
+        correct: 'Orthographic Mapping: connecting individual phonemes to graphemes in memory',
+        explanation: 'Orthographic mapping anchors the pronunciations, spellings, and meanings of words in memory for instantaneous retrieval!'
+      },
+      {
+        skill: 'Celestial Master Trial: Supreme Literacy Synthesis',
+        prompt: 'What is the ultimate purpose of universal literacy in human civilization?',
+        cue: 'Empowering every human mind with agency, empathy, knowledge transmission, and freedom',
+        choices: [
+          'Empowering every human mind with cognitive agency, empathy, and collective knowledge transmission',
+          'Standardized testing compliance across administrative jurisdictions',
+          'Accelerating mechanical typing speed for automated data entry',
+          'Restricting sacred texts to an exclusive scribal elite'
+        ],
+        correct: 'Empowering every human mind with cognitive agency, empathy, and collective knowledge transmission',
+        explanation: 'Universal literacy is the bedrock of human dignity, democratic agency, and intellectual liberation!'
+      }
+    ];
+    const item = celestialChallenges[(normalizedStage - 1) % celestialChallenges.length];
+    return {
+      stageNumber: normalizedStage,
+      skillTitle: item.skill,
+      instruction: `Celestial Archive Dissertation Trial: ${item.prompt}`,
+      spokenPrompt: item.prompt,
+      targetSound: 'MASTER_OF_PHONIXIA',
+      soundCue: item.cue,
+      choices: item.choices,
+      correct: item.correct,
+      explanation: item.explanation
+    };
+  }
+
   // Lexicon Empire standard
   const list = LEXICON_EMPIRE_STAGES[normalizedStage];
   if (list && list.length > 0) {

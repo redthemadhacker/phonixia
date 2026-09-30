@@ -594,6 +594,18 @@ class SoundManager {
     });
   }
 
+  public playClick() {
+    this.playStep();
+  }
+
+  public playPlaceBlock() {
+    this.playBlockHit();
+  }
+
+  public playVictory() {
+    this.playSuccess();
+  }
+
   public playFanfare() {
     if (!this.soundEnabled) return;
     this.initCtx();

@@ -19,44 +19,44 @@ export const LANDMARK_NODES: LandmarkNode[] = [
   {
     id: 'home-hut',
     name: 'Home Hut',
-    tagline: 'Family & Teacher Hub',
-    targetAge: 'All Explorers',
+    tagline: 'Sanctum & Wardrobe',
+    targetAge: 'Realm Hub',
     x: 10,
     y: 65,
     icon: '🛖',
     color: '#854d0e',
     accentColor: '#fde047',
-    description: 'Harbor pier hub. View synced scores, switch explorers, check reading progress, and manage settings.'
+    description: 'Harbor pier hub. Change armor styles, customize traveling companions, and inspect forged word runes.'
   },
   {
     id: 'sound-shallows',
     name: 'Sound Shallows',
     tagline: 'Letter Sounds & Blending',
-    targetAge: 'Preschool',
+    targetAge: 'Chapter I · Coastal Initiate',
     x: 50,
     y: 45,
     icon: '🌊',
     color: '#0284c7',
     accentColor: '#38bdf8',
-    description: 'The Grand Golden Phonix Citadel. Pure letter sounds, rhyming shells, and gentle sound blending.'
+    description: 'The Grand Golden Phonix Citadel. Pure phoneme aether, rhyming pearls, and sound blending trials.'
   },
   {
     id: 'builders-guild',
     name: 'Builders Guild',
     tagline: 'CVC Words & Digraphs',
-    targetAge: 'Kindergarten',
+    targetAge: 'Chapter II · Syllable Mason',
     x: 18,
     y: 28,
     icon: '🏗️',
     color: '#d97706',
     accentColor: '#fbbf24',
-    description: 'Harbor workshop quarries. Stack CVC blocks, hoist crane keystones, and learn digraph rules.'
+    description: 'Harbor workshop quarries. Forge CVC blocks, hoist crane keystones, and master digraph enchantments.'
   },
   {
     id: 'tricky-trails',
     name: 'Tricky Trails',
     tagline: 'Silent E & Sight Words',
-    targetAge: 'Early Elementary',
+    targetAge: 'Chapter III · Mirage Tracker',
     x: 50,
     y: 82,
     icon: '🌿',
@@ -68,7 +68,7 @@ export const LANDMARK_NODES: LandmarkNode[] = [
     id: 'whispering-peaks',
     name: 'Whispering Peaks',
     tagline: 'Vowel Teams & Bossy R',
-    targetAge: 'Late Elementary',
+    targetAge: 'Chapter IV · Morpheme Vanguard',
     x: 80,
     y: 26,
     icon: '🏔️',
@@ -80,13 +80,49 @@ export const LANDMARK_NODES: LandmarkNode[] = [
     id: 'lexicon-empire',
     name: 'Lexicon Empire',
     tagline: 'Final Boss & Castle Gauntlet',
-    targetAge: 'Middle to High School',
+    targetAge: 'Chapter V · Imperial Spellblade',
     x: 82,
     y: 72,
     icon: '👑',
     color: '#b45309',
     accentColor: '#f59e0b',
     description: 'Throne citadel fortress. Defeat the Shadow King to rescue the Golden Phonix!'
+  },
+  {
+    id: 'phonixia-academy',
+    name: 'Phonixia Academy',
+    tagline: '8 Higher Ed Colleges',
+    targetAge: 'Arcane Spire · High Arch-Mage',
+    x: 88,
+    y: 48,
+    icon: '🏛️',
+    color: '#9333ea',
+    accentColor: '#c084fc',
+    description: 'The 8 Collegiate Faculties. Linguistics, Storycraft, Rhetoric, Literature, and Grammar Arcanum.'
+  },
+  {
+    id: 'masters-pathways',
+    name: 'Master’s Pathways',
+    tagline: '7 Graduate Practicums',
+    targetAge: 'Sanctum · Master Scholar',
+    x: 68,
+    y: 16,
+    icon: '📜',
+    color: '#059669',
+    accentColor: '#34d399',
+    description: 'Clinical reading science practicums, dyslexia diagnostics, and oratorical debate.'
+  },
+  {
+    id: 'celestial-archives',
+    name: 'Celestial Archives',
+    tagline: 'Doctorate & Master of Phonixia',
+    targetAge: 'Apex · Master of Phonixia',
+    x: 90,
+    y: 18,
+    icon: '🌌',
+    color: '#ca8a04',
+    accentColor: '#fde047',
+    description: 'The pinnacle of Reading Science, cognitive neurolinguistics, and the supreme title: MASTER OF PHONIXIA.'
   }
 ];
 
@@ -443,78 +479,8 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
       onClick={() => containerRef.current?.focus()}
       className="relative w-full h-full flex flex-col justify-between select-none outline-none overflow-hidden"
     >
-      {/* IN-GAME TOP HUD */}
-      <div 
-        style={{
-          top: 'calc(env(safe-area-inset-top, 0px) + 8px)',
-          left: 'calc(env(safe-area-inset-left, 0px) + 8px)',
-          right: 'calc(env(safe-area-inset-right, 0px) + 8px)'
-        }}
-        className="absolute z-40 flex items-center justify-between pointer-events-none"
-      >
-        <div className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-slate-950/90 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl border border-amber-600/60 shadow-xl">
-          <div className="relative w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-950/80 border border-amber-400 flex items-center justify-center overflow-hidden">
-            <AvatarRenderer customization={activeExplorer.customization} size={30} facing="down" showPet={false} />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs sm:text-sm font-black text-amber-300 font-display">{activeExplorer.name}</span>
-              <span className="text-[9px] sm:text-[10px] font-bold px-1 rounded bg-amber-500/20 text-amber-300">Lv.{activeExplorer.level}</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-mono">
-              <span className="text-amber-400 font-bold flex items-center gap-0.5">
-                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-amber-400" />
-                {activeExplorer.totalStars}
-              </span>
-              <span className="text-yellow-400 font-bold hidden xs:inline">{activeExplorer.coins}c</span>
-              <span className="text-sky-300 font-bold hidden sm:inline">{activeExplorer.arcadeTokens}t</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2">
-          <button
-            onClick={() => {
-              sounds.stopSpeech();
-              setShowVoiceModal(true);
-            }}
-            title="Choose Phonics Voice"
-            className="h-8 sm:h-10 px-2.5 sm:px-3 rounded-xl sm:rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-500/70 text-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-xl cursor-pointer transition-transform hover:scale-105 active:scale-95"
-          >
-            <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-            <span className="hidden sm:inline">Voice</span>
-          </button>
-
-          <button
-            onClick={() => {
-              sounds.stopSpeech();
-              const next = !isAudioMuted;
-              setIsAudioMuted(next);
-              sounds.speechEnabled = !next;
-              sounds.soundEnabled = !next;
-              if (!next) sounds.speak('Voice is on.');
-            }}
-            title={isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-500/60 flex items-center justify-center text-amber-400 shadow-xl cursor-pointer"
-          >
-            {isAudioMuted ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" /> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />}
-          </button>
-
-          <button
-            onClick={() => {
-              sounds.stopSpeech();
-              onOpenHomeHut();
-            }}
-            className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider shadow-xl border border-amber-300 flex items-center gap-1 cursor-pointer transition-transform hover:scale-105 active:scale-95"
-          >
-            <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden xs:inline">Home Hut</span>
-          </button>
-        </div>
-      </div>
-
       {lockNotice && (
-        <div className="absolute top-14 sm:top-16 left-1/2 -translate-x-1/2 z-50 w-max max-w-[92%] px-4 sm:px-5 py-2 sm:py-2.5 bg-rose-950/95 border-2 border-rose-500 rounded-2xl shadow-2xl text-rose-200 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 animate-bounce pointer-events-none">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 w-max max-w-[92%] px-4 sm:px-5 py-2 sm:py-2.5 bg-rose-950/95 border-2 border-rose-500 rounded-2xl shadow-2xl text-rose-200 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 animate-bounce pointer-events-none">
           <Lock className="w-4 h-4 text-rose-400 shrink-0" />
           <span className="text-center">{lockNotice}</span>
         </div>

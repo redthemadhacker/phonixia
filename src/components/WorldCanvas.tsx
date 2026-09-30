@@ -627,8 +627,9 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
             size={38}
             isWalking={isMoving}
             isRunning={isRunning}
+            isJumping={isJumping}
             facing={facing}
-            walkCycle={isJumping ? 1.5 : walkCycle}
+            walkCycle={walkCycle}
             showPet={false}
           />
         </div>
@@ -655,8 +656,9 @@ export const WorldCanvas: React.FC<WorldCanvasProps> = ({
             size={46}
             isWalking={isMoving}
             isRunning={isRunning}
+            isJumping={isJumping}
             facing={facing}
-            walkCycle={isJumping ? 1.5 : walkCycle}
+            walkCycle={walkCycle}
             showPet={true}
           />
         </div>

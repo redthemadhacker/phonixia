@@ -29,7 +29,7 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 1,
       skillTitle: 'Letter Sound: /a/ (Short A)',
-      instruction: 'Dive down! Which letter makes the /a/ sound like apple?',
+      instruction: 'Dive down! Which letter makes the pure sound ah like apple?',
       spokenPrompt: 'Listen carefully! Which letter makes the sound, ah?',
       targetSound: 'A /æ/',
       soundCue: 'ah as in apple',
@@ -53,7 +53,7 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 2,
       skillTitle: 'Letter Sound: /b/',
-      instruction: 'Pop the sound pearl! Which letter makes the /b/ sound like bear?',
+      instruction: 'Pop the sound pearl! Which letter makes the sound buh like bear?',
       spokenPrompt: 'Listen! Which letter makes the sound, buh?',
       targetSound: 'B /b/',
       soundCue: 'buh as in bear',
@@ -77,7 +77,7 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 3,
       skillTitle: 'Letter Sound: /c/',
-      instruction: 'Which letter makes the crisp /k/ sound like cat?',
+      instruction: 'Which letter makes the crisp sound kuh like cat?',
       spokenPrompt: 'Listen! Which letter makes the sound, kuh?',
       targetSound: 'C /k/',
       soundCue: 'kuh as in cat',
@@ -101,7 +101,7 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 4,
       skillTitle: 'Letter Sound: /d/',
-      instruction: 'Tap your tongue! Which letter makes the /d/ sound like dog?',
+      instruction: 'Tap your tongue! Which letter makes the sound duh like dog?',
       spokenPrompt: 'Listen! Which letter makes the sound, duh?',
       targetSound: 'D /d/',
       soundCue: 'duh as in dog',
@@ -114,7 +114,7 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 5,
       skillTitle: 'Letter Sound: /e/ (Short E)',
-      instruction: 'Listen to the pure sound: eh. Which letter says eh like elephant?',
+      instruction: 'Listen to the sound: eh. Which letter says eh like elephant?',
       spokenPrompt: 'Listen! Which letter makes the sound, eh?',
       targetSound: 'E /ɛ/',
       soundCue: 'eh as in elephant',
@@ -179,7 +179,7 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 10,
       skillTitle: 'Letter Sounds: /j/ & /k/',
-      instruction: 'Listen: juh! Which letter makes the /j/ sound like jam?',
+      instruction: 'Listen: juh! Which letter makes the sound juh like jam?',
       spokenPrompt: 'Listen! Which letter makes the jumping sound, juh?',
       targetSound: 'J /dʒ/',
       soundCue: 'juh as in jam',
@@ -244,7 +244,7 @@ const SOUND_SHALLOWS_STAGES: Record<number, StageChallenge[]> = {
     {
       stageNumber: 15,
       skillTitle: 'Alphabet Mastery: Letters T through Z',
-      instruction: 'Tap the pearl! Which letter makes the ticking /t/ sound like top?',
+      instruction: 'Tap the pearl! Which letter makes the ticking sound tuh like top?',
       spokenPrompt: 'Listen to the tapping sound: tuh. Which letter is it?',
       targetSound: 'T /t/',
       soundCue: 'tuh as in top',
@@ -2185,12 +2185,9 @@ export const getComprehensiveStageChallenge = (
     };
   }
 
-  if (landId === 'whispering-peaks') {
-    const list = WHISPERING_PEAKS_STAGES[normalizedStage];
-    if (list && list.length > 0) {
-      return list[Math.floor(Math.random() * list.length)];
-    }
+    if (landId === 'whispering-peaks') {
     const peaksDualList = [
+      { word: 'FORTRESS', part1: 'OR', part2: 'ESS', choices1: ['OR', 'AR', 'ER', 'UR'], choices2: ['ESS', 'ABLE', 'FUL', 'LESS'], cue: 'f - or - t - r - ess' },
       { word: 'BLIZZARD', part1: 'BL', part2: 'ARD', choices1: ['BL', 'CL', 'FL', 'GL'], choices2: ['ARD', 'ORD', 'ERD', 'URD'], cue: 'b - l - ih - z - ar - d' },
       { word: 'WINTER', part1: 'IN', part2: 'ER', choices1: ['IN', 'AN', 'ON', 'UN'], choices2: ['ER', 'AR', 'OR', 'UR'], cue: 'w - in - t - er' },
       { word: 'THUNDER', part1: 'UN', part2: 'ER', choices1: ['UN', 'AN', 'EN', 'IN'], choices2: ['ER', 'OR', 'AR', 'UR'], cue: 'th - un - d - er' },
@@ -2200,19 +2197,20 @@ export const getComprehensiveStageChallenge = (
       { word: 'SNOWMAN', part1: 'OW', part2: 'AN', choices1: ['OW', 'OA', 'OU', 'OO'], choices2: ['AN', 'EN', 'IN', 'ON'], cue: 's - n - ow - m - an' },
       { word: 'MOUNTAIN', part1: 'OU', part2: 'AIN', choices1: ['OU', 'OW', 'OI', 'OY'], choices2: ['AIN', 'EAM', 'OOT', 'AIL'], cue: 'm - ou - n - t - ain' },
       { word: 'STARLIGHT', part1: 'AR', part2: 'IGH', choices1: ['AR', 'OR', 'ER', 'UR'], choices2: ['IGH', 'EE', 'AY', 'OW'], cue: 's - t - ar - l - igh - t' },
-      { word: 'FORTRESS', part1: 'OR', part2: 'ESS', choices1: ['OR', 'AR', 'ER', 'UR'], choices2: ['ESS', 'ABLE', 'FUL', 'LESS'], cue: 'f - or - t - r - ess' }
+      { word: 'AVALANCHE', part1: 'AV', part2: 'LANCHE', choices1: ['AV', 'EV', 'OV', 'IV'], choices2: ['LANCHE', 'LING', 'LESS', 'LOCK'], cue: 'av - a - lanche' },
+      { word: 'SUMMIT', part1: 'UM', part2: 'IT', choices1: ['UM', 'AM', 'EM', 'IM'], choices2: ['IT', 'ET', 'OT', 'UT'], cue: 's - um - m - it' }
     ];
     const item = peaksDualList[(normalizedStage - 1) % peaksDualList.length];
     return {
       stageNumber: normalizedStage,
-      skillTitle: `Alpine Slalom: ${item.word}`,
-      instruction: `Downhill Snowboard Slalom! Carve through BOTH sound parts for ${item.word}!`,
-      spokenPrompt: `Downhill Snowboard Slalom! Carve through both sound parts for ${item.word}!`,
+      skillTitle: 'Alpine Slalom: ' + item.word,
+      instruction: 'Slide DOWN the mountain! Choose multiple sounds: first ' + item.part1 + ', then ' + item.part2 + ' for ' + item.word + '!',
+      spokenPrompt: 'Slide down the mountain! Carve first sound ' + item.part1 + ', then second sound ' + item.part2 + ', to build ' + item.word + '!',
       targetSound: item.word,
       soundCue: item.cue,
       choices: item.choices1,
       correct: item.part1,
-      explanation: `${item.word} decodes into sounds '${item.part1}' and '${item.part2}'!`,
+      explanation: item.word + ' decodes into both sound parts: ' + item.part1 + ' and ' + item.part2 + '!',
       whisperingParts: {
         targetWord: item.word,
         part1: item.part1,
@@ -2222,7 +2220,6 @@ export const getComprehensiveStageChallenge = (
       }
     };
   }
-
   if (landId === 'phonixia-academy') {
     const academyChallenges = [
       {

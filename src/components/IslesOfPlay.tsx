@@ -40,11 +40,14 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onBackToWorld
   const [playerStallNum, setPlayerStallNum] = useState<number>(1);
   const [jumpOffset, setJumpOffset] = useState<number>(0);
   const [isJumping, setIsJumping] = useState<boolean>(false);
-  const [_isWalkingToStall, setIsWalkingToStall] = useState<boolean>(false);
+  const [isWalkingToStall, setIsWalkingToStall] = useState<boolean>(false);
+  const [boardwalkFacing, setBoardwalkFacing] = useState<'left' | 'right'>('right');
 
   // Interactive Character & Tool Animation states in Minigame Arena
   const [playerCol, setPlayerCol] = useState<number>(0);
   const [isActing, setIsActing] = useState<boolean>(false);
+  const [stationFacing, setStationFacing] = useState<'left' | 'right'>('right');
+  const [isStationMoving, setIsStationMoving] = useState<boolean>(false);
   const [actionEffect, setActionEffect] = useState<{ col: number; text: string; icon: string } | null>(null);
   const [clawDropping, setClawDropping] = useState<boolean>(false);
 
@@ -173,11 +176,17 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onBackToWorld
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         e.preventDefault();
         setPlayerCol((c) => Math.max(0, c - 1));
+        setStationFacing('left');
+        setIsStationMoving(true);
         sounds.playStep();
+        setTimeout(() => setIsStationMoving(false), 220);
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         e.preventDefault();
         setPlayerCol((c) => Math.min(activeGame.options.length - 1, c + 1));
+        setStationFacing('right');
+        setIsStationMoving(true);
         sounds.playStep();
+        setTimeout(() => setIsStationMoving(false), 220);
       } else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         executeMinigameAction(playerCol);
@@ -202,12 +211,26 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onBackToWorld
         triggerStallJump();
       } else if (k === 'arrowright' || k === 'd') {
         setPlayerStallNum((prev) => Math.min(25, prev + 1));
+        setBoardwalkFacing('right');
+        setIsWalkingToStall(true);
+        sounds.playStep();
+        setTimeout(() => setIsWalkingToStall(false), 200);
       } else if (k === 'arrowleft' || k === 'a') {
         setPlayerStallNum((prev) => Math.max(1, prev - 1));
+        setBoardwalkFacing('left');
+        setIsWalkingToStall(true);
+        sounds.playStep();
+        setTimeout(() => setIsWalkingToStall(false), 200);
       } else if (k === 'arrowdown' || k === 's') {
         setPlayerStallNum((prev) => Math.min(25, prev + 5));
+        setIsWalkingToStall(true);
+        sounds.playStep();
+        setTimeout(() => setIsWalkingToStall(false), 200);
       } else if (k === 'arrowup' || k === 'w') {
         setPlayerStallNum((prev) => Math.max(1, prev - 5));
+        setIsWalkingToStall(true);
+        sounds.playStep();
+        setTimeout(() => setIsWalkingToStall(false), 200);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -334,7 +357,14 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onBackToWorld
                   }}
                   className="absolute top-0 left-1/2 z-35 pointer-events-none transition-transform flex flex-col items-center"
                 >
-                  <AvatarRenderer customization={activeExplorer.customization} size={42} showPet={true} />
+                  <AvatarRenderer
+                    customization={activeExplorer.customization}
+                    size={44}
+                    isWalking={isWalkingToStall}
+                    isJumping={jumpOffset > 2}
+                    facing={boardwalkFacing}
+                    showPet={true}
+                  />
                 </div>
               )}
             </div>
@@ -410,9 +440,15 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onBackToWorld
                   stageNumber={activeGame.gameNum}
                   isSimplerLevel={true}
                 />
-                <span className="text-xs font-mono font-bold text-amber-300 px-3 py-1 bg-teal-950/70 border border-amber-400/40 rounded-xl shadow">
-                  Target: {activeGame.targetSoundOrWord}
-                </span>
+                <button
+                  type="button"
+                  title="Hear sound cue"
+                  onClick={() => sounds.speak(activeGame.spokenAudioCue || activeGame.howToPlay)}
+                  className="px-3 py-1 bg-teal-950/80 border border-amber-400/50 hover:bg-teal-900 rounded-xl shadow text-xs font-bold text-amber-200 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-transform"
+                >
+                  <Volume2 className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Listen</span>
+                </button>
               </div>
             </div>
 
@@ -510,7 +546,14 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onBackToWorld
                   className="absolute bottom-1 flex flex-col items-center pointer-events-none"
                 >
                   <div className="relative">
-                    <AvatarRenderer customization={activeExplorer.customization} size={46} showPet={false} />
+                    <AvatarRenderer
+                      customization={activeExplorer.customization}
+                      size={46}
+                      isWalking={isStationMoving}
+                      isActing={isActing}
+                      facing={stationFacing}
+                      showPet={false}
+                    />
                     
                     {/* The Themed Tool - strictly matching the game! */}
                     <div
@@ -537,7 +580,10 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onBackToWorld
                 type="button"
                 onClick={() => {
                   setPlayerCol((c) => Math.max(0, c - 1));
+                  setStationFacing('left');
+                  setIsStationMoving(true);
                   sounds.playStep();
+                  setTimeout(() => setIsStationMoving(false), 220);
                 }}
                 className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
               >
@@ -557,7 +603,10 @@ export const IslesOfPlay: React.FC<IslesOfPlayProps> = ({ onClose, onBackToWorld
                 type="button"
                 onClick={() => {
                   setPlayerCol((c) => Math.min(activeGame.options.length - 1, c + 1));
+                  setStationFacing('right');
+                  setIsStationMoving(true);
                   sounds.playStep();
+                  setTimeout(() => setIsStationMoving(false), 220);
                 }}
                 className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
               >

@@ -8,6 +8,7 @@ import {
   AccessibilitySettings, 
   IEPProfile 
 } from '../types/character';
+import { mapAgeToCurriculumParameters } from '../data/curriculumProposalMapper';
 
 export const LAND_ORDER: LandId[] = [
   'sound-shallows',
@@ -96,11 +97,12 @@ interface GameContextType {
   account: Account;
   activeExplorer: ExplorerProfile;
   switchExplorer: (id: string) => void;
-  createExplorer: (name: string, ageTier: ExplorerProfile['ageTier'], gender?: 'boy' | 'girl') => void;
+  createExplorer: (name: string, ageTierOrAge: ExplorerProfile['ageTier'] | number | string, gender?: 'boy' | 'girl', explicitAge?: number | string) => void;
   deleteExplorer: (id: string) => void;
   deleteAccount: () => void;
   updateExplorerName: (id: string, newName: string) => void;
   updateExplorerGender: (id: string, gender: 'boy' | 'girl') => void;
+  updateExplorerAge: (id: string, age: number | string) => void;
   updateExplorerScore: (landId: LandId, gamesCompletedDelta: number, starsDelta: number, specificCompletedCount?: number) => void;
   awardCurrency: (coinsDelta: number, tokensDelta: number) => void;
   updateAvatarCustomization: (customization: ExplorerProfile['customization']) => void;
@@ -567,14 +569,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [account.explorers, activeExplorerId]);
 
   const activeExplorer: ExplorerProfile = useMemo(() => {
+    const rawCustom = rawExplorer.customization || {};
+    const effectiveAge = rawExplorer.age !== undefined ? rawExplorer.age : (
+      rawExplorer.ageTier === 'preschool' ? 4 :
+      rawExplorer.ageTier === 'kindergarten' ? 5 :
+      rawExplorer.ageTier === 'early-elementary' ? 7 :
+      rawExplorer.ageTier === 'late-elementary' ? 10 :
+      rawExplorer.ageTier === 'middle-high' ? 13 :
+      rawExplorer.ageTier === 'collegiate' ? 19 : 26
+    );
+
     return {
       ...rawExplorer,
+      name: rawExplorer.name || 'Explorer',
+      age: effectiveAge,
       gender: rawExplorer.gender || 'boy',
       companionGuide: rawExplorer.gender === 'girl' ? 'celine' : 'kam',
+      ageTier: rawExplorer.ageTier || 'preschool',
       gradeLevel: rawExplorer.gradeLevel || 'Kindergarten',
       learningPathway: rawExplorer.learningPathway || 'general-education',
+      level: rawExplorer.level || 1,
+      totalStars: rawExplorer.totalStars || 0,
+      coins: rawExplorer.coins || 0,
+      arcadeTokens: rawExplorer.arcadeTokens || 0,
       scholarReputation: rawExplorer.scholarReputation ?? 100,
+      isHallOfFameInducted: Boolean(rawExplorer.isHallOfFameInducted),
       isMasterOfPhonixia: Boolean(rawExplorer.isMasterOfPhonixia),
+      timesStorylineCompleted: rawExplorer.timesStorylineCompleted || 0,
       strugglingSkills: rawExplorer.strugglingSkills || {},
       accessibility: {
         ...DEFAULT_ACCESSIBILITY,
@@ -588,6 +609,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       academicCollegeMajors: rawExplorer.academicCollegeMajors || [],
       masteryDisciplines: rawExplorer.masteryDisciplines || [],
       cyberGuardianBadges: rawExplorer.cyberGuardianBadges || ['safe-password-initiate'],
+      customization: {
+        skinTone: rawCustom.skinTone || (rawExplorer.gender === 'girl' ? '#d99058' : '#fcd5b5'),
+        hairStyle: rawCustom.hairStyle || 'curls',
+        hairColor: rawCustom.hairColor || '#5c3818',
+        outfitStyle: rawCustom.outfitStyle || (rawExplorer.gender === 'girl' ? 'wizard' : 'adventurer'),
+        outfitColor: rawCustom.outfitColor || (rawExplorer.gender === 'girl' ? '#7e22ce' : '#dc2626'),
+        accessory: rawCustom.accessory || (rawExplorer.gender === 'girl' ? 'glasses' : 'bandana'),
+        companionPet: rawCustom.companionPet || (rawExplorer.gender === 'girl' ? 'baby-dragon' : 'sea-turtle'),
+        title: rawCustom.title || (rawExplorer.gender === 'girl' ? 'Adventurer with Celine' : 'Adventurer with Kam')
+      },
       landScores: {
         ...DEFAULT_LAND_SCORES,
         ...(rawExplorer.landScores || {}),
@@ -655,6 +686,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             : exp
         )
+      };
+      syncAccountData(updated);
+      return updated;
+    });
+  };
+
+  const updateExplorerAge = (id: string, newAge: number | string) => {
+    const ageNum = typeof newAge === 'string' ? parseInt(newAge, 10) || 5 : newAge;
+    const params = mapAgeToCurriculumParameters(ageNum);
+
+    setAccount((prev) => {
+      const updated = {
+        ...prev,
+        explorers: (prev.explorers || []).map((exp) => {
+          if (exp.id !== id) return exp;
+          return {
+            ...exp,
+            age: ageNum,
+            ageTier: params.ageTier,
+            gradeLevel: params.gradeLevel,
+            landScores: {
+              ...(exp.landScores || {}),
+              ...params.unlockedLandScores
+            }
+          };
+        })
       };
       syncAccountData(updated);
       return updated;
@@ -999,9 +1056,30 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const createExplorer = (name: string, ageTier: ExplorerProfile['ageTier'], gender?: 'boy' | 'girl') => {
+  const createExplorer = (
+    name: string, 
+    ageTierOrAge: ExplorerProfile['ageTier'] | number | string, 
+    gender?: 'boy' | 'girl',
+    explicitAge?: number | string
+  ) => {
     const cleanName = name.trim();
     if (!cleanName) return;
+
+    let ageNum = 5;
+    let ageTier: ExplorerProfile['ageTier'] = 'preschool';
+
+    if (explicitAge !== undefined) {
+      ageNum = typeof explicitAge === 'string' ? parseInt(explicitAge, 10) || 5 : explicitAge;
+    } else if (typeof ageTierOrAge === 'number') {
+      ageNum = ageTierOrAge;
+    } else if (typeof ageTierOrAge === 'string' && !isNaN(Number(ageTierOrAge))) {
+      ageNum = parseInt(ageTierOrAge, 10) || 5;
+    } else if (typeof ageTierOrAge === 'string') {
+      ageTier = ageTierOrAge as ExplorerProfile['ageTier'];
+      ageNum = ageTier === 'preschool' ? 4 : ageTier === 'kindergarten' ? 5 : ageTier === 'early-elementary' ? 7 : ageTier === 'late-elementary' ? 10 : ageTier === 'middle-high' ? 13 : ageTier === 'collegiate' ? 19 : 26;
+    }
+
+    const curriculumParams = mapAgeToCurriculumParameters(ageNum);
 
     const explorerGender = gender || 'boy';
     const guide = explorerGender === 'girl' ? 'celine' : 'kam';
@@ -1010,10 +1088,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const newExplorer: ExplorerProfile = {
       id: newId,
       name: cleanName,
+      age: ageNum,
       gender: explorerGender,
       companionGuide: guide,
-      ageTier,
-      gradeLevel: 'Kindergarten',
+      ageTier: curriculumParams.ageTier,
+      gradeLevel: curriculumParams.gradeLevel,
       learningPathway: 'general-education',
       level: 1,
       totalStars: 0,
@@ -1023,7 +1102,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isHallOfFameInducted: false,
       isMasterOfPhonixia: false,
       timesStorylineCompleted: 0,
-      landScores: getFreshLandScores(),
+      landScores: {
+        ...getFreshLandScores(),
+        ...curriculumParams.unlockedLandScores
+      },
       strugglingSkills: {},
       accessibility: { ...DEFAULT_ACCESSIBILITY },
       iepProfile: { ...DEFAULT_IEP },
@@ -1341,6 +1423,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         deleteAccount,
         updateExplorerName,
         updateExplorerGender,
+        updateExplorerAge,
         updateExplorerScore,
         awardCurrency,
         updateAvatarCustomization,

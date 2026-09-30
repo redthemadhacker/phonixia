@@ -946,14 +946,23 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
           style={{
             left: `${playerPos.x - (facing === 'left' ? -3.5 : 3.5)}%`,
             top: `${playerPos.y - jumpOffset * 0.2}%`,
-            transform: `translate(-50%, -50%) ${facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: 'translate(-50%, -50%)',
           }}
           className="absolute z-19 pointer-events-none transition-transform duration-75 flex flex-col items-center"
         >
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-amber-400/60 px-1.5 py-0.2 rounded-full shadow whitespace-nowrap">
             <span className="text-[9px] font-bold text-amber-200">{companionGuide.name}</span>
           </div>
-          <AvatarRenderer customization={companionGuide.customization} size={38} showPet={false} />
+          <AvatarRenderer
+            customization={companionGuide.customization}
+            size={38}
+            isWalking={isMoving}
+            isRunning={isRunning}
+            isJumping={jumpOffset > 2}
+            facing={facing}
+            walkCycle={walkCycle}
+            showPet={false}
+          />
         </div>
 
         {/* Active Player Avatar on Map */}
@@ -961,14 +970,23 @@ export const LandLevelView: React.FC<LandLevelViewProps> = ({ landId, onBackToWo
           style={{
             left: `${playerPos.x}%`,
             top: `${playerPos.y - jumpOffset * 0.2}%`,
-            transform: `translate(-50%, -50%) ${facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: 'translate(-50%, -50%)',
           }}
           className="absolute z-20 pointer-events-none transition-transform duration-75 flex flex-col items-center"
         >
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-amber-400/60 px-2 py-0.2 rounded-full shadow whitespace-nowrap">
             <span className="text-[9px] font-black text-amber-300">{activeExplorer.name}</span>
           </div>
-          <AvatarRenderer customization={activeExplorer.customization} size={46} showPet={true} />
+          <AvatarRenderer
+            customization={activeExplorer.customization}
+            size={46}
+            isWalking={isMoving}
+            isRunning={isRunning}
+            isJumping={jumpOffset > 2}
+            facing={facing}
+            walkCycle={walkCycle}
+            showPet={true}
+          />
         </div>
 
         {/* Map On-Screen Controls */}

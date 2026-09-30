@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
 import { AvatarCustomization } from '../types/character';
 import { AvatarRenderer } from './AvatarRenderer';
-import { Check, RotateCcw } from 'lucide-react';
+import { Check, RotateCcw, Sparkles, BookOpen, MapPin, Award } from 'lucide-react';
 import { sounds } from '../utils/audio';
+import { mapAgeToCurriculumParameters } from '../data/curriculumProposalMapper';
 
 interface CharacterCreatorProps {
   onClose: () => void;
@@ -50,10 +51,24 @@ const COMPANIONS: { id: string; label: string; icon: string; lore: string }[] = 
 ];
 
 export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) => {
-  const { activeExplorer, updateAvatarCustomization, updateExplorerGender } = useGame();
+  const { activeExplorer, updateAvatarCustomization, updateExplorerGender, updateExplorerAge } = useGame();
   const [selectedGender, setSelectedGender] = useState<'boy' | 'girl'>(activeExplorer.gender || 'boy');
   const [custom, setCustom] = useState<AvatarCustomization>({ ...activeExplorer.customization });
-  const [activeTab, setActiveTab] = useState<'style' | 'outfit' | 'pet'>('style');
+  const [activeTab, setActiveTab] = useState<'style' | 'outfit' | 'pet' | 'curriculum'>('style');
+  const [selectedAge, setSelectedAge] = useState<number>(() => {
+    if (typeof activeExplorer.age === 'number') return activeExplorer.age;
+    if (typeof activeExplorer.age === 'string') return parseInt(activeExplorer.age, 10) || 5;
+    return activeExplorer.ageTier === 'preschool' ? 4
+      : activeExplorer.ageTier === 'kindergarten' ? 5
+      : activeExplorer.ageTier === 'early-elementary' ? 7
+      : activeExplorer.ageTier === 'late-elementary' ? 10
+      : activeExplorer.ageTier === 'middle-high' ? 13
+      : activeExplorer.ageTier === 'collegiate' ? 19 : 26;
+  });
+
+  const curriculumData = useMemo(() => {
+    return mapAgeToCurriculumParameters(selectedAge);
+  }, [selectedAge]);
 
   const handleGenderChange = (gender: 'boy' | 'girl') => {
     setSelectedGender(gender);
@@ -78,6 +93,9 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
   const handleSave = () => {
     updateExplorerGender(activeExplorer.id, selectedGender);
     updateAvatarCustomization(custom);
+    if (updateExplorerAge) {
+      updateExplorerAge(activeExplorer.id, selectedAge);
+    }
     sounds.playFanfare();
     onClose();
   };
@@ -119,6 +137,15 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
             <span className="text-xs text-amber-400 font-medium">
               {custom.title}
             </span>
+            <div className="mt-2.5 flex flex-col gap-1.5 w-full">
+              <div className="text-[11px] text-cyan-300 bg-cyan-950/80 px-2.5 py-1 rounded-full border border-cyan-500/40 flex items-center justify-center gap-1.5 font-bold">
+                <span>🎂</span>
+                <span>Age {selectedAge} · {curriculumData.gradeLevel}</span>
+              </div>
+              <div className="text-[10px] text-amber-200 bg-slate-900 px-2 py-0.5 rounded-full border border-amber-500/30 truncate font-semibold">
+                {curriculumData.proposalRealm.runeIcon} {curriculumData.activeContinentName}
+              </div>
+            </div>
             <div className="mt-3 text-[11px] text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800 flex items-center justify-center gap-1.5">
               <span>Companion:</span>
               <b className="text-amber-300">
@@ -194,6 +221,18 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
                 }`}
               >
                 Companion Pet
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('curriculum');
+                  sounds.playStep();
+                }}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                  activeTab === 'curriculum' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>📜</span>
+                <span>Curriculum (Age {selectedAge})</span>
               </button>
             </div>
 
@@ -340,6 +379,123 @@ export const CharacterCreator: React.FC<CharacterCreatorProps> = ({ onClose }) =
                     {custom.companionPet === pet.id && <Check className="w-4 h-4 text-amber-400" />}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* Tab 4: Age & Proposal Curriculum Matrix */}
+            {activeTab === 'curriculum' && (
+              <div className="space-y-4">
+                <div className="p-3.5 bg-slate-950 rounded-2xl border border-amber-500/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black text-amber-300 uppercase tracking-wider block">
+                      Select Explorer Age
+                    </label>
+                    <span className="text-xs font-black text-cyan-300 bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-400/50">
+                      Age {selectedAge} Years Old
+                    </span>
+                  </div>
+
+                  {/* Age Quick Selector Buttons */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 26].map(ageVal => {
+                      const isSelected = selectedAge === ageVal;
+                      const ageLabel = ageVal === 20 ? '19-24 (College)' : ageVal === 26 ? '25+ (Master/Adult)' : `${ageVal}`;
+                      return (
+                        <button
+                          key={ageVal}
+                          type="button"
+                          onClick={() => {
+                            setSelectedAge(ageVal);
+                            sounds.playStep();
+                          }}
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.6)] scale-105'
+                              : 'bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          {ageLabel}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Live Auto-Updated Curriculum Matrix Card */}
+                <div
+                  style={{ borderColor: curriculumData.proposalRealm.color }}
+                  className="p-4 rounded-2xl bg-slate-950 border-2 shadow-xl space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-3xl p-2 rounded-xl bg-slate-900 border border-slate-800 shadow">
+                        {curriculumData.proposalRealm.runeIcon}
+                      </span>
+                      <div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">
+                          Continent {curriculumData.proposalRealm.realmNumber} · {curriculumData.proposalRealm.ageBracket}
+                        </div>
+                        <h4 className="text-base font-black text-white font-display">
+                          {curriculumData.proposalRealm.name}
+                        </h4>
+                        <div className="text-xs font-bold text-cyan-300">
+                          {curriculumData.gradeLevel} · {curriculumData.proposalRealm.subtitle}
+                        </div>
+                      </div>
+                    </div>
+                    <span
+                      style={{ backgroundColor: `${curriculumData.proposalRealm.color}25`, borderColor: curriculumData.proposalRealm.color }}
+                      className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white border shrink-0"
+                    >
+                      Auto-Aligned
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-300 leading-relaxed italic">
+                    "{curriculumData.proposalRealm.lore}"
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                      Curriculum &amp; Pedagogical Focus
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {curriculumData.proposalRealm.curriculumFocus.map((focus: string, idx: number) => (
+                        <span
+                          key={idx}
+                          style={{ borderColor: `${curriculumData.proposalRealm.color}60` }}
+                          className="px-2 py-0.5 rounded-lg bg-slate-900 border text-[11px] font-bold text-slate-200"
+                        >
+                          ✓ {focus}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                      Signature Realm Mechanics
+                    </div>
+                    <ul className="text-xs text-slate-400 space-y-0.5">
+                      {curriculumData.proposalRealm.mechanics.map((mech: string, idx: number) => (
+                        <li key={idx} className="flex items-center gap-1.5">
+                          <span className="text-amber-400">⚡</span>
+                          <span>{mech}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/40 flex items-start gap-2">
+                    <span className="text-base">⭐</span>
+                    <div>
+                      <div className="text-[10px] font-black uppercase text-amber-300">Sample Quest Line</div>
+                      <div className="text-xs text-amber-100 font-medium">
+                        {curriculumData.proposalRealm.sampleQuest}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

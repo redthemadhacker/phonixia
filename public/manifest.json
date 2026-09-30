@@ -9,7 +9,7 @@
   "theme_color": "#020617",
   "icons": [
     {
-      "src": "/phonixia.png",
+      "src": "/logo.jpeg",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

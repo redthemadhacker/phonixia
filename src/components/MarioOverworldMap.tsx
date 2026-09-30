@@ -368,7 +368,7 @@ export const MarioOverworldMap: React.FC<MarioOverworldMapProps> = ({
           style={{
             left: `${avatarCoords.x - (walkFacing === 'left' ? -3.5 : 3.5)}%`,
             top: `${avatarCoords.y - 1}%`,
-            transform: `translate(-50%, calc(-50% - ${hopOffset * 0.8}px)) ${walkFacing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `translate(-50%, calc(-50% - ${hopOffset * 0.8}px))`,
             transition: isWalking ? 'left 0.15s linear, top 0.15s linear' : 'none'
           }}
           className="absolute z-28 pointer-events-none flex flex-col items-center select-none"
@@ -380,6 +380,8 @@ export const MarioOverworldMap: React.FC<MarioOverworldMapProps> = ({
             customization={companionGuide.customization}
             size={36}
             isWalking={isWalking}
+            isJumping={hopOffset > 2}
+            facing={walkFacing}
             walkCycle={walkCycle}
             showPet={false}
           />
@@ -390,7 +392,7 @@ export const MarioOverworldMap: React.FC<MarioOverworldMapProps> = ({
           style={{
             left: `${avatarCoords.x}%`,
             top: `${avatarCoords.y - 2.5}%`,
-            transform: `translate(-50%, calc(-50% - ${hopOffset}px)) ${walkFacing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+            transform: `translate(-50%, calc(-50% - ${hopOffset}px))`,
             transition: isWalking ? 'left 0.15s linear, top 0.15s linear' : 'none'
           }}
           className="absolute z-30 pointer-events-none flex flex-col items-center select-none"
@@ -402,6 +404,8 @@ export const MarioOverworldMap: React.FC<MarioOverworldMapProps> = ({
             customization={activeExplorer.customization}
             size={50}
             isWalking={isWalking}
+            isJumping={hopOffset > 2}
+            facing={walkFacing}
             walkCycle={walkCycle}
             showPet={true}
           />

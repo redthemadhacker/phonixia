@@ -3,6 +3,7 @@ import { GameProvider, useGame } from './context/GameContext';
 import { WorldCanvas } from './components/WorldCanvas';
 import { LandLevelView } from './components/LandLevelView';
 import { ActivePlayableStage } from './components/ActivePlayableStage';
+import { CuteTravelCutscene } from './components/CuteTravelCutscene';
 import { IslesOfPlay } from './components/IslesOfPlay';
 import { ShellshoreArcade } from './components/ShellshoreArcade';
 import { ArchitecturalWordForge } from './components/ArchitecturalWordForge';
@@ -114,11 +115,16 @@ const GameShell: React.FC = () => {
 
   const [currentView, setCurrentView] = useState<ViewState>('world');
   const [selectedLand, setSelectedLand] = useState<LandId>('sound-shallows');
+  const [worldTransition, setWorldTransition] = useState<{
+    targetLand: LandId;
+    stationName: string;
+    skillTitle: string;
+  } | null>(null);
   const [activeStageNumber, setActiveStageNumber] = useState<number>(1);
   const [questionRandomSeed, setQuestionRandomSeed] = useState<number>(0);
 
   // Modals state
-  const [isHomeHutOpen, setIsHomeHutOpen] = useState(true);
+  const [isHomeHutOpen, setIsHomeHutOpen] = useState(false);
   const [manualCelebrationOpen, setManualCelebrationOpen] = useState(false);
   const [isParentPinModalOpen, setIsParentPinModalOpen] = useState(false);
   const [isParentDashboardOpen, setIsParentDashboardOpen] = useState(false);
@@ -612,6 +618,23 @@ const GameShell: React.FC = () => {
         ))}
       </div>
 
+      {/* WORLD TRANSITION CUTSCENE BETWEEN REALMS */}
+      {worldTransition && (
+        <CuteTravelCutscene
+          landId={worldTransition.targetLand}
+          fromStage={1}
+          toStage={1}
+          stationName={worldTransition.stationName}
+          skillTitle={worldTransition.skillTitle}
+          activeExplorer={activeExplorer}
+          onArrived={() => {
+            setSelectedLand(worldTransition.targetLand);
+            setWorldTransition(null);
+            setCurrentView('land-map');
+          }}
+        />
+      )}
+
       {/* 1. GLOBAL WORLD CANVAS */}
       {currentView === 'world' && (
         <WorldCanvas
@@ -619,8 +642,23 @@ const GameShell: React.FC = () => {
             if (landId === 'phonixia-academy' || landId === 'masters-pathways' || landId === 'celestial-archives') {
               setCurrentView('higher-ed');
             } else {
-              setSelectedLand(landId);
-              setCurrentView('land-map');
+              // Trigger cinematic world transition cutscene
+              const names: Record<LandId, { station: string; skill: string }> = {
+                'sound-shallows': { station: 'Whispering Cove', skill: 'Pure Phonics Sound Pearls' },
+                'builders-guild': { station: 'Guild Word Forge', skill: 'Word Crane & Architecture' },
+                'tricky-trails': { station: 'Canopy Crossing', skill: 'Tricky Sight Word Vines' },
+                'whispering-peaks': { station: 'Blizzard Ridge', skill: 'Downhill Mountain Slalom' },
+                'lexicon-empire': { station: 'Imperial Bastion', skill: 'Rhetoric & Clausal Fortresses' },
+                'phonixia-academy': { station: 'Phonixia Academy', skill: 'Collegiate Linguistics' },
+                'masters-pathways': { station: 'Master Pathways', skill: 'Multisensory Literacy' },
+                'celestial-archives': { station: 'Celestial Sanctum', skill: 'Apex Coronation' }
+              };
+              const info = names[landId] || { station: 'Phonixia Realm', skill: 'Phonics Journey' };
+              setWorldTransition({
+                targetLand: landId,
+                stationName: info.station,
+                skillTitle: info.skill
+              });
             }
           }}
           onSelectMinigame={(minigameId: MinigameId) => {

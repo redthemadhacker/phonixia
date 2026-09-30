@@ -128,24 +128,41 @@ class SoundManager {
       return 'k';
     }
 
+    // Convert 'makes the X sound' or 'makes the /x/ sound' into purely phonetic prompt
+    text = text.replace(/which letter makes the \/([a-z])\/ sound like/gi, 'which letter makes the sound, $1uh, like');
+    text = text.replace(/which letter makes the ([a-z]) sound/gi, 'which letter makes the sound, $1uh');
+    text = text.replace(/makes the \/j\/ sound/gi, 'makes the sound juh');
+    text = text.replace(/makes the \/k\/ sound/gi, 'makes the sound kuh');
+    text = text.replace(/makes the \/b\/ sound/gi, 'makes the sound buh');
+    text = text.replace(/makes the \/d\/ sound/gi, 'makes the sound duh');
+    text = text.replace(/makes the \/t\/ sound/gi, 'makes the sound tuh');
+    text = text.replace(/makes the \/p\/ sound/gi, 'makes the sound puh');
+    text = text.replace(/makes the \/g\/ sound/gi, 'makes the sound guh');
+    text = text.replace(/makes the \/a\/ sound/gi, 'makes the sound ah');
+    text = text.replace(/makes the \/e\/ sound/gi, 'makes the sound eh');
+    text = text.replace(/makes the \/i\/ sound/gi, 'makes the sound ih');
+    text = text.replace(/makes the \/o\/ sound/gi, 'makes the sound ah');
+    text = text.replace(/makes the \/u\/ sound/gi, 'makes the sound uh');
+
     // Fix repeated consonant phoneme spelling so speech engine doesn't say "k - s - s - s"
     text = text.replace(/ksss/gi, 'ks');
-    text = text.replace(/\bk\s*s\s*s\s*s\b/gi, 'ks');
+    text = text.replace(/k\s*s\s*s\s*s/gi, 'ks');
     text = text.replace(/fff\s*-\s*ah\s*-\s*ksss/gi, 'f... ah... ks... spells fox!');
     text = text.replace(/d\s*-\s*ah\s*-\s*g/gi, 'd... ah... g... spells dog!');
     text = text.replace(/p\s*-\s*ih\s*-\s*g/gi, 'p... ih... g... spells pig!');
     text = text.replace(/k\s*-\s*ah\s*-\s*t/gi, 'k... ah... t... spells cat!');
 
     // Convert phonetic slashes into natural spoken equivalents
-    text = text.replace(/\/æ\//g, 'short a');
-    text = text.replace(/\/ɒ\//g, 'short o');
-    text = text.replace(/\/ɛ\//g, 'short e');
-    text = text.replace(/\/ɪ\//g, 'short i');
-    text = text.replace(/\/ʌ\//g, 'short u');
-    text = text.replace(/\/eɪ\//g, 'long a');
-    text = text.replace(/\/aɪ\//g, 'long i');
-    text = text.replace(/\/oʊ\//g, 'long o');
-    text = text.replace(/\/uː\//g, 'long u');
+    text = text.replace(/\/æ\//g, 'ah');
+    text = text.replace(/\/ɒ\//g, 'ah');
+    text = text.replace(/\/ɛ\//g, 'eh');
+    text = text.replace(/\/ɪ\//g, 'ih');
+    text = text.replace(/\/ʌ\//g, 'uh');
+    text = text.replace(/\/eɪ\//g, 'ay');
+    text = text.replace(/\/aɪ\//g, 'eye');
+    text = text.replace(/\/oʊ\//g, 'oh');
+    text = text.replace(/\/uː\//g, 'oo');
+    text = text.replace(/\/dʒ\//g, 'juh');
     text = text.replace(/\/ʃ\//g, 'sh');
     text = text.replace(/\/tʃ\//g, 'ch');
     text = text.replace(/\/θ\//g, 'th');
@@ -155,38 +172,29 @@ class SoundManager {
     text = text.replace(/\/st\//g, 's t');
     text = text.replace(/\/nd\//g, 'n d');
     text = text.replace(/\/mp\//g, 'm p');
-    text = text.replace(/\/b\//g, 'b');
-    text = text.replace(/\/t\//g, 't');
-    text = text.replace(/\/m\//g, 'm');
-    text = text.replace(/\/g\//g, 'g');
-    text = text.replace(/\/s\//g, 's');
-    text = text.replace(/\/d\//g, 'd');
-    text = text.replace(/\/w\//g, 'w');
-    text = text.replace(/\/k\//g, 'k');
+    text = text.replace(/\/b\//g, 'buh');
+    text = text.replace(/\/t\//g, 'tuh');
+    text = text.replace(/\/m\//g, 'mmm');
+    text = text.replace(/\/g\//g, 'guh');
+    text = text.replace(/\/s\//g, 'sss');
+    text = text.replace(/\/d\//g, 'duh');
+    text = text.replace(/\/w\//g, 'wuu');
+    text = text.replace(/\/k\//g, 'kuh');
 
-    // Clean elongated strings
-    text = text.replace(/\bshhh\b/gi, 'sh');
-    text = text.replace(/\bchhh\b/gi, 'ch');
-    text = text.replace(/\bthhh\b/gi, 'th');
-    text = text.replace(/\bmmm\b/gi, 'm');
-    text = text.replace(/\bsss\b/gi, 's');
-    text = text.replace(/\bfff\b/gi, 'f');
-    text = text.replace(/\blll\b/gi, 'l');
-    text = text.replace(/\bnnn\b/gi, 'n');
-    text = text.replace(/\baaa\b/gi, 'ah');
-    text = text.replace(/\bpuh\b/gi, 'p');
-    text = text.replace(/\bbuh\b/gi, 'b');
-    text = text.replace(/\btuh\b/gi, 't');
-    text = text.replace(/\bduh\b/gi, 'd');
-    text = text.replace(/\bkuh\b/gi, 'k');
-    text = text.replace(/\bguh\b/gi, 'g');
-    text = text.replace(/\bjuh\b/gi, 'j');
-    text = text.replace(/\bwuu\b/gi, 'w');
-    text = text.replace(/\bzzz\b/gi, 'z');
-
+    // Retain and polish phonetic pronunciations for building
+    // Clean elongated strings for natural speech flow
+    text = text.replace(/shhh/gi, 'sh');
+    text = text.replace(/chhh/gi, 'ch');
+    text = text.replace(/thhh/gi, 'th');
+    text = text.replace(/mmm/gi, 'mmm');
+    text = text.replace(/sss/gi, 'sss');
+    text = text.replace(/fff/gi, 'fff');
+    text = text.replace(/lll/gi, 'lll');
+    text = text.replace(/nnn/gi, 'nnn');
+    text = text.replace(/aaa/gi, 'ah');
+    // Keep 'puh', 'buh', 'tuh', 'duh', 'kuh', 'guh', 'juh', 'wuu' as distinct phonetic sound syllables!
     return text;
   }
-
   public speakPhonicsSlow(text: string) {
     if (!this.speechEnabled) return;
     this.speak(text, 0.75, 1.2);
@@ -306,19 +314,47 @@ class SoundManager {
     this.initCtx();
     if (!this.audioCtx) return;
 
+    const now = this.audioCtx.currentTime;
+    // Mario-style high-impact running step tap
     const osc = this.audioCtx.createOscillator();
     const gain = this.audioCtx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(140, this.audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(45, this.audioCtx.currentTime + 0.05);
 
-    gain.gain.setValueAtTime(0.08, this.audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.05);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(75, now + 0.045);
+
+    gain.gain.setValueAtTime(0.14, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
 
     osc.connect(gain);
     gain.connect(this.audioCtx.destination);
-    osc.start();
-    osc.stop(this.audioCtx.currentTime + 0.05);
+
+    osc.start(now);
+    osc.stop(now + 0.045);
+  }
+
+  // Double Mario-style rapid footsteps for fast running
+  public playRunSteps() {
+    if (!this.soundEnabled) return;
+    this.initCtx();
+    if (!this.audioCtx) return;
+
+    const now = this.audioCtx.currentTime;
+    [0, 0.07].forEach((delay, idx) => {
+      if (!this.audioCtx) return;
+      const t = now + delay;
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(idx === 0 ? 240 : 260, t);
+      osc.frequency.exponentialRampToValueAtTime(80, t + 0.04);
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.04);
+    });
   }
 
   // Classic Mario-style Jump Sound: upward pitch sweep!

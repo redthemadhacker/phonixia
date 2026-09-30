@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
 import { AvatarRenderer } from './AvatarRenderer';
 import { sounds } from '../utils/audio';
 import { PHONIXIA_LANDS } from '../data/curriculumData';
+import { mapAgeToCurriculumParameters } from '../data/curriculumProposalMapper';
 import {
   X,
   Users,
@@ -43,6 +44,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
     deleteExplorer,
     updateExplorerName,
     updateExplorerGender,
+    updateExplorerAge,
     updateAvatarCustomization,
     resetExplorerProgress,
     resetClassroomAndGameData,
@@ -60,6 +62,7 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
   }, []);
   const [newExplorerName, setNewExplorerName] = useState('');
   const [newExplorerGender, setNewExplorerGender] = useState<'boy' | 'girl'>('boy');
+  const [newExplorerAge, setNewExplorerAge] = useState<number>(5);
   const [newExplorerTier, setNewExplorerTier] = useState<
     'preschool' | 'kindergarten' | 'early-elementary' | 'late-elementary' | 'middle-high'
   >('preschool');
@@ -72,13 +75,52 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Explorer Name & Customization Draft State
-  const [draftName, setDraftName] = useState(activeExplorer.name);
-  const [draftGender, setDraftGender] = useState<'boy' | 'girl'>(activeExplorer.gender || 'boy');
+  const [draftName, setDraftName] = useState(activeExplorer?.name || 'Explorer');
+  const [draftGender, setDraftGender] = useState<'boy' | 'girl'>(activeExplorer?.gender || 'boy');
+  const [draftAge, setDraftAge] = useState<number>(() => {
+    if (typeof activeExplorer?.age === 'number') return activeExplorer.age;
+    if (typeof activeExplorer?.age === 'string') return parseInt(activeExplorer.age, 10) || 5;
+    return activeExplorer?.ageTier === 'preschool' ? 4
+      : activeExplorer?.ageTier === 'kindergarten' ? 5
+      : activeExplorer?.ageTier === 'early-elementary' ? 7
+      : activeExplorer?.ageTier === 'late-elementary' ? 10
+      : activeExplorer?.ageTier === 'middle-high' ? 13
+      : activeExplorer?.ageTier === 'collegiate' ? 19 : 26;
+  });
   const [isEditingName, setIsEditingName] = useState(false);
   const [draftCustomization, setDraftCustomization] = useState({
-    ...activeExplorer.customization,
-    outfitStyle: activeExplorer.customization.outfitStyle || 'ranger',
+    ...(activeExplorer?.customization || {}),
+    outfitStyle: activeExplorer?.customization?.outfitStyle || 'ranger',
   });
+
+  // Keep draft state safely in sync when activeExplorer changes
+  useEffect(() => {
+    if (activeExplorer) {
+      setDraftName(activeExplorer.name || 'Explorer');
+      setDraftGender(activeExplorer.gender || 'boy');
+      const effAge = typeof activeExplorer.age === 'number' ? activeExplorer.age
+        : typeof activeExplorer.age === 'string' ? parseInt(activeExplorer.age, 10) || 5
+        : activeExplorer.ageTier === 'preschool' ? 4
+        : activeExplorer.ageTier === 'kindergarten' ? 5
+        : activeExplorer.ageTier === 'early-elementary' ? 7
+        : activeExplorer.ageTier === 'late-elementary' ? 10
+        : activeExplorer.ageTier === 'middle-high' ? 13
+        : activeExplorer.ageTier === 'collegiate' ? 19 : 26;
+      setDraftAge(effAge);
+      setDraftCustomization({
+        ...(activeExplorer.customization || {}),
+        outfitStyle: activeExplorer.customization?.outfitStyle || 'ranger',
+      });
+    }
+  }, [activeExplorer]);
+
+  const activeCurriculum = useMemo(() => {
+    return mapAgeToCurriculumParameters(draftAge);
+  }, [draftAge]);
+
+  const newExplorerCurriculum = useMemo(() => {
+    return mapAgeToCurriculumParameters(newExplorerAge);
+  }, [newExplorerAge]);
 
   // Customization Palettes
   const SKIN_TONES = ['#ffd1a4', '#fcd5b5', '#d99058', '#b0703c', '#8a4b1e', '#5c3818'];
@@ -169,12 +211,12 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newExplorerName.trim()) return;
-    createExplorer(newExplorerName.trim(), newExplorerTier, newExplorerGender);
+    createExplorer(newExplorerName.trim(), newExplorerAge, newExplorerGender, newExplorerAge);
     setNewExplorerName('');
     setIsCreating(false);
     sounds.playFanfare();
     sounds.speak(
-      `Welcome to Phonixia, ${newExplorerName}! Traveling with ${newExplorerGender === 'boy' ? 'Kam' : 'Celine'}!`
+      `Welcome to Phonixia, ${newExplorerName}! Curriculum initialized for Age ${newExplorerAge}. Traveling with ${newExplorerGender === 'boy' ? 'Kam' : 'Celine'}!`
     );
   };
 
@@ -217,10 +259,13 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
       updateExplorerName(activeExplorer.id, draftName.trim());
     }
     updateExplorerGender(activeExplorer.id, draftGender);
+    if (updateExplorerAge) {
+      updateExplorerAge(activeExplorer.id, draftAge);
+    }
     updateAvatarCustomization(draftCustomization);
     setIsEditingName(false);
     sounds.playSuccess();
-    sounds.speak(`Profile updated for ${draftName.trim() || activeExplorer.name}!`);
+    sounds.speak(`Profile and curriculum updated for ${draftName.trim() || activeExplorer.name}!`);
   };
 
   const handleTeacherClassroomReset = () => {
@@ -427,21 +472,54 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        Adventurer Class / Specialization
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Explorer Age
+                        </label>
+                        <span className="text-[10px] font-black text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-400/40">
+                          Age {newExplorerAge} ({newExplorerCurriculum.gradeLevel})
+                        </span>
+                      </div>
                       <select
-                        value={newExplorerTier}
-                        onChange={(e) => setNewExplorerTier(e.target.value as any)}
+                        value={newExplorerAge}
+                        onChange={(e) => setNewExplorerAge(parseInt(e.target.value, 10))}
                         className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-amber-400 cursor-pointer font-bold"
                       >
-                        <option value="preschool">🏹 Scout Ranger (Forest Tracker)</option>
-                        <option value="kindergarten">📜 Rune Scholar (Glyph Weaver)</option>
-                        <option value="early-elementary">🛡️ Citadel Knight (Phonix Defender)</option>
-                        <option value="late-elementary">🧙‍♂️ Arch-Mage (Element Spellsword)</option>
-                        <option value="middle-high">👑 High Champion (Lexicon Paladin)</option>
+                        <option value={4}>Age 3–4 (Pre-K · Sound Shallows: Auditory Awareness)</option>
+                        <option value={5}>Age 5–6 (Kindergarten · Sound Shallows: Phoneme Attunement)</option>
+                        <option value={7}>Age 6–8 (Grades 1–2 · Builders Guild: Phonics Forge &amp; CVC)</option>
+                        <option value={8}>Age 8–9 (Grade 3 · Builders Guild: Multisyllabic Slicing)</option>
+                        <option value={10}>Age 9–11 (Grades 4–5 · Tricky Trails: Heart-Words &amp; Fluency)</option>
+                        <option value={12}>Age 11–13 (Grades 6–7 · Whispering Peaks: Greek/Latin Roots)</option>
+                        <option value={14}>Age 13–14 (Grade 8 · Whispering Peaks: Morphology Mastery)</option>
+                        <option value={16}>Age 14–18 (High School · Lexicon Empire: Clausal Syntax &amp; Rhetoric)</option>
+                        <option value={20}>Age 19–24 (Collegiate · Phonixia Academy: IPA &amp; Generative Grammar)</option>
+                        <option value={26}>Age 25+ (Master's Pathways: Structured Literacy &amp; Neuro-Intervention)</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Real-time curriculum preview matching proposal parameters */}
+                  <div
+                    style={{ borderColor: `${newExplorerCurriculum.proposalRealm.color}60` }}
+                    className="p-2.5 rounded-xl bg-slate-900/90 border flex items-center justify-between gap-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl p-1 rounded-lg bg-slate-950 border border-slate-800">
+                        {newExplorerCurriculum.proposalRealm.runeIcon}
+                      </span>
+                      <div>
+                        <div className="text-[9px] font-mono uppercase tracking-wider text-amber-400 font-bold">
+                          Continent {newExplorerCurriculum.proposalRealm.realmNumber}: {newExplorerCurriculum.proposalRealm.name}
+                        </div>
+                        <div className="text-xs font-black text-white">
+                          {newExplorerCurriculum.gradeLevel} · {newExplorerCurriculum.proposalRealm.subtitle}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold text-slate-300 bg-slate-950 px-2 py-0.5 rounded-full border border-slate-800 shrink-0">
+                      Auto-Aligned
+                    </span>
                   </div>
 
                   <div className="space-y-1">
@@ -666,6 +744,105 @@ export const HomeHutModal: React.FC<HomeHutModalProps> = ({
                         <div className="text-[10px] text-pink-300">Celine as Companion</div>
                       </div>
                     </button>
+                  </div>
+                </div>
+
+                {/* Explorer Age & Proposal Curriculum Matrix */}
+                <div className="p-3.5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black text-amber-300 uppercase tracking-wide block">
+                      Explorer Age &amp; Curriculum Level
+                    </label>
+                    <span className="text-xs font-black text-cyan-300 bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-400/50">
+                      Age {draftAge} Years Old ({activeCurriculum.gradeLevel})
+                    </span>
+                  </div>
+
+                  {/* Age Quick Selector Buttons */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 26].map(ageVal => {
+                      const isSelected = draftAge === ageVal;
+                      const ageLabel = ageVal === 20 ? '19-24 (College)' : ageVal === 26 ? '25+ (Master/Adult)' : `${ageVal}`;
+                      return (
+                        <button
+                          key={ageVal}
+                          type="button"
+                          onClick={() => {
+                            setDraftAge(ageVal);
+                            sounds.playStep();
+                          }}
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.6)] scale-105'
+                              : 'bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          {ageLabel}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Live Proposal Curriculum Matrix Card */}
+                  <div
+                    style={{ borderColor: activeCurriculum.proposalRealm.color }}
+                    className="p-3.5 rounded-xl bg-slate-900/90 border-2 shadow-lg space-y-2.5"
+                  >
+                    <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl p-1.5 rounded-xl bg-slate-950 border border-slate-800">
+                          {activeCurriculum.proposalRealm.runeIcon}
+                        </span>
+                        <div>
+                          <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400 font-bold">
+                            Continent {activeCurriculum.proposalRealm.realmNumber} · {activeCurriculum.proposalRealm.ageBracket}
+                          </div>
+                          <h4 className="text-sm font-black text-white font-display">
+                            {activeCurriculum.proposalRealm.name}
+                          </h4>
+                          <div className="text-[11px] font-bold text-cyan-300">
+                            {activeCurriculum.gradeLevel} · {activeCurriculum.proposalRealm.subtitle}
+                          </div>
+                        </div>
+                      </div>
+                      <span
+                        style={{ backgroundColor: `${activeCurriculum.proposalRealm.color}25`, borderColor: activeCurriculum.proposalRealm.color }}
+                        className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider text-white border shrink-0"
+                      >
+                        Auto-Aligned
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-300 leading-relaxed italic">
+                      "{activeCurriculum.proposalRealm.lore}"
+                    </p>
+
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                        Curriculum Focus
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {activeCurriculum.proposalRealm.curriculumFocus.map((focus: string, idx: number) => (
+                          <span
+                            key={idx}
+                            style={{ borderColor: `${activeCurriculum.proposalRealm.color}60` }}
+                            className="px-2 py-0.5 rounded-lg bg-slate-950 border text-[10px] font-bold text-slate-200"
+                          >
+                            ✓ {focus}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/30 flex items-start gap-1.5">
+                      <span className="text-sm">⭐</span>
+                      <div>
+                        <div className="text-[9px] font-black uppercase text-amber-300">Sample Quest Line</div>
+                        <div className="text-[11px] text-amber-100 font-medium">
+                          {activeCurriculum.proposalRealm.sampleQuest}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

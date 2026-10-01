@@ -44,7 +44,7 @@ Engineered with zero-trust parental cybersecurity standards:
 
 Experience the live beta build:
 
-👉 **[Play Phonixia Beta](https://ais-pre-huegntzn2yibb7en6ccwvr-174773205323.us-west1.run.app)**
+👉 **[Play Phonixia Beta](https://phonixia-7c9c93ef0d42.herokuapp.com/)**
 
 ---
 

@@ -139,15 +139,13 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
   } else if (isWalking || isRunning) {
     // Mario-style classic stepped locomotion (snappy, repeated fast steps like Mario walking/running)
     // Quantize the cycle into distinct snappy pose steps
-    const stepCount = isRunning ? 4 : 4;
-    const stepProgress = (activeCycle / (Math.PI * 2)) % 1;
-    const stepPhase = Math.floor(stepProgress * stepCount);
+    const stepCount = 4;
+    // Ensure normalized positive cycle progress between 0 and 1
+    const normalizedCycle = ((activeCycle % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+    const stepProgress = normalizedCycle / (Math.PI * 2);
+    const stepPhase = Math.floor(stepProgress * stepCount) % stepCount;
     
     // Snappy stepped angles: Left Leg, Right Leg, Left Arm, Right Arm
-    // Phase 0: Left forward step, Right back
-    // Phase 1: Contact transition snap
-    // Phase 2: Right forward step, Left back
-    // Phase 3: Contact transition snap
     const runMult = isRunning ? 1.6 : 1.0;
     const poses = [
       { lLeg: 34 * runMult, rLeg: -34 * runMult, lArm: -38 * runMult, rArm: 38 * runMult, bob: isRunning ? -6 : -3 },
@@ -155,7 +153,7 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
       { lLeg: -34 * runMult, rLeg: 34 * runMult, lArm: 38 * runMult, rArm: -38 * runMult, bob: isRunning ? -6 : -3 },
       { lLeg: -10 * runMult, rLeg: 10 * runMult, lArm: 12 * runMult, rArm: -12 * runMult, bob: 0 },
     ];
-    const currentPose = poses[stepPhase % poses.length];
+    const currentPose = poses[((stepPhase % poses.length) + poses.length) % poses.length] || poses[0];
     leftLegRot = currentPose.lLeg;
     rightLegRot = currentPose.rLeg;
     leftArmRot = currentPose.lArm;

@@ -1,6 +1,6 @@
 # Phonixia: Multiverse Adventure 🎮✨
 
-Phonixia is a free, accessible phonics learning quest engineered for children. Designed to make foundational reading engaging and intuitive, players venture through 5 magical realms to master phonetic pronunciation challenges, discover hidden mechanics, and track their literacy journey.
+Phonixia is a free, accessible beta version of a phonics learning quest engineered for children. Designed to make foundational reading engaging and intuitive, players venture through 5 magical realms to master phonetic pronunciation challenges, discover hidden mechanics, and track their literacy journey.
 
 ---
 

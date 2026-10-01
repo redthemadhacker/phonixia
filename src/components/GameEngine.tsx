@@ -72,6 +72,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   const [isStroking, setIsStroking] = useState(false);
 
   // 2. Builders Guild: Crane Hook Position & Hoisting State
+  const [isMoving, setIsMoving] = useState(false);
   const [builderX, setBuilderX] = useState<number>(50);
   const [builderFacing, setBuilderFacing] = useState<'left' | 'right'>('right');
   const [craneLowered, setCraneLowered] = useState(false);
@@ -182,33 +183,60 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     }, 450);
   }, [hasSubmitted, isStroking, activeOptions, swimPos.x, handleSelectOption]);
 
-  // Realm 2 Action: Multi-Letter Crane Hook Drops & Lifts Block
-  const triggerHoistBrick = useCallback(() => {
+  // Realm 2 Action: Multi-Letter Crane Hook Drops, Lifts & Delivers Block to Word Building
+  const triggerHoistBrick = useCallback((optionOverride?: string, optionIndexOverride?: number) => {
     if (hasSubmitted || craneLowered) return;
-    setCraneLowered(true);
-    sounds.playBlockHit();
 
-    let closestIdx = 0;
-    let minDiff = 999;
-    activeOptions.forEach((_, idx) => {
-      const blockX = 12 + (idx * (76 / Math.max(activeOptions.length - 1, 1)));
-      const diff = Math.abs(builderX - blockX);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIdx = idx;
-      }
-    });
+    let targetIdx = optionIndexOverride;
+    if (targetIdx === undefined) {
+      let minDiff = 999;
+      activeOptions.forEach((_, idx) => {
+        const blockX = 12 + (idx * (76 / Math.max(activeOptions.length - 1, 1)));
+        const diff = Math.abs(builderX - blockX);
+        if (diff < minDiff) {
+          minDiff = diff;
+          targetIdx = idx;
+        }
+      });
+    }
 
-    const chosen = activeOptions[closestIdx];
-    const targetX = 12 + (closestIdx * (76 / Math.max(activeOptions.length - 1, 1)));
+    const chosen = optionOverride || (targetIdx !== undefined ? activeOptions[targetIdx] : activeOptions[0]);
+    const safeIdx = targetIdx !== undefined ? targetIdx : 0;
+    const targetX = 12 + (safeIdx * (76 / Math.max(activeOptions.length - 1, 1)));
+
+    // Step 1: Align builder and crane directly over the chosen block
     setBuilderX(targetX);
-    setHeldBrick(chosen);
+    setIsMoving(true);
+    setBuilderFacing(targetX >= builderX ? 'right' : 'left');
 
     setTimeout(() => {
-      handleSelectOption(chosen, closestIdx);
-      setHeldBrick(null);
-      setCraneLowered(false);
-    }, 450);
+      setIsMoving(false);
+      // Step 2: Drop the hook onto the letter block
+      setCraneLowered(true);
+      sounds.playHammer();
+
+      setTimeout(() => {
+        // Step 3: Crane claw grabs the letter block and lifts it up
+        setHeldBrick(chosen);
+        sounds.playCollect();
+        setCraneLowered(false); // Hoist hook cable retracts carrying block
+
+        setTimeout(() => {
+          // Step 4: Crane trolley and builder transit towards the Word Building Tray / Stacking area (center-left)
+          setIsMoving(true);
+          setBuilderFacing('left');
+          setBuilderX(25);
+
+          setTimeout(() => {
+            // Step 5: Deliver letter block onto the word assembly tray
+            setIsMoving(false);
+            sounds.playBlockHit();
+            handleSelectOption(chosen, safeIdx);
+            setHeldBrick(null);
+          }, 450);
+        }, 300);
+      }, 350);
+    }, 180);
   }, [hasSubmitted, craneLowered, activeOptions, builderX, handleSelectOption]);
 
   // Realm 3 Action: Jungle Trail Leap & Switch
@@ -300,6 +328,9 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     const speed = 1.35;
 
     const tick = () => {
+      const moving = Boolean(dpad.left || dpad.right || dpad.up || dpad.down);
+      setIsMoving(moving);
+
       if (landId === 'sound-shallows') {
         if (dpad.left) {
           setSwimPos(p => ({ ...p, x: Math.max(8, p.x - speed) }));
@@ -828,19 +859,44 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                 </div>
               </div>
 
-              {/* Suspended Hook following the Builder */}
+              {/* Suspended Crane Trolley & Hook following the Builder */}
               <div
                 style={{
                   left: `${builderX}%`,
                   top: '32px',
-                  height: craneLowered ? '110px' : '48px',
+                  height: craneLowered ? '118px' : '48px',
                   transform: 'translateX(-50%)',
+                  transition: 'left 0.15s ease-out, height 0.25s ease-in-out'
                 }}
-                className="absolute z-20 w-1 bg-amber-400/90 transition-all duration-200 flex flex-col items-center"
+                className="absolute z-20 w-1 bg-amber-400/90 flex flex-col items-center pointer-events-none"
               >
-                <div className="w-6 h-6 rounded-md bg-amber-500 border border-white flex items-center justify-center shadow-lg -bottom-3 absolute">
-                  <span className="text-xs">🪝</span>
+                {/* Overhead Carriage Wheels */}
+                <div className="w-8 h-2.5 rounded-t bg-amber-600 border border-amber-300 absolute -top-3 flex items-center justify-around px-1 shadow">
+                  <div className="w-1 h-1 rounded-full bg-slate-950" />
+                  <div className="w-1 h-1 rounded-full bg-slate-950" />
                 </div>
+
+                {/* Crane Hook & Mechanical Claw Gripper */}
+                <div className="w-7 h-7 rounded-md bg-amber-500 border border-white flex flex-col items-center justify-center shadow-lg -bottom-3.5 absolute">
+                  <span className="text-sm">🪝</span>
+                  {/* Gripper prongs */}
+                  <div className="flex items-center gap-2 -mt-1.5">
+                    <div className={`w-1.5 h-1 border-b border-l border-white ${heldBrick ? 'rotate-12' : '-rotate-12'}`} />
+                    <div className={`w-1.5 h-1 border-b border-r border-white ${heldBrick ? '-rotate-12' : 'rotate-12'}`} />
+                  </div>
+                </div>
+
+                {/* Carried Letter Block suspended from hook */}
+                {heldBrick && (
+                  <div className="absolute -bottom-14 flex flex-col items-center animate-bounce-gentle">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 text-slate-950 font-black text-base flex items-center justify-center border-2 border-white shadow-[0_0_15px_rgba(245,158,11,0.9)]">
+                      {heldBrick}
+                    </div>
+                    <span className="text-[8px] font-black text-amber-200 bg-slate-950/90 px-1 rounded border border-amber-400 shadow -mt-1">
+                      HOISTED
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* 8-BLOCK ROW: Adjusted positioning to prevent bottom cutoff */}
@@ -852,9 +908,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                       <div
                         key={idx}
                         onClick={() => {
-                          const targetX = 12 + (idx * (76 / Math.max(activeOptions.length - 1, 1)));
-                          setBuilderX(targetX);
-                          handleSelectOption(opt, idx);
+                          triggerHoistBrick(opt, idx);
                         }}
                         className="group flex flex-col items-center cursor-pointer transition-transform hover:-translate-y-1 active:scale-95"
                       >
@@ -893,14 +947,20 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                 style={{
                   left: `${builderX - (builderFacing === 'left' ? -8 : 8)}%`,
                   bottom: '48px',
-                  transform: `translateX(-50%) ${builderFacing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+                  transform: 'translateX(-50%)',
                 }}
                 className="absolute z-25 transition-transform duration-75 flex flex-col items-center pointer-events-none"
               >
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-slate-950/80 px-1.5 rounded text-[8px] font-bold text-amber-300 shadow">
                   {companionGuide.name}
                 </div>
-                <AvatarRenderer customization={companionGuide.customization} size={38} showPet={false} />
+                <AvatarRenderer
+                  customization={companionGuide.customization}
+                  size={38}
+                  isWalking={isMoving}
+                  facing={builderFacing}
+                  showPet={false}
+                />
               </div>
 
               {/* Player Builder Rig with Crane Hoist */}
@@ -908,7 +968,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                 style={{
                   left: `${builderX}%`,
                   bottom: `${50 + (craneLowered ? 6 : 0)}px`,
-                  transform: `translateX(-50%) ${builderFacing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+                  transform: 'translateX(-50%)',
                 }}
                 className="absolute z-30 transition-transform duration-75 flex flex-col items-center pointer-events-none"
               >
@@ -920,7 +980,13 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-amber-400 px-1.5 rounded text-[8px] font-bold text-amber-200 shadow">
                   {activeExplorer.name}
                 </div>
-                <AvatarRenderer customization={activeExplorer.customization} size={52} />
+                <AvatarRenderer
+                  customization={activeExplorer.customization}
+                  size={52}
+                  isWalking={isMoving}
+                  isActing={craneLowered || Boolean(heldBrick)}
+                  facing={builderFacing}
+                />
               </div>
             </div>
           )}
@@ -970,13 +1036,26 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                 style={{
                   left: `${cartX}%`,
                   bottom: `${34 + (isDashing ? 8 : 0)}px`,
-                  transform: `translateX(-50%) ${cartFacing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+                  transform: 'translateX(-50%)',
                 }}
                 className="absolute z-30 transition-transform duration-75 flex flex-col items-center pointer-events-none"
               >
                 <div className="flex items-center gap-1">
-                  <AvatarRenderer customization={activeExplorer.customization} size={46} />
-                  <AvatarRenderer customization={companionGuide.customization} size={36} showPet={false} />
+                  <AvatarRenderer
+                    customization={activeExplorer.customization}
+                    size={46}
+                    isWalking={isMoving}
+                    isJumping={isDashing}
+                    facing={cartFacing}
+                  />
+                  <AvatarRenderer
+                    customization={companionGuide.customization}
+                    size={36}
+                    isWalking={isMoving}
+                    isJumping={isDashing}
+                    facing={cartFacing}
+                    showPet={false}
+                  />
                 </div>
                 <div className="w-16 h-4 bg-amber-800 rounded-b-lg border border-amber-500 flex items-center justify-around px-1 shadow">
                   <div className="w-2.5 h-2.5 rounded-full bg-slate-900 border border-amber-300" />
@@ -1031,11 +1110,24 @@ export const GameEngine: React.FC<GameEngineProps> = ({
               >
                 <div className="relative flex flex-col items-center">
                   <div className="w-12 h-2.5 bg-gradient-to-r from-indigo-400 via-purple-300 to-indigo-400 rounded-full shadow border border-white" />
-                  <AvatarRenderer customization={activeExplorer.customization} size={48} />
+                  <AvatarRenderer
+                    customization={activeExplorer.customization}
+                    size={48}
+                    isWalking={true}
+                    isJumping={isThermalBoosting}
+                    facing={gliderBank < 0 ? 'left' : 'right'}
+                  />
                 </div>
                 <div className="relative flex flex-col items-center opacity-90">
                   <div className="w-10 h-2 bg-gradient-to-r from-purple-400 via-pink-300 to-purple-400 rounded-full shadow border border-white" />
-                  <AvatarRenderer customization={companionGuide.customization} size={36} showPet={false} />
+                  <AvatarRenderer
+                    customization={companionGuide.customization}
+                    size={36}
+                    isWalking={true}
+                    isJumping={isThermalBoosting}
+                    facing={gliderBank < 0 ? 'left' : 'right'}
+                    showPet={false}
+                  />
                 </div>
               </div>
             </div>
@@ -1086,21 +1178,27 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                 style={{
                   left: `${citadelX - (citadelFacing === 'left' ? -8 : 8)}%`,
                   bottom: '36px',
-                  transform: `translateX(-50%) ${citadelFacing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+                  transform: 'translateX(-50%)',
                 }}
                 className="absolute z-25 transition-transform duration-75 flex flex-col items-center pointer-events-none"
               >
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-slate-950/80 px-1.5 rounded text-[8px] font-bold text-yellow-300 shadow">
                   {companionGuide.name}
                 </div>
-                <AvatarRenderer customization={companionGuide.customization} size={38} showPet={false} />
+                <AvatarRenderer
+                  customization={companionGuide.customization}
+                  size={38}
+                  isWalking={isMoving}
+                  facing={citadelFacing}
+                  showPet={false}
+                />
               </div>
 
               <div
                 style={{
                   left: `${citadelX}%`,
                   bottom: '38px',
-                  transform: `translateX(-50%) ${citadelFacing === 'left' ? 'scaleX(-1)' : 'scaleX(1)'}`,
+                  transform: 'translateX(-50%)',
                 }}
                 className="absolute z-30 transition-transform duration-75 flex flex-col items-center pointer-events-none"
               >
@@ -1110,7 +1208,13 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-amber-400 px-1.5 rounded text-[8px] font-bold text-amber-200 shadow">
                   {activeExplorer.name}
                 </div>
-                <AvatarRenderer customization={activeExplorer.customization} size={52} />
+                <AvatarRenderer
+                  customization={activeExplorer.customization}
+                  size={52}
+                  isWalking={isMoving}
+                  isActing={isChannelingScepter}
+                  facing={citadelFacing}
+                />
               </div>
             </div>
           )}

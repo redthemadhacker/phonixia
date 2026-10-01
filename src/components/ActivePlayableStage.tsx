@@ -12,7 +12,7 @@ import { CutePicturePrompt } from './CutePicturePrompt';
 import { getPictureClue } from '../utils/phonicsPictures';
 import { 
   ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Star, Volume2, 
-  RotateCcw, ChevronsUp, Flame, Undo2, RefreshCw, Gamepad2, HeartCrack
+  RotateCcw, ChevronsUp, Flame, Undo2, RefreshCw, Gamepad2, HeartCrack, Hammer
 } from 'lucide-react';
 
 export interface GameQuestion {
@@ -60,7 +60,7 @@ interface ActivePlayableStageProps {
 export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   landId,
   activeExplorer,
-  companionGuide: _companionGuide,
+  companionGuide,
   currentQuestion,
   activeGameIndex,
   isAnswered,
@@ -176,16 +176,27 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   const [craneTrolleyX, setCraneTrolleyX] = useState<number>(50);
   const [hoistHookY, setHoistHookY] = useState<number>(20);
   const [isHoisting, setIsHoisting] = useState(false);
+  const [craneCarryingLetter, setCraneCarryingLetter] = useState<string | null>(null);
+  const [craneDropTargetX, setCraneDropTargetX] = useState<number | null>(null);
   const [builderStack, setBuilderStack] = useState<string[]>([]);
   const [builderWrongNotice, setBuilderWrongNotice] = useState<string | null>(null);
 
   // Tricky Trails: Vine Swing
   const [vineAngle, setVineAngle] = useState(0);
   const [vineX, setVineX] = useState<number>(50);
+  const [vineAnchorX, setVineAnchorX] = useState<number>(50);
   const [vinePlayerState, setVinePlayerState] = useState<'ground' | 'jumping' | 'swinging' | 'landing'>('ground');
+  const [vineFacing, setVineFacing] = useState<'left' | 'right'>('right');
+  const [isVineWalking, setIsVineWalking] = useState(false);
+  const [builderFacing, setBuilderFacing] = useState<'left' | 'right'>('right');
+  const [isBuilderWalking, setIsBuilderWalking] = useState(false);
+  const [isBuilderStriking, setIsBuilderStriking] = useState(false);
+  const [chariotFacing, setChariotFacing] = useState<'left' | 'right'>('right');
+  const [isChariotMoving, setIsChariotMoving] = useState(false);
 
   // Whispering Peaks: Alpine Snowboard Downhill Run (Strict Inline Row)
   const [snowboardX, setSnowboardX] = useState<number>(50);
+  const [snowboardY, setSnowboardY] = useState<number>(18); // Start at mountain summit top
   const [snowboardCarve, setSnowboardCarve] = useState<number>(0);
   const [isSnowboardSliding, setIsSnowboardSliding] = useState<boolean>(false);
   const [snowboardSpray, setSnowboardSpray] = useState<boolean>(false);
@@ -198,9 +209,23 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     setWhisperingStep(1);
     setWhisperingPart1(null);
     setWhisperingNotice(null);
+    setSnowboardY(18); // Reset snowboard back up to the snowy peak summit
+    setSnowboardX(50);
   }, [displayedQuestion, activeGameIndex]);
 
   const activeWhisperingChoices = useMemo(() => {
+    if (displayedQuestion.whisperingParts) {
+      const parts = displayedQuestion.whisperingParts;
+      if (whisperingStep === 1) {
+        const raw1 = parts.choices1 || displayedQuestion.choices;
+        if (!raw1.includes(parts.part1)) return [parts.part1, ...raw1.slice(0, 3)].sort(() => 0.5 - Math.random());
+        return raw1;
+      } else {
+        const raw2 = parts.choices2 || displayedQuestion.choices;
+        if (!raw2.includes(parts.part2)) return [parts.part2, ...raw2.slice(0, 3)].sort(() => 0.5 - Math.random());
+        return raw2;
+      }
+    }
     const raw = displayedQuestion.choices || [];
     const correct = (displayedQuestion.correct || '').trim();
     if (!correct) return raw;
@@ -209,7 +234,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
       return [...raw.slice(0, 3), correct].sort(() => 0.5 - Math.random());
     }
     return raw;
-  }, [displayedQuestion]);
+  }, [displayedQuestion, whisperingStep]);
 
   const sanitizedTargetSound = useMemo(() => {
     if (!displayedQuestion) return '';
@@ -250,12 +275,14 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
   useEffect(() => {
     setBuilderStack([]);
+    setCraneCarryingLetter(null);
+    setCraneDropTargetX(null);
     setBuilderWrongNotice(null);
   }, [displayedQuestion, activeGameIndex]);
 
   useEffect(() => {
     sounds.stopSpeech();
-    const promptText = displayedQuestion.instruction || displayedQuestion.spokenPrompt || 'Listen closely!';
+    const promptText = displayedQuestion.spokenPrompt || displayedQuestion.instruction || 'Listen closely!';
     const timer = setTimeout(() => {
       sounds.speak(promptText);
     }, 350);
@@ -263,20 +290,10 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
   }, [displayedQuestion, activeGameIndex]);
 
   useEffect(() => {
-    let frame: number;
-    let t = 0;
-    const swingLoop = () => {
-      t += 0.035;
-      if (vinePlayerState === 'ground') {
-        setVineAngle(Math.sin(t) * 14);
-      }
-      frame = requestAnimationFrame(swingLoop);
-    };
     if (landId === 'tricky-trails') {
-      frame = requestAnimationFrame(swingLoop);
+      setVineAngle(0);
     }
-    return () => cancelAnimationFrame(frame);
-  }, [landId, vinePlayerState]);
+  }, [landId]);
 
   useEffect(() => {
     let animId: number;
@@ -311,14 +328,34 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
       if (landId === 'builders-guild') {
         const speed = 0.8;
-        if (activeDpad.left) setCraneTrolleyX((p) => Math.max(10, p - speed));
-        if (activeDpad.right) setCraneTrolleyX((p) => Math.min(90, p + speed));
+        let bMoving = false;
+        if (activeDpad.left) {
+          setCraneTrolleyX((p) => Math.max(10, p - speed));
+          setBuilderFacing('left');
+          bMoving = true;
+        }
+        if (activeDpad.right) {
+          setCraneTrolleyX((p) => Math.min(90, p + speed));
+          setBuilderFacing('right');
+          bMoving = true;
+        }
+        setIsBuilderWalking(bMoving);
       }
 
       if (landId === 'tricky-trails' && vinePlayerState === 'ground') {
         const speed = 0.8;
-        if (activeDpad.left) setVineX((p) => Math.max(16, p - speed));
-        if (activeDpad.right) setVineX((p) => Math.min(84, p + speed));
+        let vMoving = false;
+        if (activeDpad.left) {
+          setVineX((p) => Math.max(16, p - speed));
+          setVineFacing('left');
+          vMoving = true;
+        }
+        if (activeDpad.right) {
+          setVineX((p) => Math.min(84, p + speed));
+          setVineFacing('right');
+          vMoving = true;
+        }
+        setIsVineWalking(vMoving);
       }
 
       if (landId === 'whispering-peaks' && !isSnowboardSliding) {
@@ -335,12 +372,26 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
           setSnowboardCarve(0);
           setSnowboardSpray(false);
         }
-      }
 
+        // Pressing DOWN arrow directly carves and slides down to the closest slalom gate!
+        if (activeDpad.down) {
+          triggerSnowboardDownhillSlide();
+        }
+      }
       if (landId === 'lexicon-empire') {
         const speed = 0.85;
-        if (activeDpad.left) setChariotX((p) => Math.max(14, p - speed));
-        if (activeDpad.right) setChariotX((p) => Math.min(86, p + speed));
+        let cMoving = false;
+        if (activeDpad.left) {
+          setChariotX((p) => Math.max(14, p - speed));
+          setChariotFacing('left');
+          cMoving = true;
+        }
+        if (activeDpad.right) {
+          setChariotX((p) => Math.min(86, p + speed));
+          setChariotFacing('right');
+          cMoving = true;
+        }
+        setIsChariotMoving(cMoving);
       }
 
       animId = requestAnimationFrame(tick);
@@ -464,49 +515,103 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     }, 300);
   }, [isAnswered, displayedQuestion, getClosestChoiceIndex, swimPos.x, handleAnswerEvaluation]);
 
-  // 2. Builders Guild
-  const handleBuilderLetterPick = useCallback((letter: string) => {
+  // 2. Builders Guild: Multi-phase Crane Pickup, Transit & Stacking Drop-Off
+  const handleBuilderLetterPick = useCallback((letter: string, optionIndex?: number) => {
     if (isAnswered || isHoisting || !targetBuilderWord) return;
     setBuilderWrongNotice(null);
 
     const currentLen = builderStack.length;
     const expectedLetter = targetBuilderWord[currentLen];
 
+    // Determine target pick X coordinate
+    const choicesCount = builderChoices.length;
+    const letterIdx = optionIndex !== undefined 
+      ? optionIndex 
+      : builderChoices.indexOf(letter);
+    const pickX = letterIdx >= 0 && choicesCount > 1
+      ? 14 + (letterIdx * (72 / (choicesCount - 1)))
+      : craneTrolleyX;
+
+    // Word building workshop station is at left: 16%
+    const dropX = 18;
+
     setIsHoisting(true);
-    setHoistHookY(68);
-    sounds.playHammer();
+    setIsBuilderWalking(true);
+    // Align trolley over letter if not already there
+    setCraneTrolleyX(pickX);
+    setBuilderFacing(pickX >= craneTrolleyX ? 'right' : 'left');
 
+    // Phase 1: Lower Hook down to pick up letter
     setTimeout(() => {
-      setHoistHookY(22);
-      setIsHoisting(false);
+      setIsBuilderWalking(false);
+      setIsBuilderStriking(true);
+      setHoistHookY(66);
+      sounds.playHammer();
 
-      if (letter === expectedLetter) {
+      // Phase 2: Grasp letter onto Hook & retract
+      setTimeout(() => {
+        setCraneCarryingLetter(letter);
         sounds.playCollect();
-        const nextStack = [...builderStack, letter];
-        setBuilderStack(nextStack);
+        setHoistHookY(24);
 
-        if (nextStack.join('') === targetBuilderWord) {
-          sounds.playFanfare();
-          sounds.speak(`Excellent! You stacked ${targetBuilderWord}!`);
-          handleAnswerEvaluation(targetBuilderWord);
+        if (letter === expectedLetter) {
+          // Correct letter! Trolley travels to the Word Building workshop
+          setTimeout(() => {
+            setIsBuilderStriking(false);
+            setIsBuilderWalking(true);
+            setBuilderFacing('left');
+            setCraneTrolleyX(dropX); // Move crane to building workshop!
+
+            // Phase 3: Crane arrives at workshop, lowers hook to drop letter onto stack
+            setTimeout(() => {
+              setIsBuilderWalking(false);
+              setHoistHookY(58); // Lower hook above the building stack
+              sounds.playBlockHit();
+
+              // Phase 4: Release letter onto word stack
+              setTimeout(() => {
+                setCraneCarryingLetter(null);
+                setHoistHookY(20);
+                sounds.playCollect();
+
+                const nextStack = [...builderStack, letter];
+                setBuilderStack(nextStack);
+                setIsHoisting(false);
+
+                if (nextStack.join('') === targetBuilderWord) {
+                  sounds.playFanfare();
+                  sounds.speak(`Excellent! You stacked ${targetBuilderWord}!`);
+                  handleAnswerEvaluation(targetBuilderWord);
+                } else {
+                  sounds.speak(letter);
+                }
+              }, 320);
+            }, 550);
+          }, 350);
         } else {
-          sounds.speak(letter);
-        }
-      } else {
-        sounds.playDamage();
-        const nextMiss = currentQuestionMissCount + 1;
-        setCurrentQuestionMissCount(nextMiss);
-        if (recordSkillMiss) {
-          recordSkillMiss(targetBuilderWord);
-        }
-        setBuilderWrongNotice('Oops! That letter is out of order or incorrect. Try again!');
-        sounds.speak('Try again! Listen closely to the sound!');
-        handleAnswerEvaluation('__WRONG__');
-      }
-    }, 380);
-  }, [isAnswered, isHoisting, targetBuilderWord, builderStack, handleAnswerEvaluation, currentQuestionMissCount, recordSkillMiss]);
+          // Incorrect letter: hook raises, wobbles, and drops back down with warning
+          setTimeout(() => {
+            setIsBuilderStriking(false);
+            sounds.playDamage();
+            setCraneCarryingLetter(null);
+            setHoistHookY(20);
+            setIsHoisting(false);
 
-  // 3. Tricky Trails
+            const nextMiss = currentQuestionMissCount + 1;
+            setCurrentQuestionMissCount(nextMiss);
+            if (recordSkillMiss) {
+              recordSkillMiss(targetBuilderWord);
+            }
+            setBuilderWrongNotice(`Oops! '${letter}' isn't the next letter for '${targetBuilderWord}'. Try again!`);
+            sounds.speak('Try again! Listen closely to the sound!');
+            handleAnswerEvaluation('__WRONG__');
+          }, 450);
+        }
+      }, 350);
+    }, 280);
+  }, [isAnswered, isHoisting, targetBuilderWord, builderStack, builderChoices, craneTrolleyX, handleAnswerEvaluation, currentQuestionMissCount, recordSkillMiss]);
+
+  // 3. Tricky Trails - Physics Vine Leap & Swing
   const triggerVineLeap = useCallback((choiceOverride?: string) => {
     if (isAnswered || vinePlayerState !== 'ground') return;
 
@@ -517,34 +622,44 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
 
     const targetChoice = choiceOverride || displayedQuestion.choices[targetIdx];
     const targetX = 14 + targetIdx * (72 / Math.max(count - 1, 1));
+    const startX = vineX;
+    const direction = targetX >= startX ? 1 : -1;
+    setVineFacing(direction === 1 ? 'right' : 'left');
 
+    const midAnchor = Math.max(22, Math.min(78, (startX + targetX) / 2));
+    setVineAnchorX(midAnchor);
+
+    // Jump up towards vine loop
     setVinePlayerState('jumping');
     sounds.playJump();
 
     setTimeout(() => {
+      // Grasp vine & swing in arc
       setVinePlayerState('swinging');
-      setVineAngle(targetX > vineX ? 28 : -28);
+      setVineAngle(-direction * 28);
       sounds.playWhoosh();
 
       setTimeout(() => {
-        setVineX(targetX);
-        sounds.playCollect();
+        setVineAngle(direction * 32);
 
         setTimeout(() => {
+          // Release and land on platform
           setVinePlayerState('landing');
+          setVineX(targetX);
           setVineAngle(0);
-          sounds.playStep();
+          sounds.playCollect();
 
           setTimeout(() => {
             setVinePlayerState('ground');
+            sounds.playStep();
             handleAnswerEvaluation(targetChoice);
           }, 240);
-        }, 300);
-      }, 300);
-    }, 200);
+        }, 280);
+      }, 200);
+    }, 180);
   }, [isAnswered, vinePlayerState, displayedQuestion, getClosestChoiceIndex, vineX, handleAnswerEvaluation]);
 
-  // 4. Whispering Peaks (Downhill Mountain Slalom Slide)
+  // 4. Whispering Peaks (Downhill Mountain Slalom Slide - You slide DOWN the mountain!)
   const triggerSnowboardDownhillSlide = useCallback((choiceOverride?: string) => {
     if (isAnswered || isSnowboardSliding) return;
 
@@ -560,16 +675,70 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
     setIsSnowboardSliding(true);
     setActiveGateIdx(targetIdx);
     setSnowboardSpray(true);
-    sounds.playJump();
     sounds.playWhoosh();
+    sounds.playStep();
 
-    const carveAngle = targetX > snowboardX ? 24 : -24;
+    const carveAngle = targetX > snowboardX ? 26 : -26;
     setSnowboardCarve(carveAngle);
     setSnowboardX(targetX);
+    // Slide fast DOWN the slope toward the gate
+    setSnowboardY(whisperingStep === 1 ? 48 : 82);
 
     setTimeout(() => {
       sounds.playCollect();
 
+      // Check if multi-sound challenge (e.g. FORTRESS: OR then ESS, BLIZZARD: BL then ARD)
+      if (displayedQuestion.whisperingParts) {
+        const parts = displayedQuestion.whisperingParts;
+        if (whisperingStep === 1) {
+          if (targetChoice.trim().toUpperCase() === parts.part1.trim().toUpperCase()) {
+            // Sound 1 correct! Now choose sound 2 to complete the word!
+            setWhisperingPart1(parts.part1);
+            setWhisperingStep(2);
+            setWhisperingNotice('Great! You chose ' + parts.part1 + '! Now slide down to choose ' + parts.part2 + ' for ' + parts.targetWord + '!');
+            sounds.speak('Great! You found ' + parts.part1 + '. Now choose ' + parts.part2 + '!');
+            setTimeout(() => {
+              setSnowboardSpray(false);
+              setSnowboardCarve(0);
+              setIsSnowboardSliding(false);
+              setActiveGateIdx(null);
+              // Reposition at mid-slope to carve down through second gate
+              setSnowboardY(52);
+            }, 300);
+            return;
+          } else {
+            // Miss on part 1
+            setSnowboardSpray(false);
+            setSnowboardCarve(0);
+            setIsSnowboardSliding(false);
+            setActiveGateIdx(null);
+            setWhisperingNotice('Watch out! ' + parts.targetWord + ' starts with ' + parts.part1 + '. Try again!');
+            handleAnswerEvaluation('__WRONG__');
+            return;
+          }
+        } else {
+          // In Step 2
+          if (targetChoice.trim().toUpperCase() === parts.part2.trim().toUpperCase()) {
+            setSnowboardSpray(false);
+            setSnowboardCarve(0);
+            setIsSnowboardSliding(false);
+            setActiveGateIdx(null);
+            sounds.playFanfare();
+            handleAnswerEvaluation(parts.part1); // Pass correct answer to complete stage
+            return;
+          } else {
+            setSnowboardSpray(false);
+            setSnowboardCarve(0);
+            setIsSnowboardSliding(false);
+            setActiveGateIdx(null);
+            setWhisperingNotice('Close! The second sound for ' + parts.targetWord + ' is ' + parts.part2 + '. Try again!');
+            handleAnswerEvaluation('__WRONG__');
+            return;
+          }
+        }
+      }
+
+      // Standard single choice fallback
       setTimeout(() => {
         setSnowboardSpray(false);
         setSnowboardCarve(0);
@@ -577,8 +746,8 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
         setActiveGateIdx(null);
         handleAnswerEvaluation(targetChoice);
       }, 350);
-    }, 350);
-  }, [isAnswered, isSnowboardSliding, activeWhisperingChoices, getClosestChoiceIndex, snowboardX, handleAnswerEvaluation]);
+    }, 400);
+  }, [isAnswered, isSnowboardSliding, activeWhisperingChoices, getClosestChoiceIndex, snowboardX, whisperingStep, displayedQuestion, handleAnswerEvaluation]);
 
   // 5. Lexicon Empire
   const triggerChariotLaser = useCallback((choiceOverride?: string) => {
@@ -748,28 +917,26 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               isSimplerLevel={landId === 'sound-shallows' || landId === 'builders-guild' || activeGameIndex <= 25 || activeExplorer.ageTier === 'preschool' || activeExplorer.ageTier === 'kindergarten'}
             />
 
-            <div className="inline-flex items-center gap-2 sm:gap-3 bg-slate-950/90 border-2 border-amber-400 px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-xl sm:rounded-2xl shadow-inner">
-              {landId === 'sound-shallows' || landId === 'builders-guild' ? (
-                <PhonicsWordDisplay text={sanitizedTargetSound} size={32} showSubtitle={false} />
-              ) : (
-                <span className="text-lg sm:text-2xl md:text-3xl font-black text-amber-300 font-display tracking-widest break-all">
-                  {sanitizedTargetSound}
-                </span>
-              )}
-              <button
-                type="button"
-                title="Hear instruction and sound again"
-                onClick={() => {
-                  const promptText = landId === 'builders-guild'
-                    ? `Pick the letter tiles in order to build: ${targetBuilderWord}!`
-                    : (displayedQuestion.instruction || displayedQuestion.spokenPrompt || 'Listen closely!');
-                  sounds.speak(promptText);
-                }}
-                className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-400/50 cursor-pointer active:scale-90 transition-transform"
-              >
-                <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
+            {/* Read-Aloud Audio Prompt (No written hint words shown) */}
+            <button
+              type="button"
+              title="Tap to hear spoken prompt"
+              onClick={() => {
+                const promptText = landId === "builders-guild"
+                  ? "Pick the letter tiles in order to build the word!"
+                  : (displayedQuestion.spokenPrompt || displayedQuestion.instruction || "Listen closely!");
+                sounds.speak(promptText);
+              }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl bg-slate-950/90 hover:bg-slate-900 border-2 border-amber-400 text-amber-300 shadow-md cursor-pointer active:scale-95 transition-all select-none"
+            >
+              <div className="p-1 rounded-xl bg-amber-500/20 border border-amber-400/60">
+                <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 animate-pulse" />
+              </div>
+              <div className="text-left">
+                <div className="text-[9px] sm:text-[10px] font-mono font-bold text-amber-200 uppercase tracking-wider">Audio Prompt</div>
+                <div className="text-xs sm:text-sm font-black text-amber-300">Tap to Hear</div>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -916,20 +1083,70 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               </div>
             )}
 
+            {/* Overhead Crane Steel Girder Rail */}
+            <div className="absolute top-0 inset-x-0 h-4 bg-gradient-to-b from-stone-800 via-amber-900/60 to-stone-900 border-b border-amber-600/50 flex items-center justify-between px-3 z-15 pointer-events-none">
+              <div className="flex items-center gap-1.5 text-[9px] font-black text-amber-400/90 uppercase tracking-widest">
+                <Hammer className="w-3 h-3 text-amber-400" />
+                <span>Quarry Crane Track</span>
+              </div>
+              <div className="text-[9px] font-mono text-amber-300/80">
+                {craneCarryingLetter ? `Hoisting [ ${craneCarryingLetter} ] ➔ Workshop Drop-off` : 'Gantry Ready'}
+              </div>
+            </div>
+
+            {/* Overhead Mechanical Crane Gantry & Hoist Hook */}
             <div
-              style={{ left: `${craneTrolleyX}%`, top: '2px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }}
+              style={{
+                left: `${craneTrolleyX}%`,
+                top: '4px',
+                transform: 'translateX(-50%)',
+                transition: 'left 0.4s cubic-bezier(0.25, 1, 0.5, 1)'
+              }}
               className="absolute z-25 flex flex-col items-center pointer-events-none"
             >
-              <div className="w-8 h-3 bg-amber-500 rounded-b border border-amber-300 shadow" />
-              <div style={{ height: `${hoistHookY * 1.8}px`, transition: 'height 0.25s ease-in-out' }} className="w-0.5 bg-slate-300" />
-              <div className="text-base sm:text-xl">🪝</div>
+              {/* Heavy Trolley Carriage on Track */}
+              <div className="w-10 h-3.5 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 rounded-b-md border border-amber-200 shadow-md flex items-center justify-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-900 animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-200" />
+              </div>
+
+              {/* Steel Cable Hoist */}
+              <div
+                style={{
+                  height: `${hoistHookY * 1.8}px`,
+                  transition: 'height 0.28s ease-in-out'
+                }}
+                className="w-1 bg-gradient-to-b from-amber-200 via-slate-300 to-amber-400 shadow"
+              />
+
+              {/* Crane Hook & Mechanical Claw Assembly */}
+              <div className="relative flex flex-col items-center -mt-1">
+                <div className="text-lg sm:text-2xl filter drop-shadow">🪝</div>
+                {/* Physical Gripper Claws */}
+                <div className="flex items-center justify-center -mt-2">
+                  <div className={`w-2.5 h-1 border-b-2 border-l-2 border-amber-300 rounded-bl transition-transform duration-200 ${craneCarryingLetter ? 'rotate-12 scale-110' : '-rotate-12'}`} />
+                  <div className={`w-2.5 h-1 border-b-2 border-r-2 border-amber-300 rounded-br transition-transform duration-200 ${craneCarryingLetter ? '-rotate-12 scale-110' : 'rotate-12'}`} />
+                </div>
+
+                {/* Hoisted Letter Block hanging from crane claw */}
+                {craneCarryingLetter && (
+                  <div className="absolute top-6 flex flex-col items-center animate-bounce-gentle">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 text-slate-950 font-black text-sm flex items-center justify-center border-2 border-white shadow-[0_0_12px_rgba(251,191,36,0.8)]">
+                      {craneCarryingLetter}
+                    </div>
+                    <span className="text-[8px] font-black text-amber-200 bg-slate-950/90 px-1 rounded shadow -mt-1">
+                      CARRYING
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="absolute bottom-1.5 inset-x-1 sm:inset-x-4 flex items-center justify-around z-20 pointer-events-none gap-0.5">
               {builderChoices.map((letter, idx) => (
                 <div
                   key={idx}
-                  onClick={() => handleBuilderLetterPick(letter)}
+                  onClick={() => handleBuilderLetterPick(letter, idx)}
                   className="pointer-events-auto cursor-pointer hover:scale-115 active:scale-90 transition-transform shrink min-w-0"
                 >
                   <PhonicsLetter letter={letter} size={36} />
@@ -937,13 +1154,27 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               ))}
             </div>
 
-            <div style={{ left: `${craneTrolleyX}%`, bottom: '44px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }} className="absolute z-30 pointer-events-none">
-              <AvatarRenderer customization={activeExplorer.customization} size={40} />
+            <div
+              style={{
+                left: `${craneTrolleyX}%`,
+                bottom: '44px',
+                transform: 'translateX(-50%)',
+                transition: 'left 0.4s cubic-bezier(0.25, 1, 0.5, 1)'
+              }}
+              className="absolute z-30 pointer-events-none"
+            >
+              <AvatarRenderer
+                customization={activeExplorer.customization}
+                size={42}
+                isWalking={isBuilderWalking}
+                isActing={isBuilderStriking || Boolean(craneCarryingLetter)}
+                facing={builderFacing}
+              />
             </div>
           </div>
         )}
 
-        {/* 3. TRICKY TRAILS */}
+        {/* 3. TRICKY TRAILS: ORGANIC SWINGING VINE & FOREST RUNNER */}
         {landId === 'tricky-trails' && (
           <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-emerald-950 via-slate-950 to-stone-950 rounded-2xl border-2 border-emerald-400/60 overflow-hidden select-none">
             <div className="absolute top-4 sm:top-6 inset-x-0 flex items-center justify-around px-2 sm:px-8 z-20 pointer-events-none">
@@ -962,60 +1193,206 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
               ))}
             </div>
 
+            {/* Ambient Jungle Canopy Vines (Fixed Overhead Foliage) */}
+            <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden">
+              {/* Background ambient vines swaying in canopy breeze */}
+              {[22, 50, 78].map((pct, i) => (
+                <div
+                  key={i}
+                  style={{
+                    left: `${pct}%`,
+                    top: '-6px',
+                    transformOrigin: 'top center',
+                    animation: `pulse ${3.2 + i * 0.8}s ease-in-out infinite alternate`,
+                    opacity: 0.45
+                  }}
+                  className="absolute pointer-events-none"
+                >
+                  <svg width="28" height="150" viewBox="0 0 28 150">
+                    <path
+                      d="M 14 0 Q 8 40 18 80 T 14 140"
+                      fill="none"
+                      stroke="#166534"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                    />
+                    <path d="M 12 30 Q 4 26 8 20 Q 14 24 12 30 Z" fill="#15803d" />
+                    <path d="M 16 65 Q 24 61 20 55 Q 14 59 16 65 Z" fill="#22c55e" />
+                    <path d="M 13 100 Q 5 96 9 90 Q 15 94 13 100 Z" fill="#16a34a" />
+                  </svg>
+                </div>
+              ))}
+            </div>
+
+            {/* Active Physics Swinging Vine (Anchored to canopy branch at vineAnchorX) */}
             <div
               style={{
-                left: `${vineX}%`,
+                left: `${vinePlayerState === 'ground' ? 50 : vineAnchorX}%`,
                 top: '0px',
                 transformOrigin: 'top center',
                 transform: `rotate(${vineAngle}deg)`,
-                transition: vinePlayerState === 'swinging' ? 'left 0.3s ease-in-out, transform 0.25s ease-in-out' : 'transform 0.1s'
+                transition: vinePlayerState === 'swinging'
+                  ? 'transform 0.22s cubic-bezier(0.25, 1, 0.5, 1)'
+                  : 'transform 0.15s ease-out'
               }}
               className="absolute pointer-events-none z-25 flex flex-col items-center"
             >
-              <div className="w-1.5 h-36 sm:h-48 bg-gradient-to-b from-emerald-700 via-green-600 to-amber-700 rounded-b" />
-              {(vinePlayerState === 'swinging' || vinePlayerState === 'jumping') && (
-                <div className="-mt-3 flex flex-col items-center animate-scale-up">
-                  <AvatarRenderer customization={activeExplorer.customization} size={42} />
+              <svg width="44" height="200" viewBox="0 0 44 200" className="overflow-visible pointer-events-none">
+                <defs>
+                  <linearGradient id="vineGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#15803d" />
+                    <stop offset="50%" stopColor="#22c55e" />
+                    <stop offset="100%" stopColor="#854d0e" />
+                  </linearGradient>
+                </defs>
+
+                {/* Ceiling Branch Mount */}
+                <ellipse cx="22" cy="4" rx="10" ry="4" fill="#14532d" />
+                <circle cx="22" cy="5" r="3" fill="#f59e0b" />
+
+                {/* Flexible Organic Curved Vine Body with inertia flex */}
+                <path
+                  d={`M 22 4 Q ${22 + (vineAngle * 0.35)} 60 ${22 - (vineAngle * 0.2)} 120 T 22 178`}
+                  fill="none"
+                  stroke="url(#vineGrad1)"
+                  strokeWidth="5.5"
+                  strokeLinecap="round"
+                />
+
+                {/* Organic Leaf Clusters */}
+                <path d="M 20 36 Q 10 32 14 26 Q 22 30 20 36 Z" fill="#22c55e" />
+                <path d="M 24 75 Q 34 71 30 65 Q 22 69 24 75 Z" fill="#16a34a" />
+                <path d="M 21 115 Q 11 111 15 103 Q 23 109 21 115 Z" fill="#4ade80" />
+                <path d="M 23 150 Q 33 146 29 140 Q 21 144 23 150 Z" fill="#22c55e" />
+
+                {/* Jungle Orchid Flower */}
+                <circle cx="24" cy="98" r="4.5" fill="#f43f5e" />
+                <circle cx="24" cy="98" r="2" fill="#fef08a" />
+
+                {/* Braided Grip Ring for Explorer Hands */}
+                <circle cx="22" cy="180" r="6" fill="none" stroke="#d97706" strokeWidth="3" />
+              </svg>
+
+              {/* Suspended Avatar Grasping the Vine during Swing */}
+              {vinePlayerState === 'swinging' && (
+                <div className="-mt-6 flex flex-col items-center">
+                  <AvatarRenderer
+                    customization={activeExplorer.customization}
+                    size={46}
+                    isSwinging={true}
+                    swingAngle={vineAngle}
+                    facing={vineFacing}
+                  />
                 </div>
               )}
             </div>
 
+            {/* Mid-air Leap / Landing Flight Avatar */}
+            {(vinePlayerState === 'jumping' || vinePlayerState === 'landing') && (
+              <div
+                style={{
+                  left: `${vinePlayerState === 'jumping' ? vineX : vineX}%`,
+                  bottom: vinePlayerState === 'jumping' ? '50px' : '35px',
+                  transform: 'translateX(-50%)',
+                  transition: 'all 0.22s cubic-bezier(0.25, 1, 0.5, 1)'
+                }}
+                className="absolute z-30 pointer-events-none flex flex-col items-center select-none"
+              >
+                <AvatarRenderer
+                  customization={activeExplorer.customization}
+                  size={46}
+                  isJumping={true}
+                  facing={vineFacing}
+                />
+              </div>
+            )}
+
+            {/* Ground Adventurer & Companion exploring or aiming */}
             {vinePlayerState === 'ground' && (
               <div
-                style={{ left: `${vineX}%`, bottom: '10px', transform: 'translateX(-50%)', transition: 'left 0.1s ease-out' }}
-                className="absolute z-30 pointer-events-none flex flex-col items-center"
+                style={{
+                  left: `${vineX}%`,
+                  bottom: '10px',
+                  transform: 'translateX(-50%)',
+                  transition: 'left 0.08s ease-out'
+                }}
+                className="absolute z-30 pointer-events-none flex items-center gap-2 select-none"
               >
-                <AvatarRenderer customization={activeExplorer.customization} size={42} />
+                <div className="flex flex-col items-center">
+                  <AvatarRenderer
+                    customization={activeExplorer.customization}
+                    size={46}
+                    isWalking={isVineWalking}
+                    facing={vineFacing}
+                  />
+                  <div className="w-8 h-2 bg-black/40 rounded-full blur-[1px] mt-0.5" />
+                </div>
+                <div className="flex flex-col items-center opacity-85">
+                  <AvatarRenderer
+                    customization={companionGuide.customization}
+                    size={34}
+                    isWalking={isVineWalking}
+                    facing={vineFacing}
+                    showPet={false}
+                  />
+                  <div className="w-6 h-1.5 bg-black/30 rounded-full blur-[1px] mt-0.5" />
+                </div>
               </div>
             )}
           </div>
         )}
 
         {/* 4. WHISPERING PEAKS: DOWNHILL MOUNTAIN SLALOM SLIDE */}
-        {landId === 'whispering-peaks' && (
-          <div className="relative w-full h-[230px] xs:h-[270px] sm:h-[340px] bg-gradient-to-b from-slate-900 via-indigo-950 to-sky-950 rounded-2xl border-2 border-indigo-400/60 overflow-hidden select-none flex flex-col justify-between p-2.5 sm:p-3">
+        {landId === "whispering-peaks" && (
+          <div className="relative w-full h-[250px] xs:h-[290px] sm:h-[360px] bg-gradient-to-b from-slate-900 via-indigo-950 to-sky-950 rounded-2xl border-2 border-indigo-400/60 overflow-hidden select-none flex flex-col justify-between p-2.5 sm:p-3">
+            {/* Mountain Summit & Downhill Direction Header */}
             <div className="w-full flex items-center justify-between text-[11px] font-mono font-bold text-cyan-200 border-b border-indigo-500/40 pb-1 z-20">
               <span className="flex items-center gap-1 truncate">
                 <span>🏔️</span>
-                <span>Alpine Downhill Mountain Slide</span>
+                <span>Alpine Downhill Mountain Slope (Slide DOWN 🏂)</span>
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-400/50 text-cyan-300 text-[10px] shrink-0 flex items-center gap-1">
-                <span>🏂</span>
-                <span>Mountain Slope</span>
-              </span>
+              <div className="flex items-center gap-2">
+                {displayedQuestion.whisperingParts && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-950 border border-indigo-400 text-amber-300 text-[10px] font-bold flex items-center gap-1 shadow">
+                    <span>Part {whisperingStep}/2:</span>
+                    <span>{whisperingStep === 1 ? "First Sound" : "Second Sound"}</span>
+                  </span>
+                )}
+                <span className="px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-400/50 text-cyan-300 text-[10px] shrink-0 flex items-center gap-1">
+                  <span>⬇️</span>
+                  <span>Downhill Slide</span>
+                </span>
+              </div>
             </div>
+
+            {/* In-game Multi-Sound Slide Guidance Notice */}
+            {whisperingNotice && (
+              <div className="absolute top-10 left-1/2 -translate-x-1/2 z-40 px-3 py-1 rounded-xl bg-slate-950/90 border border-cyan-300 text-cyan-200 text-xs font-bold shadow-lg animate-bounce text-center max-w-[90%]">
+                {whisperingNotice}
+              </div>
+            )}
 
             {/* Alpine Mountain Slope Background Decors */}
-            <div className="absolute inset-0 pointer-events-none opacity-25 z-0 flex items-end justify-between px-4 pb-2">
-              <span className="text-3xl filter drop-shadow">🌲</span>
-              <span className="text-4xl filter drop-shadow">🏔️</span>
-              <span className="text-3xl filter drop-shadow">🌲</span>
-              <span className="text-4xl filter drop-shadow">🏔️</span>
-              <span className="text-3xl filter drop-shadow">🌲</span>
+            <div className="absolute inset-0 pointer-events-none opacity-25 z-0 flex flex-col justify-between p-3">
+              <div className="flex justify-between text-2xl">
+                <span>❄️</span>
+                <span>🏔️ Summit</span>
+                <span>❄️</span>
+              </div>
+              <div className="flex justify-around text-3xl">
+                <span>🌲</span>
+                <span>🎿 Slope</span>
+                <span>🌲</span>
+              </div>
+              <div className="flex justify-between text-4xl">
+                <span>🏔️</span>
+                <span>⛷️ Downhill</span>
+                <span>🏔️</span>
+              </div>
             </div>
 
-            {/* Downhill Mountain Slalom Gate Choices (Side-by-side with guaranteed correct answer available) */}
-            <div className="w-full flex flex-row flex-nowrap items-center justify-around gap-1.5 sm:gap-3 z-20 my-auto px-1 overflow-x-auto">
+            {/* Downhill Mountain Slalom Gate Choices */}
+            <div className="w-full flex flex-row flex-nowrap items-center justify-around gap-1.5 sm:gap-3 z-20 mt-auto mb-2 px-1 overflow-x-auto">
               {activeWhisperingChoices.map((choice, idx) => {
                 const isTarget = activeGateIdx === idx;
                 return (
@@ -1024,40 +1401,54 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                     onClick={() => triggerSnowboardDownhillSlide(choice)}
                     className={`flex-1 min-w-0 p-2 sm:p-3 rounded-xl sm:rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
                       isTarget
-                        ? 'bg-gradient-to-b from-cyan-200 via-sky-300 to-indigo-400 text-slate-950 border-white ring-2 ring-cyan-300 shadow-lg scale-105'
-                        : 'bg-slate-900/90 border-cyan-400/70 text-cyan-100 hover:border-cyan-200 shadow'
+                        ? "bg-gradient-to-b from-cyan-200 via-sky-300 to-indigo-400 text-slate-950 border-white ring-2 ring-cyan-300 shadow-lg scale-105"
+                        : "bg-slate-900/90 border-cyan-400/70 text-cyan-100 hover:border-cyan-200 shadow"
                     }`}
                   >
-                    <span className="text-[10px] sm:text-xs mb-0.5">🚩</span>
+                    <div className="flex items-center gap-1 text-[10px] sm:text-xs mb-0.5 text-cyan-300">
+                      <span>🚩 Gate {idx + 1}</span>
+                    </div>
                     <span className="font-black text-xs sm:text-base tracking-wide truncate max-w-full text-center">
                       {choice}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] text-cyan-300 font-mono mt-0.5 hidden xs:inline">Slide ➔</span>
+                    <span className="text-[8px] sm:text-[9px] text-cyan-300 font-mono mt-0.5 hidden xs:inline">
+                      Slide DOWN ➔
+                    </span>
                   </div>
                 );
               })}
             </div>
 
+            {/* Snowboarder Adventurer sliding DOWN the mountain slope */}
             <div
               style={{
                 left: `${snowboardX}%`,
-                bottom: '8px',
+                top: `${snowboardY}%`,
                 transform: `translateX(-50%) rotate(${snowboardCarve}deg)`,
-                transition: isSnowboardSliding ? 'left 0.3s ease-out, transform 0.2s' : 'left 0.08s ease-out, transform 0.1s ease-out'
+                transition: isSnowboardSliding
+                  ? "left 0.35s ease-out, top 0.35s cubic-bezier(0.25, 1, 0.5, 1), transform 0.2s"
+                  : "left 0.08s ease-out, top 0.3s ease-out, transform 0.1s ease-out"
               }}
               className="absolute z-30 flex flex-col items-center pointer-events-none select-none"
             >
-              <AvatarRenderer customization={activeExplorer.customization} size={40} />
-              <div className="w-14 h-2.5 rounded-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-blue-500 border border-white shadow flex items-center justify-center text-[6px] font-black text-white">
-                SNOWBOARD
+              <div className="relative flex flex-col items-center">
+                <AvatarRenderer
+                  customization={activeExplorer.customization}
+                  size={44}
+                  isWalking={true}
+                  isRunning={isSnowboardSliding}
+                  facing={snowboardCarve < 0 ? "left" : "right"}
+                />
+                <div className="w-14 h-2.5 rounded-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-blue-500 border border-white shadow flex items-center justify-center text-[6px] font-black text-white -mt-0.5">
+                  SNOWBOARD
+                </div>
               </div>
               {snowboardSpray && (
-                <div className="text-[9px] text-cyan-200 animate-bounce">❄️ 💨 ❄️</div>
+                <div className="text-[9px] text-cyan-200 animate-bounce mt-0.5">❄️ 💨 ❄️</div>
               )}
             </div>
           </div>
         )}
-
         {/* 5. LEXICON EMPIRE */}
         {landId === 'lexicon-empire' && (
           <div className="relative w-full h-[250px] xs:h-[290px] sm:h-[360px] bg-gradient-to-b from-purple-950 via-slate-950 to-rose-950 rounded-2xl border-2 sm:border-3 border-rose-500 shadow-lg overflow-hidden select-none p-2 sm:p-3">
@@ -1114,7 +1505,13 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
             </div>
 
             <div style={{ left: `${chariotX}%`, bottom: '16px', transform: 'translateX(-50%)' }} className="absolute z-30 pointer-events-none">
-              <AvatarRenderer customization={activeExplorer.customization} size={42} />
+              <AvatarRenderer
+                customization={activeExplorer.customization}
+                size={44}
+                isWalking={isChariotMoving}
+                isActing={Boolean(laserBeamTarget)}
+                facing={chariotFacing}
+              />
             </div>
           </div>
         )}
@@ -1255,7 +1652,7 @@ export const ActivePlayableStage: React.FC<ActivePlayableStageProps> = ({
                   : landId === 'tricky-trails'
                   ? 'SWING'
                   : landId === 'whispering-peaks'
-                  ? 'SLIDE 🏂'
+                  ? 'SLIDE DOWN 🏂'
                   : 'FIRE'}
               </span>
             </button>

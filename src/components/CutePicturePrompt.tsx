@@ -98,22 +98,13 @@ export const CutePicturePrompt: React.FC<CutePicturePromptProps> = ({
             )}
           </div>
 
-          {/* Text Description & Cue */}
-          <div className="text-left flex flex-col justify-center">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-950 bg-white/90 px-1.5 py-0.5 rounded-md shadow-sm">
-                Picture Clue
-              </span>
-              <span className="text-[10px] font-mono font-bold text-white/90 drop-shadow">
-                {clue.phonics}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 text-white font-black text-xs sm:text-sm drop-shadow">
-              <span>{clue.word}</span>
-              <Sparkles className="w-3.5 h-3.5 text-amber-200 fill-amber-200 animate-spin-slow" />
+          {/* Read-Aloud Prompt Trigger (No written hint words displayed) */}
+          <div className="flex items-center gap-1.5 px-1">
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-950/70 border border-white/30 text-amber-300 font-bold text-xs shadow-inner">
+              <Volume2 className="w-3.5 h-3.5 animate-pulse text-amber-300" />
+              <span className="text-[11px] font-black uppercase tracking-wider text-amber-200">Read Aloud</span>
             </div>
           </div>
-
           {/* Expand Fullscreen Button */}
           <span
             onClick={(e) => {
@@ -146,7 +137,7 @@ export const CutePicturePrompt: React.FC<CutePicturePromptProps> = ({
             {/* Badge Title */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/30 border border-white/30 text-xs font-black tracking-widest uppercase">
               <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-              <span>{clue.badge}</span>
+              <span>Sound Clue</span>
               <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
             </div>
 
@@ -160,20 +151,12 @@ export const CutePicturePrompt: React.FC<CutePicturePromptProps> = ({
               </span>
             </div>
 
-            {/* Word Display */}
+            {/* Picture Read-Aloud Clue (No written answer words) */}
             <div className="space-y-1">
-              <h2 className="text-3xl sm:text-4xl font-black font-display tracking-wider drop-shadow-md">
-                {clue.word}
-              </h2>
-              <p className="text-sm sm:text-base font-mono font-bold text-amber-100 bg-black/30 inline-block px-3 py-1 rounded-xl border border-white/20">
-                Phonics Sound: {clue.phonics}
+              <p className="text-sm sm:text-base font-black text-amber-200 bg-black/40 inline-block px-4 py-1.5 rounded-2xl border border-amber-400/40">
+                Tap Emoji or Button to Listen!
               </p>
             </div>
-
-            {/* Fun Sound & Description */}
-            <p className="text-xs sm:text-sm font-medium text-white/95 bg-black/20 p-2.5 rounded-2xl">
-              {clue.funSound}
-            </p>
 
             {/* Tap to Speak / Play Again */}
             <button
@@ -182,7 +165,7 @@ export const CutePicturePrompt: React.FC<CutePicturePromptProps> = ({
               className="w-full py-3 rounded-2xl bg-slate-950 hover:bg-slate-900 border-2 border-amber-400 text-amber-300 font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg cursor-pointer active:scale-95 transition-all"
             >
               <Volume2 className="w-4 h-4 text-amber-400" />
-              <span>Tap to Hear {clue.word}!</span>
+              <span>Tap to Hear Sound!</span>
             </button>
           </div>
         </div>

@@ -46,10 +46,15 @@ export const Navigation: React.FC<NavigationProps> = ({
       <div className="flex items-center gap-4">
         <button
           onClick={() => setCurrentView('world')}
-          className="font-display text-xl font-bold tracking-wider text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 cursor-pointer"
+          className="font-display text-xl font-bold tracking-wider text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2.5 cursor-pointer"
         >
-          <span className="text-2xl">🔥</span>
-          PHONIXIA
+          <img
+            src="/logo.jpeg"
+            alt="Phonixia Logo"
+            className="w-7 h-7 rounded-lg object-cover border border-amber-400/60 shadow"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+          <span>PHONIXIA</span>
         </button>
       </div>
 

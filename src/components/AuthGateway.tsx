@@ -279,6 +279,15 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticated }) => 
         
         {/* Header */}
         <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <img
+              src="/logo.jpeg"
+              alt="Phonixia Emblem"
+              className="w-12 h-12 rounded-2xl border-2 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.5)] object-cover"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </div>
+
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-amber-500/20 border border-amber-400/80 text-amber-300 text-xs font-black tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-pulse">
             <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
             <span>EPIC ADVENTURE QUEST</span>

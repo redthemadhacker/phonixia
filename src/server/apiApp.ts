@@ -68,12 +68,15 @@ export function loadAccounts(): Record<string, StoredAccountRecord> {
   try {
     if (fs.existsSync(ACCOUNTS_FILE)) {
       const data = fs.readFileSync(ACCOUNTS_FILE, 'utf-8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+        return parsed;
+      }
     }
   } catch (e) {
     console.error('Error loading accounts:', e);
   }
-  return {};
+  return initAccountsFile();
 }
 
 export function saveAccounts(accounts: Record<string, StoredAccountRecord>) {

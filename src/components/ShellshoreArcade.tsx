@@ -34,11 +34,14 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
   const [playerCabinetNum, setPlayerCabinetNum] = useState<number>(26);
   const [jumpOffset, setJumpOffset] = useState<number>(0);
   const [isJumping, setIsJumping] = useState<boolean>(false);
-  const [_isWalkingToCabinet, setIsWalkingToCabinet] = useState<boolean>(false);
+  const [isWalkingToCabinet, setIsWalkingToCabinet] = useState<boolean>(false);
+  const [arcadeFacing, setArcadeFacing] = useState<'left' | 'right'>('right');
 
   // Interactive Character & Tool Animation states in Arcade Modal
   const [playerCol, setPlayerCol] = useState<number>(0);
   const [isActing, setIsActing] = useState<boolean>(false);
+  const [stationFacing, setStationFacing] = useState<'left' | 'right'>('right');
+  const [isStationMoving, setIsStationMoving] = useState<boolean>(false);
   const [actionEffect, setActionEffect] = useState<{ col: number; text: string; icon: string } | null>(null);
   const [clawDropping, setClawDropping] = useState<boolean>(false);
 
@@ -167,11 +170,17 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         e.preventDefault();
         setPlayerCol(c => Math.max(0, c - 1));
+        setStationFacing('left');
+        setIsStationMoving(true);
         sounds.playStep();
+        setTimeout(() => setIsStationMoving(false), 220);
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         e.preventDefault();
         setPlayerCol(c => Math.min(activeGame.options.length - 1, c + 1));
+        setStationFacing('right');
+        setIsStationMoving(true);
         sounds.playStep();
+        setTimeout(() => setIsStationMoving(false), 220);
       } else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         executeArcadeAction(playerCol);
@@ -329,7 +338,14 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                   }}
                   className="absolute top-0 left-1/2 z-35 pointer-events-none transition-transform flex flex-col items-center"
                 >
-                  <AvatarRenderer customization={activeExplorer.customization} size={42} showPet={true} />
+                  <AvatarRenderer
+                    customization={activeExplorer.customization}
+                    size={42}
+                    isWalking={isWalkingToCabinet}
+                    isJumping={isJumping || jumpOffset > 2}
+                    facing={arcadeFacing}
+                    showPet={true}
+                  />
                 </div>
               )}
             </div>
@@ -405,9 +421,15 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                   stageNumber={activeGame.gameNum}
                   isSimplerLevel={activeGame.gameNum <= 35}
                 />
-                <span className="text-xs font-mono font-bold text-cyan-300 px-3 py-1 bg-purple-950/70 border border-cyan-400/40 rounded-xl shadow">
-                  Target: {activeGame.targetSoundOrWord}
-                </span>
+                <button
+                  type="button"
+                  title="Hear sound cue"
+                  onClick={() => sounds.speak(activeGame.spokenAudioCue || activeGame.howToPlay)}
+                  className="px-3 py-1 bg-purple-950/80 border border-cyan-400/50 hover:bg-purple-900 rounded-xl shadow text-xs font-bold text-cyan-200 flex items-center gap-1.5 cursor-pointer active:scale-95 transition-transform"
+                >
+                  <Volume2 className="w-3.5 h-3.5 text-cyan-300" />
+                  <span>Listen</span>
+                </button>
               </div>
             </div>
 
@@ -509,7 +531,14 @@ export const ShellshoreArcade: React.FC<ShellshoreArcadeProps> = ({ onBackToWorl
                   className="absolute bottom-1 flex flex-col items-center pointer-events-none"
                 >
                   <div className="relative">
-                    <AvatarRenderer customization={activeExplorer.customization} size={46} showPet={false} />
+                    <AvatarRenderer
+                      customization={activeExplorer.customization}
+                      size={46}
+                      isWalking={isStationMoving}
+                      isActing={isActing}
+                      facing={stationFacing}
+                      showPet={false}
+                    />
                     
                     {/* The Themed Arcade Tool matching game */}
                     <div

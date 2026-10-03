@@ -1,64 +1,56 @@
-# Phonixia: Multiverse Adventure 🎮✨
+# Phonixia: Multiverse Adventure // Educational Phonics Gaming Engine
 
-Phonixia is a free, accessible beta version of a phonics learning quest engineered for children. Designed to make foundational reading engaging and intuitive, players venture through 5 magical realms to master phonetic pronunciation challenges, discover hidden mechanics, and track their literacy journey.
-
----
-
-## 🌟 Key Features
-
-* **5 Immersive Magical Realms:**
-  * *Sound Shallows* — Interactive underwater swimming mechanics.
-  * *Builders Guild* — Brick-mason quarry challenges.
-  * *Crystal Caverns* — Dynamic minecart dashing.
-  * *Skyward Heights* — High-altitude sky gliding.
-  * *The Acropolis* — Climax realm showdown.
-* **Phonetic Pronunciation Challenges:** Targets foundational letter sounds and syllable audio cues (e.g., *BUH*, *EH*, *DAH*) with hint-free mastery enforcement.
-* **Custom Explorer & Guides:** Character creation featuring gender-matched companion guides (**Kam** and **Celine**).
-* **Multi-Device Cloud Persistence:** Cross-platform cloud cartridge saves allowing seamless session recovery across phones, tablets, and desktops.
-* **Parent Dashboard & Telemetry:** Real-time visibility into player reading progression, mastery checkpoints, and usage statistics.
+> **Live Production:** [https://phonixia-7c9c93ef0d42.herokuapp.com](https://phonixia-7c9c93ef0d42.herokuapp.com)  
+> `root@phonixia:~# educational quest // clean-slate engine // EST. 2026`
 
 ---
 
-## 🔒 Security & Privacy Architecture
+## Overview
 
-Engineered with zero-trust parental cybersecurity standards:
+**Phonixia: Multiverse Adventure** is a free, accessible beta version of an open-world phonics learning quest engineered for children.
 
-* **Authentication Standards:** Client and server-side complexity enforcement (uppercase, lowercase, number, special character, 8+ characters) backed by a live validation checklist.
-* **Cryptographic Storage:** Strong salted key derivation implemented via standard Web Crypto APIs and secure hashing.
-* **Local LAN & Wi-Fi Isolation:** Strict security headers, rate-limiting, and local network boundary protections to prevent unauthorized Wi-Fi sniffing or LAN enumeration.
+Designed to make foundational reading engaging and intuitive without predatory ads or data brokers, players journey through five realms to master phonetic pronunciation challenges, discover world traversal mechanics, and track their literacy progress across devices.
 
 ---
 
-## 🛠️ Tech Stack & Environment
+## Technical Stack
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Development Environment** | Linux (Ubuntu 24.10), VS Code, GitHub, AI Studio |
-| **Frontend Core** | React, TypeScript, Vite, Tailwind CSS |
-| **Backend & Services** | Node.js, Express, Web Crypto API |
-| **Deployment Target** | Cloud Run & Mobile Browser Viewports |
-
----
-
-## 🚀 Live Demo & Testing
-
-Experience the live beta build:
-
-👉 **[Play Phonixia Beta](https://phonixia-7c9c93ef0d42.herokuapp.com/)**
+- **Framework:** [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Bundler & Tooling:** [Vite](https://vitejs.dev/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Backend & Services:** [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/)
+- **Cryptography & Audio:** Web Crypto API, Custom Web Audio Synthesizers
+- **Hosting & Infrastructure:** [Heroku](https://www.heroku.com/)
+- **Development Environment:** Linux (Ubuntu 24.10), VS Code, Git
 
 ---
 
-## 📱 Mobile Responsiveness & Viewport Optimization
+## Key Modules & Architecture
 
-Phonixia is fine-tuned for touch ergonomics and cross-platform fidelity:
+The application combines a lightweight voxel-inspired runtime with an orthographic reading parser, built for zero-bloat execution across school Chromebooks, tablets, and phones.
 
-* **Dynamic Viewports:** Uses dynamic viewport height units (`100dvh`) to prevent address-bar clipping on iOS Safari and mobile Chromium browsers.
-* **Safe-Area Insets:** Built-in viewport padding supports device notches, rounded device borders, and navigation gestures.
-* **Adaptive Canvas Scaling:** Responsive element scaling eliminates horizontal overflow and layout shifts across tablets, laptops, and mobile screens.
+* **Five Exploration Realms:** 
+  * *Sound Shallows* — Interactive underwater navigation and swimming mechanics.
+  * *Builders Guild* — Brick-mason quarry challenges with physical block placements.
+  * *Crystal Caverns* — High-velocity rail navigation and dynamic minecart dashing.
+  * *Skyward Heights* — Open-altitude gliding mechanics across acoustic thermal currents.
+  * *The Acropolis* — Climax realm synthesizing full decodable vocabulary challenges.
+* **Clinical Decodable Parser:** Evaluates foundational letter sounds and syllable audio cues (*BUH*, *EH*, *DAH*) with hint-free mastery enforcement.
+* **Character Customization & Guides:** Custom explorer creation featuring dual companion guides (**Kam** and **Celine**).
+* **Multi-Device Cloud Persistence:** Cross-platform cloud cartridge saves enabling uninterrupted session state recovery across mobile and desktop environments.
+* **Parent Dashboard & Telemetry:** Real-time visibility into reading milestones, session length, and phoneme mastery rates.
+* **Zero-Trust Child Privacy:** Salted key derivation via Web Crypto APIs, strict LAN isolation, zero third-party telemetry, and robust password validation.
 
 ---
 
-## 📦 Local Setup
+## Local Development
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+- [npm](https://www.npmjs.com/)
+
+### Installation & Setup
 
 1. **Clone the repository:**
    ```bash

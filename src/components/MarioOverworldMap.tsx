@@ -5,11 +5,11 @@ import { sounds } from '../utils/audio';
 import { AvatarRenderer } from './AvatarRenderer';
 import { Star, CheckCircle2, ArrowLeft, Footprints, Play, Lock, Shield, Sparkles } from 'lucide-react';
 
-import shallowsBg from '../../sound.jpeg';
-import buildersBg from '../../build.jpeg';
-import trailsBg from '../../trails.jpeg';
-import peaksBg from '../../peak.jpeg';
-import empireBg from '../../empire.jpeg';
+const shallowsBg = '/sound.jpeg';
+const buildersBg = '/build.jpeg';
+const trailsBg = '/trails.jpeg';
+const peaksBg = '/peak.jpeg';
+const empireBg = '/empire.jpeg';
 
 interface StageNode {
   number: number;

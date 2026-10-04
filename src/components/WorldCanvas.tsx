@@ -7,7 +7,7 @@ import {
   Lock, Volume2, VolumeX, Home, Play, Star, Footprints, 
   ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Mic, X, ChevronsUp
 } from 'lucide-react';
-import phonixiaMap from '../../phonixia.png';
+const phonixiaMap = '/phonixia.png';
 
 interface WorldCanvasProps {
   onSelectLand: (landId: LandId) => void;

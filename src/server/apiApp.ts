@@ -88,8 +88,19 @@ export function saveAccounts(accounts: Record<string, StoredAccountRecord>) {
 }
 
 // Initialize seed accounts
-export function initAccountsFile() {
-  const accounts = loadAccounts();
+export function initAccountsFile(): Record<string, StoredAccountRecord> {
+  let accounts: Record<string, StoredAccountRecord> = {};
+  try {
+    if (fs.existsSync(ACCOUNTS_FILE)) {
+      const data = fs.readFileSync(ACCOUNTS_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (parsed && typeof parsed === 'object') {
+        accounts = parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Error initializing accounts file:', e);
+  }
 
   // 1. Account: readingheroes
   if (!accounts['readingheroes']) {
@@ -317,6 +328,7 @@ export function initAccountsFile() {
   }
 
   saveAccounts(accounts);
+  return accounts;
 }
 
 initAccountsFile();

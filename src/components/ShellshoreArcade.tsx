@@ -9,7 +9,7 @@ import {
   ArrowLeft, ArrowRight, Volume2, RotateCcw,
   Coins, ChevronsUp
 } from 'lucide-react';
-import shellshoreBg from '../../shellshore.jpeg';
+const shellshoreBg = '/shellshore.jpeg';
 
 interface ShellshoreArcadeProps {
   onBackToWorld: () => void;

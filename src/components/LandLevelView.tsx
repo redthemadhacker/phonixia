@@ -12,11 +12,11 @@ import {
   ArrowRight, Mic, X, ChevronsUp, Sparkles, Trophy, Heart, Flame, Shield
 } from 'lucide-react';
 
-import shallowsBg from '../../sound.jpeg';
-import buildersBg from '../../build.jpeg';
-import trailsBg from '../../trails.jpeg';
-import peaksBg from '../../peak.jpeg';
-import empireBg from '../../empire.jpeg';
+const shallowsBg = '/sound.jpeg';
+const buildersBg = '/build.jpeg';
+const trailsBg = '/trails.jpeg';
+const peaksBg = '/peak.jpeg';
+const empireBg = '/empire.jpeg';
 
 interface LandLevelViewProps {
   landId: LandId;

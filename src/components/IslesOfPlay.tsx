@@ -8,7 +8,7 @@ import { getMinigameVisuals } from '../utils/minigameVisuals';
 import { 
   ArrowLeft, Volume2, Coins, ChevronsUp, Star, Sparkles
 } from 'lucide-react';
-import islesBg from '../../isles.jpeg';
+const islesBg = '/isles.jpeg';
 
 interface IslesOfPlayProps {
   onClose?: () => void;

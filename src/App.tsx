@@ -100,7 +100,11 @@ type ViewState =
   | 'higher-ed' 
   | 'speech-lab';
 
-const GameShell: React.FC = () => {
+interface AuthenticatedGameViewProps {
+  onLogout: () => void;
+}
+
+const AuthenticatedGameView: React.FC<AuthenticatedGameViewProps> = ({ onLogout }) => {
   const { 
     activeExplorer,
     showHallOfFameCelebration, 
@@ -109,9 +113,6 @@ const GameShell: React.FC = () => {
   } = useGame();
   
   const companionGuide = getCompanionGuide(activeExplorer);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem('phonixia_active_session') === 'true';
-  });
 
   const [currentView, setCurrentView] = useState<ViewState>('world');
   const [selectedLand, setSelectedLand] = useState<LandId>('sound-shallows');
@@ -124,7 +125,7 @@ const GameShell: React.FC = () => {
   const [questionRandomSeed, setQuestionRandomSeed] = useState<number>(0);
 
   // Modals state
-  const [isHomeHutOpen, setIsHomeHutOpen] = useState(false);
+  const [isHomeHutOpen, setIsHomeHutOpen] = useState(true);
   const [manualCelebrationOpen, setManualCelebrationOpen] = useState(false);
   const [isParentPinModalOpen, setIsParentPinModalOpen] = useState(false);
   const [isParentDashboardOpen, setIsParentDashboardOpen] = useState(false);
@@ -156,24 +157,18 @@ const GameShell: React.FC = () => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleInactivityLogout = useCallback(() => {
-    sessionStorage.removeItem('phonixia_active_session');
-    setIsAuthenticated(false);
-    setCurrentView('world');
-    setIsHomeHutOpen(true);
+    onLogout();
     sounds.playError();
     sounds.speak('Session timed out after 5 minutes of inactivity. Please sign in again.');
-  }, []);
+  }, [onLogout]);
 
   const resetIdleTimer = useCallback(() => {
-    if (!isAuthenticated) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     // 5 minutes = 300,000 ms
     timeoutRef.current = setTimeout(handleInactivityLogout, 5 * 60 * 1000);
-  }, [isAuthenticated, handleInactivityLogout]);
+  }, [handleInactivityLogout]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-
     const events = ['mousedown', 'mousemove', 'keydown', 'touchstart', 'scroll', 'click'];
     events.forEach(event => window.addEventListener(event, resetIdleTimer));
     resetIdleTimer();
@@ -182,22 +177,11 @@ const GameShell: React.FC = () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       events.forEach(event => window.removeEventListener(event, resetIdleTimer));
     };
-  }, [isAuthenticated, resetIdleTimer]);
+  }, [resetIdleTimer]);
 
   const activeQuestion = React.useMemo(() => {
     return getComprehensiveStageChallenge(selectedLand, activeStageNumber);
   }, [selectedLand, activeStageNumber, questionRandomSeed]);
-
-  if (!isAuthenticated) {
-    return (
-      <AuthGateway 
-        onAuthenticated={() => {
-          setIsAuthenticated(true);
-          setIsHomeHutOpen(true);
-        }} 
-      />
-    );
-  }
 
   const handleLaunchStage = (stageNum: number) => {
     setActiveStageNumber(stageNum);
@@ -348,7 +332,7 @@ const GameShell: React.FC = () => {
       acc?.dyslexiaFont ? 'font-sans tracking-wide' : ''
     } ${acc?.highContrast ? 'contrast-125' : ''}`}>
       
-      {/* 1. TOP MMO / RPG HUD OVERLAY (Floating, Video-Game Style) */}
+      {/* 1. TOP MMO / RPG HUD OVERLAY */}
       <header className="absolute top-0 inset-x-0 z-40 p-2 sm:p-3 flex items-start justify-between pointer-events-none gap-2">
         
         {/* Character Status Plate (Top-Left) */}
@@ -511,7 +495,7 @@ const GameShell: React.FC = () => {
         </div>
       </header>
 
-      {/* 2. RIGHT-SIDE RPG QUEST TRACKER (Collapsible, Fantasy Styled) */}
+      {/* 2. RIGHT-SIDE RPG QUEST TRACKER */}
       <div className="absolute right-2 sm:right-3 top-16 z-30 pointer-events-auto">
         <div className="bg-slate-950/92 backdrop-blur-md border border-amber-500/50 rounded-2xl p-2.5 sm:p-3 shadow-xl max-w-[210px] sm:max-w-[240px] text-xs">
           <div 
@@ -642,7 +626,6 @@ const GameShell: React.FC = () => {
             if (landId === 'phonixia-academy' || landId === 'masters-pathways' || landId === 'celestial-archives') {
               setCurrentView('higher-ed');
             } else {
-              // Trigger cinematic world transition cutscene
               const names: Record<LandId, { station: string; skill: string }> = {
                 'sound-shallows': { station: 'Whispering Cove', skill: 'Pure Phonics Sound Pearls' },
                 'builders-guild': { station: 'Guild Word Forge', skill: 'Word Crane & Architecture' },
@@ -720,12 +703,12 @@ const GameShell: React.FC = () => {
         <ShellshoreArcade onBackToWorld={() => setCurrentView('world')} />
       )}
 
-      {/* 6. ARCHITECTURAL WORD FORGE (BUILDERS GUILD) */}
+      {/* 6. ARCHITECTURAL WORD FORGE */}
       {currentView === 'word-forge' && (
         <ArchitecturalWordForge onBack={() => setCurrentView('world')} />
       )}
 
-      {/* 7. HIGHER EDUCATION HUB (PHONIXIA ACADEMY & CELESTIAL ARCHIVES) */}
+      {/* 7. HIGHER EDUCATION HUB */}
       {currentView === 'higher-ed' && (
         <HigherEducationHub 
           onBack={() => setCurrentView('world')}
@@ -790,31 +773,31 @@ const GameShell: React.FC = () => {
         />
       )}
 
-      {/* 13. ADAPTIVE ACCESSIBILITY & UDL MODAL */}
+      {/* 14. ADAPTIVE ACCESSIBILITY & UDL MODAL */}
       <AdaptiveAccessibilityModal
         isOpen={isAccessibilityModalOpen}
         onClose={() => setIsAccessibilityModalOpen(false)}
       />
 
-      {/* 14. TEACHER MTSS / RTI DASHBOARD */}
+      {/* 15. TEACHER MTSS / RTI DASHBOARD */}
       <TeacherMTSSDashboard
         isOpen={isTeacherDashboardOpen}
         onClose={() => setIsTeacherDashboardOpen(false)}
       />
 
-      {/* 15. CYBER GUARDIAN FAMILY SAFETY MODAL */}
+      {/* 16. CYBER GUARDIAN FAMILY SAFETY MODAL */}
       <CyberGuardianModal
         isOpen={isCyberGuardianOpen}
         onClose={() => setIsCyberGuardianOpen(false)}
       />
 
-      {/* 16. 19-TIER GRADE MILESTONES MODAL */}
+      {/* 17. 19-TIER GRADE MILESTONES MODAL */}
       <GradeMilestonesModal
         isOpen={isGradeMilestonesOpen}
         onClose={() => setIsGradeMilestonesOpen(false)}
       />
 
-      {/* 17. ETHICAL BUSINESS & LICENSING MODAL */}
+      {/* 18. ETHICAL BUSINESS & LICENSING MODAL */}
       <BusinessLicensingModal
         isOpen={isBusinessLicensingOpen}
         onClose={() => setIsBusinessLicensingOpen(false)}
@@ -822,6 +805,29 @@ const GameShell: React.FC = () => {
 
     </div>
   );
+};
+
+const GameShell: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('phonixia_active_session') === 'true';
+  });
+
+  const handleLogout = useCallback(() => {
+    sessionStorage.removeItem('phonixia_active_session');
+    setIsAuthenticated(false);
+  }, []);
+
+  if (!isAuthenticated) {
+    return (
+      <AuthGateway 
+        onAuthenticated={() => {
+          setIsAuthenticated(true);
+        }} 
+      />
+    );
+  }
+
+  return <AuthenticatedGameView onLogout={handleLogout} />;
 };
 
 export default function App() {

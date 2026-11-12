@@ -1,7 +1,6 @@
 # Phonixia: Multiverse Adventure // Educational Phonics Gaming Engine
 
-> **Live Production:** [https://phonixia-7c9c93ef0d42.herokuapp.com](https://phonixia-7c9c93ef0d42.herokuapp.com)  
-> `root@phonixia:~# educational quest // clean-slate engine // EST. 2026`
+> **Live Production:** [https://phonixia-9e0fb4a9c435.herokuapp.com/](https://phonixia-9e0fb4a9c435.herokuapp.com/)  
 
 ---
 
